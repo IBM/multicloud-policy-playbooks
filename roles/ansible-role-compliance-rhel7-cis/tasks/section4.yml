@@ -1,0 +1,2715 @@
+- name: "EVIDENCE | 4.1.1.1 | BEFORE | Ensure audit log storage size is configured"
+  block:
+  - shell: grep max_log_file /etc/audit/auditd.conf;true
+    register: eb_rhel7cis_rule_4_1_1_1
+  - set_fact:
+      mode_rhel7cis_rule_4_1_1_1: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_1_1_1|bool) else 'check_only'}}"
+      cis_noncompliant_4_1_1_1_status: Unknown
+  when:
+      - (rhel7cis_rule_4_1_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_1|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.1.1
+      - customcheck
+  check_mode: no
+
+- name: "NOTSCORED | 4.1.1.1 | PATCH | Ensure audit log storage size is configured"
+  lineinfile:
+      dest: /etc/audit/auditd.conf
+      regexp: "^max_log_file( |=)"
+      line: "max_log_file = 10"
+      state: present
+  register:  rhel7cis_rule_4_1_1_1_out
+  when:
+      - (rhel7cis_rule_4_1_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_1|bool)
+  notify: restart auditd
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.1.1
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_1|bool)) }}"
+
+- name: Display Output | 4.1.1.1 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.1.1.1 | When Not Compliant
+          debug:
+              msg="NOT_COMPLIANT|CIS_RESULT| 4.1.1.1 |audit log storage size is configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_1_1_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_1_1_1_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.1.1.1"] }}'
+      when:
+          - rhel7cis_rule_4_1_1_1_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_1|bool))
+    - block:
+        - name: Display Output | 4.1.1.1 | When Compliant
+          debug:
+              msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.1.1.1 |audit log storage size is configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_1_1_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_1_1_1_status: Compliant
+      when:
+          - not rhel7cis_rule_4_1_1_1_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_1|bool)
+  when:
+      - (rhel7cis_rule_4_1_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_1|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.1.1
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.1.1.2 | BEFORE | Ensure system is disabled when audit logs are full"
+  block:
+  - shell: cat /etc/audit/auditd.conf | grep "space_left_action\|action_mail_acct";true
+    register: eb_rhel7cis_rule_4_1_1_2
+  - set_fact:
+      mode_rhel7cis_rule_4_1_1_2: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_1_1_2|bool) else 'check_only'}}"
+      cis_noncompliant_4_1_1_2_status: Unknown
+      cis_noncompliant_4_1_1_2a_status: Unknown
+      cis_noncompliant_4_1_1_2b_status: Unknown
+      cis_noncompliant_4_1_1_2c_status: Unknown
+  when:
+      - (rhel7cis_rule_4_1_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_2|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.1.2
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.1.1.2 | PATCH | Ensure system is disabled when audit logs are full"
+  lineinfile:
+      dest: /etc/audit/auditd.conf
+      regexp: "^admin_space_left_action"
+      line: "admin_space_left_action = {{ rhel7cis_auditd['admin_space_left_action'] }}"
+      state: present
+  register:  rhel7cis_rule_4_1_1_2a_out
+  when:
+      - (rhel7cis_rule_4_1_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_2|bool)
+  notify: restart auditd
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.1.2
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_2|bool)) }}"
+
+- name: Display Output | 4.1.1.2 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.1.1.2 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.1.1.2 |system is disabled when audit logs are full|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_1_2a_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_1_1_2a_status: NonCompliant
+      when:
+          - rhel7cis_rule_4_1_1_2a_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_2|bool))
+    - block:
+        - name: Display Output | 4.1.1.2 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.1.1.2 |system is disabled when audit logs are full|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_1_2a_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_1_1_2a_status: Compliant
+      when:
+          - not rhel7cis_rule_4_1_1_2a_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_2|bool)
+  when:
+      - (rhel7cis_rule_4_1_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_2|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.1.2
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.1.1.2 | PATCH | Ensure email on non-admin audit space alert"
+  lineinfile:
+      dest: /etc/audit/auditd.conf
+      regexp: "^space_left_action"
+      line: "space_left_action = email"
+      state: present
+  register:  rhel7cis_rule_4_1_1_2b_out
+  when:
+      - (rhel7cis_rule_4_1_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_2|bool)
+  notify: restart auditd
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.1.2
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_2|bool)) }}"
+
+- name: Display Output | 4.1.1.2 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.1.1.2 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.1.1.2 |email on non-admin audit space alert|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_1_2b_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_1_1_2b_status: NonCompliant
+      when:
+          - rhel7cis_rule_4_1_1_2b_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_2|bool))
+    - block:
+        - name: Display Output | 4.1.1.2 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.1.1.2 |email on non-admin audit space alert|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_1_2b_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_1_1_2b_status: Compliant
+      when:
+          - not rhel7cis_rule_4_1_1_2b_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_2|bool)
+  when:
+      - (rhel7cis_rule_4_1_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_2|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.1.2
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.1.1.2 | PATCH | Ensure action_mail_acct = root"
+  lineinfile:
+      dest: /etc/audit/auditd.conf
+      regexp: "^action_mail_acct"
+      line: "action_mail_acct = root"
+      state: present
+  register:  rhel7cis_rule_4_1_1_2c_out
+  when:
+      - (rhel7cis_rule_4_1_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_2|bool)
+  notify: restart auditd
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.1.2
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_2|bool)) }}"
+
+- name: Display Output | 4.1.1.2 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.1.1.2 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.1.1.2 |action_mail_acct = root|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_1_2c_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_1_1_2c_status: NonCompliant
+      when:
+          - rhel7cis_rule_4_1_1_2c_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_2|bool))
+    - block:
+        - name: Display Output | 4.1.1.2 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.1.1.2 |action_mail_acct = root|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_1_2c_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_1_1_2c_status: Compliant
+      when:
+          - not rhel7cis_rule_4_1_1_2c_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_2|bool)
+  when:
+      - (rhel7cis_rule_4_1_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_2|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.1.2
+      - customcheck
+  check_mode: no
+
+#*********************************************************************************
+- name: "EVIDENCE | 4.1.1.3 | BEFORE | Ensure audit logs are not automatically deleted"
+  block:
+  - shell: grep max_log_file_action /etc/audit/auditd.conf;true
+    register: eb_rhel7cis_rule_4_1_1_3
+  - set_fact:
+      mode_rhel7cis_rule_4_1_1_3: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_1_1_3|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_4_1_1_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_3|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.1.3
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.1.1.3 | PATCH | Ensure audit logs are not automatically deleted"
+  lineinfile:
+      dest: /etc/audit/auditd.conf
+      regexp: "^max_log_file_action"
+      line: "max_log_file_action = {{ rhel7cis_auditd['max_log_file_action'] }}"
+      state: present
+  register:  rhel7cis_rule_4_1_1_3_out
+  when:
+      - (rhel7cis_rule_4_1_1_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_3|bool)
+  notify: restart auditd
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.1.3
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_3|bool)) }}"
+
+- name: Display Output | 4.1.1.3 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.1.1.3 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.1.1.3 |audit logs are not automatically deleted|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_1_3_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_1_1_3_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.1.1.3"] }}'
+      when:
+          - rhel7cis_rule_4_1_1_3_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_3|bool))
+    - block:
+        - name: Display Output | 4.1.1.3 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.1.1.3 |audit logs are not automatically deleted|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_1_3_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_1_1_3_status: Compliant
+      when:
+          - not rhel7cis_rule_4_1_1_3_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_3|bool)
+  when:
+      - (rhel7cis_rule_4_1_1_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_3|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.1.3
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.1.2 | BEFORE | Ensure auditd service is enabled"
+  block:
+  - shell: systemctl is-enabled auditd;true
+    register: eb_rhel7cis_rule_4_1_2
+  - set_fact:
+      mode_rhel7cis_rule_4_1_2: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_1_2|bool) else 'check_only'}}"
+      cis_noncompliant_4_1_2_status: Unknown
+  when:
+      - (rhel7cis_rule_4_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_2|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.2
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.1.2 | PATCH | Ensure auditd service is enabled"
+  service:
+      name: auditd
+      state: started
+      enabled: yes
+  register:  rhel7cis_rule_4_1_2_out
+  when:
+      - rhel7cis_skip_for_travis == false
+      - (rhel7cis_rule_4_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_2|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.2
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_2|bool)) }}"
+
+- name: Display Output | 4.1.2 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.1.2 | When Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.1.2 |auditd service is enabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_2_out.enabled}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_1_2_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.1.2"] }}'
+      when:
+          - rhel7cis_rule_4_1_2_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_2|bool))
+    - block:
+        - name: Display Output | 4.1.2 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.1.2 |auditd service is enabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_2_out.enabled}}"
+        - set_fact:
+            cis_noncompliant_4_1_2_status: Compliant
+      when:
+          - not rhel7cis_rule_4_1_2_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_2|bool)
+  when:
+      - (rhel7cis_rule_4_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_2|bool)
+      - rhel7cis_skip_for_travis == false
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.2
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.1.3 | BEFORE | Ensure auditing for processes that start prior to auditd is enabled"
+  block:
+  - shell: grep "^\s*linux" /boot/grub2/grub.cfg;true
+    register: eb_rhel7cis_rule_4_1_3
+  - set_fact:
+      mode_rhel7cis_rule_4_1_3: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_1_3|bool) else 'check_only'}}"
+      cis_noncompliant_4_1_3_status: Unknown
+  when:
+      - (rhel7cis_rule_4_1_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_3|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.3
+      - customcheck
+  check_mode: no
+
+# The /etc/grub2.cfg is a symbolic link to /boot/grub2/grub.cfg. The notify: generate new grub config changes this /boot/grub2/grub.cfg
+- block:
+    - name: "Get info on grub"
+      stat:
+          path: /etc/grub2.cfg
+      register: grub_cfg
+      # ls -las /etc/grub2.cfg
+      # 0 lrwxrwxrwx 1 root root 22 Oct 25  2019 /etc/grub2.cfg -> ../boot/grub2/grub.cfg
+      #when: grub_cfg is not defined or grub_cfg.stat is not defined
+      # https://github.com/ansible/ansible/issues/4297 The when does not work
+    - name: "SCORED | 4.1.3 | PATCH | Ensure auditing for processes that start prior to auditd is enabled"
+      replace:
+          dest: /etc/default/grub
+          regexp: '(^GRUB_CMDLINE_LINUX\s*\=\s*)(?:")(.+)(?<!audit=1)(?:")'
+          replace: '\1"\2 audit=1"'
+          follow: yes
+      ignore_errors: yes
+      notify: generate new grub config
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_4_1_3|bool)
+      - not ansible_check_mode
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.3
+
+
+#*********************************************************************************
+- name: "EVIDENCE | 4.1.4 | BEFORE | Ensure events that modify date and time information are collected"
+  block:
+  - shell: bash -x -c 'grep time-change /etc/audit/audit.rules;auditctl -l | grep time-change;grep time-change /etc/audit/rules.d/rhel7cis_rule_4_1_4.rules;true' 2>&1
+    register: eb_rhel7cis_rule_4_1_4
+  - set_fact:
+      mode_rhel7cis_rule_4_1_4: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_1_4|bool) else 'check_only'}}"
+      cis_noncompliant_4_1_4_status: Unknown
+  when:
+      - (rhel7cis_rule_4_1_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_4|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.4
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.1.4 | PATCH | Ensure events that modify date and time information are collected"
+  template:
+      src: audit/rhel7cis_rule_4_1_4.rules.j2
+      dest: /etc/audit/rules.d/rhel7cis_rule_4_1_4.rules
+      owner: root
+      group: root
+      mode: 0600
+  register:  rhel7cis_rule_4_1_4_out
+  when:
+      - (rhel7cis_rule_4_1_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_4|bool)
+  notify: restart auditd
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.4
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_4|bool)) }}"
+
+- name: Display Output | 4.1.4 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.1.4 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.1.4 |events that modify date and time information are collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_4_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_1_4_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.1.4"] }}'
+      when:
+          - rhel7cis_rule_4_1_4_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_4|bool))
+    - block:
+        - name: Display Output | 4.1.4 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.1.4 |events that modify date and time information are collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_4_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_1_4_status: Compliant
+      when:
+          - not rhel7cis_rule_4_1_4_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_4|bool)
+  when:
+      - (rhel7cis_rule_4_1_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_4|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.4
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.1.5 | BEFORE | Ensure events that modify user/group information are collected"
+  block:
+  - shell: bash -x -c 'grep identity /etc/audit/audit.rules;grep identity /etc/audit/rules.d/rhel7cis_rule_4_1_5.rules;auditctl -l | grep identity;true' 2>&1
+    register: eb_rhel7cis_rule_4_1_5
+  - set_fact:
+      mode_rhel7cis_rule_4_1_5: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_1_5|bool) else 'check_only'}}"
+      cis_noncompliant_4_1_5_status: Unknown
+  when:
+      - (rhel7cis_rule_4_1_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_5|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.5
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.1.5 | PATCH | Ensure events that modify user/group information are collected"
+  template:
+      src: audit/rhel7cis_rule_4_1_5.rules.j2
+      dest: /etc/audit/rules.d/rhel7cis_rule_4_1_5.rules
+      owner: root
+      group: root
+      mode: 0600
+  register:  rhel7cis_rule_4_1_5_out
+  when:
+      - (rhel7cis_rule_4_1_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_5|bool)
+  notify: restart auditd
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.5
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_5|bool)) }}"
+
+- name: Display Output | 4.1.5 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.1.5 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.1.5 |events that modify user/group information are collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_5_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_1_5_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.1.5"] }}'
+      when:
+          - rhel7cis_rule_4_1_5_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_5|bool))
+    - block:
+        - name: Display Output | 4.1.5 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.1.5 |events that modify user/group information are collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_5_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_1_5_status: Compliant
+      when:
+          - not rhel7cis_rule_4_1_5_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_5|bool)
+  when:
+      - (rhel7cis_rule_4_1_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_5|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.5
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.1.6 | BEFORE | Ensure events that modify the system's network environment are collected"
+  block:
+  - shell: bash -x -c 'grep system-locale /etc/audit/audit.rules;grep system-locale /etc/audit/rules.d/rhel7cis_rule_4_1_6.rules;auditctl -l | grep system-locale;true' 2>&1
+    register: eb_rhel7cis_rule_4_1_6
+  - set_fact:
+      mode_rhel7cis_rule_4_1_6: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_1_6|bool) else 'check_only'}}"
+      cis_noncompliant_4_1_6_status: Unknown
+  when:
+      - (rhel7cis_rule_4_1_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_6|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.6
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.1.6 | PATCH | Ensure events that modify the system's network environment are collected"
+  template:
+      src: audit/rhel7cis_rule_4_1_6.rules.j2
+      dest: /etc/audit/rules.d/rhel7cis_rule_4_1_6.rules
+      owner: root
+      group: root
+      mode: 0600
+  register:  rhel7cis_rule_4_1_6_out
+  when:
+      - (rhel7cis_rule_4_1_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_6|bool)
+  notify: restart auditd
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.6
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_6|bool)) }}"
+
+- name: Display Output | 4.1.6 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.1.6 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.1.6 |events that modify the system's network environment are collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_6_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_1_6_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.1.6"] }}'
+      when:
+          - rhel7cis_rule_4_1_6_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_6|bool))
+    - block:
+        - name: Display Output | 4.1.6 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.1.6 |events that modify the system's network environment are collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_6_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_1_6_status: Compliant
+      when:
+          - not rhel7cis_rule_4_1_6_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_6|bool)
+  when:
+      - (rhel7cis_rule_4_1_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_6|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.6
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.1.7 | BEFORE | Ensure events that modify the system's Mandatory Access Controls are collected"
+  block:
+  - shell: bash -x -c 'grep MAC-policy /etc/audit/audit.rules;grep MAC-policy /etc/audit/rules.d/rhel7cis_rule_4_1_7.rules;true' 2>&1
+    register: eb_rhel7cis_rule_4_1_7
+  - set_fact:
+      mode_rhel7cis_rule_4_1_7: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_1_7|bool) else 'check_only'}}"
+      cis_noncompliant_4_1_7_status: Unknown
+  when:
+      - (rhel7cis_rule_4_1_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_7|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.7
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.1.7 | PATCH | Ensure events that modify the system's Mandatory Access Controls are collected"
+  template:
+      src: audit/rhel7cis_rule_4_1_7.rules.j2
+      dest: /etc/audit/rules.d/rhel7cis_rule_4_1_7.rules
+      owner: root
+      group: root
+      mode: 0600
+  register:  rhel7cis_rule_4_1_7_out
+  when:
+      - (rhel7cis_rule_4_1_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_7|bool)
+  notify: restart auditd
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.7
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_7|bool)) }}"
+
+- name: Display Output | 4.1.7 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.1.7 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.1.7 |events that modify the system's Mandatory Access Controls are collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_7_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_1_7_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.1.7"] }}'
+      when:
+          - rhel7cis_rule_4_1_7_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_7|bool))
+    - block:
+        - name: Display Output | 4.1.7 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.1.7 |events that modify the system's Mandatory Access Controls are collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_7_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_1_7_status: Compliant
+      when:
+          - not rhel7cis_rule_4_1_7_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_7|bool)
+  when:
+      - (rhel7cis_rule_4_1_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_7|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.7
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.1.8 | BEFORE | Ensure login and logout events are collected"
+  block:
+  - shell: bash -x -c 'grep logins /etc/audit/audit.rules;grep logins /etc/audit/rules.d/rhel7cis_rule_4_1_8.rules;true' 2>&1
+    register: eb_rhel7cis_rule_4_1_8
+  - set_fact:
+      mode_rhel7cis_rule_4_1_8: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_1_8|bool) else 'check_only'}}"
+      cis_noncompliant_4_1_8_status: Unknown
+  when:
+      - (rhel7cis_rule_4_1_8|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_8|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.8
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.1.8 | PATCH | Ensure login and logout events are collected"
+  template:
+      src: audit/rhel7cis_rule_4_1_8.rules.j2
+      dest: /etc/audit/rules.d/rhel7cis_rule_4_1_8.rules
+      owner: root
+      group: root
+      mode: 0600
+  register:  rhel7cis_rule_4_1_8_out
+  when:
+      - (rhel7cis_rule_4_1_8|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_8|bool)
+  notify: restart auditd
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.8
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_8|bool)) }}"
+
+- name: Display Output | 4.1.8 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.1.8 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.1.8 |login and logout events are collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_8_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_1_8_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.1.8"] }}'
+      when:
+          - rhel7cis_rule_4_1_8_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_8|bool))
+    - block:
+        - name: Display Output | 4.1.8 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.1.8 |login and logout events are collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_8_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_1_8_status: Compliant
+      when:
+          - not rhel7cis_rule_4_1_8_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_8|bool)
+  when:
+      - (rhel7cis_rule_4_1_8|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_8|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.8
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.1.9 | BEFORE | Ensure session initiation information is collected"
+  block:
+  - shell: bash -x -c 'grep session /etc/audit/audit.rules;grep session /etc/audit/rules.d/rhel7cis_rule_4_1_9.rules;auditctl -l | grep session;true' 2>&1
+    register: eb_rhel7cis_rule_4_1_9
+  - set_fact:
+      mode_rhel7cis_rule_4_1_9: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_1_9|bool) else 'check_only'}}"
+      cis_noncompliant_4_1_9_status: Unknown
+  when:
+      - (rhel7cis_rule_4_1_9|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_9|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.9
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.1.9 | PATCH | Ensure session initiation information is collected"
+  template:
+      src: audit/rhel7cis_rule_4_1_9.rules.j2
+      dest: /etc/audit/rules.d/rhel7cis_rule_4_1_9.rules
+      owner: root
+      group: root
+      mode: 0600
+  register:  rhel7cis_rule_4_1_9_out
+  when:
+      - (rhel7cis_rule_4_1_9|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_9|bool)
+  notify: restart auditd
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.9
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_9|bool)) }}"
+
+- name: Display Output | 4.1.9 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.1.9 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.1.9 |session initiation information is collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_9_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_1_9_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.1.9"] }}'
+      when:
+          - rhel7cis_rule_4_1_9_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_9|bool))
+    - block:
+        - name: Display Output | 4.1.9 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.1.9 |session initiation information is collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_9_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_1_9_status: Compliant
+      when:
+          - not rhel7cis_rule_4_1_9_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_9|bool)
+  when:
+      - (rhel7cis_rule_4_1_9|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_9|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.9
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.1.10 | BEFORE | Ensure discretionary access control permission modification events are collected"
+  block:
+  - shell: bash -x -c 'grep perm_mod /etc/audit/audit.rules;grep perm_mod /etc/audit/rules.d/rhel7cis_rule_4_1_10.rules;auditctl -l | grep perm_mod;true' 2>&1
+    register: eb_rhel7cis_rule_4_1_10
+  - set_fact:
+      mode_rhel7cis_rule_4_1_10: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_1_10|bool) else 'check_only'}}"
+      cis_noncompliant_4_1_10_status: Unknown
+  when:
+      - (rhel7cis_rule_4_1_10|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_10|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.10
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.1.10 | PATCH | Ensure discretionary access control permission modification events are collected"
+  template:
+      src: audit/rhel7cis_rule_4_1_10.rules.j2
+      dest: /etc/audit/rules.d/rhel7cis_rule_4_1_10.rules
+      owner: root
+      group: root
+      mode: 0600
+  register:  rhel7cis_rule_4_1_10_out
+  when:
+      - (rhel7cis_rule_4_1_10|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_10|bool)
+  notify: restart auditd
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.10
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_10|bool)) }}"
+
+- name: Display Output | 4.1.10 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.1.10 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.1.10 |discretionary access control permission modification events are collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_10_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_1_10_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.1.10"] }}'
+      when:
+          - rhel7cis_rule_4_1_10_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_10|bool))
+    - block:
+        - name: Display Output | 4.1.10 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.1.10 |discretionary access control permission modification events are collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_10_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_1_10_status: Compliant
+      when:
+          - not rhel7cis_rule_4_1_10_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_10|bool)
+  when:
+      - (rhel7cis_rule_4_1_10|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_10|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.10
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.1.11 | BEFORE | Ensure unsuccessful unauthorized file access attempts are collected"
+  block:
+  - shell: bash -x -c 'grep access /etc/audit/audit.rules;grep access /etc/audit/rules.d/rhel7cis_rule_4_1_11.rules;auditctl -l | grep access;true' 2>&1
+    register: eb_rhel7cis_rule_4_1_11
+  - set_fact:
+      mode_rhel7cis_rule_4_1_11: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_1_11|bool) else 'check_only'}}"
+      cis_noncompliant_4_1_11_status: Unknown
+  when:
+      - (rhel7cis_rule_4_1_11|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_11|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.11
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.1.11 | PATCH | Ensure unsuccessful unauthorized file access attempts are collected"
+  template:
+      src: audit/rhel7cis_rule_4_1_11.rules.j2
+      dest: /etc/audit/rules.d/rhel7cis_rule_4_1_11.rules
+      owner: root
+      group: root
+      mode: 0600
+  register:  rhel7cis_rule_4_1_11_out
+  when:
+      - (rhel7cis_rule_4_1_11|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_11|bool)
+  notify: restart auditd
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.11
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_11|bool)) }}"
+
+- name: Display Output | 4.1.11 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.1.11 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.1.11 |unsuccessful unauthorized file access attempts are collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_11_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_1_11_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.1.11"] }}'
+      when:
+          - rhel7cis_rule_4_1_11_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_11|bool))
+    - block:
+        - name: Display Output | 4.1.11 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.1.11 |unsuccessful unauthorized file access attempts are collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_11_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_1_11_status: Compliant
+      when:
+          - not rhel7cis_rule_4_1_11_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_11|bool)
+  when:
+      - (rhel7cis_rule_4_1_11|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_11|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.11
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.1.12 | BEFORE | Ensure use of privileged commands is collected"
+  block:
+  - shell: for i in  $(df | grep '^/dev' | awk '{ print $NF }'); do find $i -xdev -type f -perm -4000 -o -type f -perm -2000 | awk '{print "-a always,exit -F path=" $1 " -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged" }'; done;true
+    register: eb_rhel7cis_rule_4_1_12
+  - set_fact:
+      mode_rhel7cis_rule_4_1_12: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_1_12|bool) else 'check_only'}}"
+      cis_noncompliant_4_1_12_status: Unknown
+  when:
+      - (rhel7cis_rule_4_1_12|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_12|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.12
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.1.12 | PATCH | Ensure use of privileged commands is collected"
+  shell: for i in  $(df | grep '^/dev' | awk '{ print $NF }'); do find $i -xdev -type f -perm -4000 -o -type f -perm -2000 2>/dev/null; done
+  register: priv_procs
+  changed_when: no
+  check_mode: no
+  when:
+      - (rhel7cis_rule_4_1_12|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_12|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.12
+      - customcheck
+
+- name: Display Output | 4.1.12 | When Compliant
+  block:
+    - name: Display Output | 4.1.12 | When Not Compliant
+      debug:
+        msg="NOT_COMPLIANT|CIS_RESULT| 4.1.12 |use of privileged commands is collected|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{priv_procs.stdout_lines}}"
+      when: (priv_procs.stdout | length > 0 ) or (priv_procs.stderr | length > 0 )
+    - name: Display Output | 4.1.12 | When Compliant
+      debug:
+        msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.1.12 |use of privileged commands is collected|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{priv_procs.stdout_lines}}"
+      when: (priv_procs.stdout | length == 0) and (priv_procs.stderr | length == 0 )
+  when:
+      - (rhel7cis_rule_4_1_12|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_12|bool)
+  tags:
+      - level2
+      - auditd
+      - rule_4.1.12
+      - patch
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.1.12 | PATCH | Ensure use of privileged commands is collected"
+  template:
+      src: audit/rhel7cis_rule_4_1_12.rules.j2
+      dest: /etc/audit/rules.d/rhel7cis_rule_4_1_12.rules
+      owner: root
+      group: root
+      mode: 0600
+  register:  rhel7cis_rule_4_1_12_out
+  notify: restart auditd
+  when:
+      - (rhel7cis_rule_4_1_12|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_12|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.12
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_12|bool)) }}"
+
+- name: Display Output | 4.1.12 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.1.12 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.1.12 |use of privileged commands is collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_12_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_1_12_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.1.12"] }}'
+      when:
+          - rhel7cis_rule_4_1_12_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_12|bool))
+    - block:
+        - name: Display Output | 4.1.12 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.1.12 |use of privileged commands is collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_12_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_1_12_status: Compliant
+      when:
+          - not rhel7cis_rule_4_1_12_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_12|bool)
+  when:
+      - (rhel7cis_rule_4_1_12|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_12|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.12
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.1.13 | BEFORE | Ensure successful file system mounts are collected"
+  block:
+  - shell: bash -x -c 'grep mounts /etc/audit/audit.rules;auditctl -l | grep mounts;grep mounts /etc/audit/rules.d/rhel7cis_rule_4_1_13.rules;true' 2>&1
+    register: eb_rhel7cis_rule_4_1_13
+  - set_fact:
+      mode_rhel7cis_rule_4_1_13: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_1_13|bool) else 'check_only'}}"
+      cis_noncompliant_4_1_13_status: Unknown
+  when:
+      - (rhel7cis_rule_4_1_13|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_13|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.13
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.1.13 | PATCH | Ensure successful file system mounts are collected"
+  template:
+      src: audit/rhel7cis_rule_4_1_13.rules.j2
+      dest: /etc/audit/rules.d/rhel7cis_rule_4_1_13.rules
+      owner: root
+      group: root
+      mode: 0600
+  register:  rhel7cis_rule_4_1_13_out
+  when:
+      - (rhel7cis_rule_4_1_13|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_13|bool)
+  notify: restart auditd
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.13
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_13|bool)) }}"
+
+- name: Display Output | 4.1.13 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.1.13 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.1.13 |successful file system mounts are collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_13_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_1_13_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.1.13"] }}'
+      when:
+          - rhel7cis_rule_4_1_13_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_13|bool))
+    - block:
+        - name: Display Output | 4.1.13 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.1.13 |successful file system mounts are collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_13_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_1_13_status: Compliant
+      when:
+          - not rhel7cis_rule_4_1_13_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_13|bool)
+  when:
+      - (rhel7cis_rule_4_1_13|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_13|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.13
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.1.14 | BEFORE | Ensure file deletion events by users are collected"
+  block:
+  - shell: bash -x -c 'grep delete /etc/audit/audit.rules;auditctl -l | grep delete;grep delete /etc/audit/rules.d/rhel7cis_rule_4_1_14.rules;true' 2>&1
+    register: eb_rhel7cis_rule_4_1_14
+  - set_fact:
+      mode_rhel7cis_rule_4_1_14: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_1_14|bool) else 'check_only'}}"
+      cis_noncompliant_4_1_14_status: Unknown
+  when:
+      - (rhel7cis_rule_4_1_14|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_14|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.14
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.1.14 | PATCH | Ensure file deletion events by users are collected"
+  template:
+      src: audit/rhel7cis_rule_4_1_14.rules.j2
+      dest: /etc/audit/rules.d/rhel7cis_rule_4_1_14.rules
+      owner: root
+      group: root
+      mode: 0600
+  register:  rhel7cis_rule_4_1_14_out
+  when:
+      - (rhel7cis_rule_4_1_14|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_14|bool)
+  notify: restart auditd
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.14
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_14|bool)) }}"
+
+- name: Display Output | 4.1.14 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.1.14 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.1.14 |file deletion events by users are collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_14_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_1_14_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.1.14"] }}'
+      when:
+          - rhel7cis_rule_4_1_14_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_14|bool))
+    - block:
+        - name: Display Output | 4.1.14 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.1.14 |file deletion events by users are collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_14_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_1_14_status: Compliant
+      when:
+          - not rhel7cis_rule_4_1_14_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_14|bool)
+  when:
+      - (rhel7cis_rule_4_1_14|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_14|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.14
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.1.15 | BEFORE | Ensure changes to system administration scope (sudoers) is collected"
+  block:
+  - shell: bash -x -c 'grep scope /etc/audit/audit.rules;auditctl -l | grep scope;grep scope /etc/audit/rules.d/rhel7cis_rule_4_1_15.rules;true' 2>&1
+    register: eb_rhel7cis_rule_4_1_15
+  - set_fact:
+      mode_rhel7cis_rule_4_1_15: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_1_15|bool) else 'check_only'}}"
+      cis_noncompliant_4_1_15_status: Unknown
+  when:
+      - (rhel7cis_rule_4_1_15|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_15|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.15
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.1.15 | PATCH | Ensure changes to system administration scope (sudoers) is collected"
+  template:
+      src: audit/rhel7cis_rule_4_1_15.rules.j2
+      dest: /etc/audit/rules.d/rhel7cis_rule_4_1_15.rules
+      owner: root
+      group: root
+      mode: 0600
+  register:  rhel7cis_rule_4_1_15_out
+  when:
+      - (rhel7cis_rule_4_1_15|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_15|bool)
+  notify: restart auditd
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.15
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_15|bool)) }}"
+
+- name: Display Output | 4.1.15 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.1.15 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.1.15 |changes to system administration scope (sudoers) is collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_15_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_1_15_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.1.15"] }}'
+      when:
+          - rhel7cis_rule_4_1_15_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_15|bool))
+    - block:
+        - name: Display Output | 4.1.15 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.1.15 |changes to system administration scope (sudoers) is collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_15_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_1_15_status: Compliant
+      when:
+          - not rhel7cis_rule_4_1_15_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_15|bool)
+  when:
+      - (rhel7cis_rule_4_1_15|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_15|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.15
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.1.16 | BEFORE | Ensure system administrator actions (sudolog) are collected"
+  block:
+  - shell: bash -x -c 'grep actions /etc/audit/audit.rules;auditctl -l | grep actions;grep actions /etc/audit/rules.d/rhel7cis_rule_4_1_16.rules;true' 2>&1
+    register: eb_rhel7cis_rule_4_1_16
+  - set_fact:
+      mode_rhel7cis_rule_4_1_16: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_1_16|bool) else 'check_only'}}"
+      cis_noncompliant_4_1_16_status: Unknown
+  when:
+      - (rhel7cis_rule_4_1_16|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_16|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.16
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.1.16 | PATCH | Ensure system administrator actions (sudolog) are collected"
+  template:
+      src: audit/rhel7cis_rule_4_1_16.rules.j2
+      dest: /etc/audit/rules.d/rhel7cis_rule_4_1_16.rules
+      owner: root
+      group: root
+      mode: 0600
+  register:  rhel7cis_rule_4_1_16_out
+  when:
+      - (rhel7cis_rule_4_1_16|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_16|bool)
+  notify: restart auditd
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.16
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_16|bool)) }}"
+
+- name: Display Output | 4.1.16 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.1.16 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.1.16 |system administrator actions (sudolog) are collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_16_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_1_16_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.1.16"] }}'
+      when:
+          - rhel7cis_rule_4_1_16_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_16|bool))
+    - block:
+        - name: Display Output | 4.1.16 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.1.16 |system administrator actions (sudolog) are collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_16_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_1_16_status: Compliant
+      when:
+          - not rhel7cis_rule_4_1_16_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_16|bool)
+  when:
+      - (rhel7cis_rule_4_1_16|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_16|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.16
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.1.17 | BEFORE | Ensure kernel module loading and unloading is collected"
+  block:
+  - shell: bash -x -c 'grep modules /etc/audit/audit.rules;auditctl -l | grep modules;grep modules /etc/audit/rules.d/rhel7cis_rule_4_1_17.rules;true' 2>&1
+    register: eb_rhel7cis_rule_4_1_17
+  - set_fact:
+      mode_rhel7cis_rule_4_1_17: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_1_17|bool) else 'check_only'}}"
+      cis_noncompliant_4_1_17_status: Unknown
+  when:
+      - (rhel7cis_rule_4_1_17|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_17|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.17
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.1.17 | PATCH | Ensure kernel module loading and unloading is collected"
+  template:
+      src: audit/rhel7cis_rule_4_1_17.rules.j2
+      dest: /etc/audit/rules.d/rhel7cis_rule_4_1_17.rules
+      owner: root
+      group: root
+      mode: 0600
+  register:  rhel7cis_rule_4_1_17_out
+  when:
+      - (rhel7cis_rule_4_1_17|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_17|bool)
+  notify: restart auditd
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.17
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_17|bool)) }}"
+
+- name: Display Output | 4.1.17 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.1.17 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.1.17 |kernel module loading and unloading is collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_17_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_1_17_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.1.17"] }}'
+      when:
+          - rhel7cis_rule_4_1_17_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_17|bool))
+    - block:
+        - name: Display Output | 4.1.17 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.1.17 |kernel module loading and unloading is collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_17_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_1_17_status: Compliant
+      when:
+          - not rhel7cis_rule_4_1_17_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_17|bool)
+  when:
+      - (rhel7cis_rule_4_1_17|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_17|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.17
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.1.18 | BEFORE | Ensure the audit configuration is immutable"
+  block:
+  - shell: bash -x -c 'grep "^\s*[^#]*-e 2" /etc/audit/audit.rules;grep "^\s*[^#]" /etc/audit/rules.d/rhel7cis_rule_4_1_18.rules;true' 2>&1
+    register: eb_rhel7cis_rule_4_1_18
+  - set_fact:
+      mode_rhel7cis_rule_4_1_18: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_1_18|bool) else 'check_only'}}"
+      cis_noncompliant_4_1_18_status: Unknown
+  when:
+      - (rhel7cis_rule_4_1_18|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_18|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.18
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.1.18 | PATCH | Ensure the audit configuration is immutable"
+  template:
+      src: audit/rhel7cis_rule_4_1_18.rules.j2
+      dest: /etc/audit/rules.d/rhel7cis_rule_4_1_18.rules
+      owner: root
+      group: root
+      mode: 0600
+  register:  rhel7cis_rule_4_1_18_out
+  when:
+      - (rhel7cis_rule_4_1_18|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_18|bool)
+  notify: restart auditd
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.18
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_18|bool)) }}"
+
+- name: Display Output | 4.1.18 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.1.18 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.1.18 |system administrator actions (sudolog) are collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_18_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_1_18_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.1.18"] }}'
+      when:
+          - rhel7cis_rule_4_1_18_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_1_18|bool))
+    - block:
+        - name: Display Output | 4.1.18 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.1.18 |system administrator actions (sudolog) are collected|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_1_18_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_1_18_status: Compliant
+      when:
+          - not rhel7cis_rule_4_1_18_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_18|bool)
+  when:
+      - (rhel7cis_rule_4_1_18|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_18|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.18
+      - customcheck
+  check_mode: no
+
+- meta: flush_handlers
+# This allows to include the meta
+#- name: Force execute handlers immediately or not 
+#  include_tasks: flush_handlers.yml
+
+- name: "EVIDENCE | 4.1.1.1 | AFTER | Ensure audit log storage size is configured"
+  block:
+  - shell: grep max_log_file /etc/audit/auditd.conf;true
+    register: ea_rhel7cis_rule_4_1_1_1
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.1.1.1","description":"Ensure audit log storage size is configured","before":eb_rhel7cis_rule_4_1_1_1.stdout,"after":ea_rhel7cis_rule_4_1_1_1.stdout,"mode":mode_rhel7cis_rule_4_1_1_1,"status":cis_noncompliant_4_1_1_1_status }] }}'
+    when: eb_rhel7cis_rule_4_1_1_1.stdout is defined and ea_rhel7cis_rule_4_1_1_1.stdout is defined
+  when:
+      - (rhel7cis_rule_4_1_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_1|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.1.1
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.1.1.2 | AFTER | Ensure system is disabled when audit logs are full"
+  block:
+  - name: "EVIDENCE | 4.1.1.2 | AFTER | Ensure system is disabled when audit logs are full"
+    set_fact:
+      cis_noncompliant_status: true
+      cis_noncompliant_4_1_1_2_status: NonCompliant
+      cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.1.1.2"] }}'
+    when:
+      - not(cis_noncompliant_4_1_1_2c_status=="Compliant") or not(cis_noncompliant_4_1_1_2b_status=="Compliant") or not(cis_noncompliant_4_1_1_2a_status=="Compliant")
+  - name: "set_fact 4.1.1.2 Compliant"
+    set_fact:
+      cis_noncompliant_4_1_1_2_status: Compliant
+    when: cis_noncompliant_4_1_1_2c_status=="Compliant" and cis_noncompliant_4_1_1_2b_status=="Compliant" and cis_noncompliant_4_1_1_2b_status=="Compliant"
+  - shell: cat /etc/audit/auditd.conf | grep "space_left_action\|action_mail_acct";true
+    register: ea_rhel7cis_rule_4_1_1_2
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.1.1.2","description":"Ensure system is disabled when audit logs are full","before":eb_rhel7cis_rule_4_1_1_2.stdout,"after":ea_rhel7cis_rule_4_1_1_2.stdout,"mode":mode_rhel7cis_rule_4_1_1_2,"status":cis_noncompliant_4_1_1_2_status }] }}'
+    when: eb_rhel7cis_rule_4_1_1_2.stdout is defined and ea_rhel7cis_rule_4_1_1_2.stdout is defined
+  when:
+      - (rhel7cis_rule_4_1_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_2|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.1.2
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.1.1.3 | AFTER | Ensure audit logs are not automatically deleted"
+  block:
+  - shell: grep max_log_file_action /etc/audit/auditd.conf;true
+    register: ea_rhel7cis_rule_4_1_1_3
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.1.1.3","description":"Ensure audit logs are not automatically deleted","before":eb_rhel7cis_rule_4_1_1_3.stdout,"after":ea_rhel7cis_rule_4_1_1_3.stdout,"mode":mode_rhel7cis_rule_4_1_1_3,"status":cis_noncompliant_4_1_1_3_status }] }}'
+    when: eb_rhel7cis_rule_4_1_1_3.stdout is defined and ea_rhel7cis_rule_4_1_1_3.stdout is defined
+  when:
+      - (rhel7cis_rule_4_1_1_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_1_3|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.1.3
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.1.2 | AFTER | Ensure auditd service is enabled"
+  block:
+  - shell: systemctl is-enabled auditd;true
+    register: ea_rhel7cis_rule_4_1_2
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.1.2","description":"Ensure auditd service is enabled","before":eb_rhel7cis_rule_4_1_2.stdout,"after":ea_rhel7cis_rule_4_1_2.stdout,"mode":mode_rhel7cis_rule_4_1_2,"status":cis_noncompliant_4_1_2_status }] }}'
+    when: eb_rhel7cis_rule_4_1_2.stdout is defined and ea_rhel7cis_rule_4_1_2.stdout is defined
+  when:
+      - (rhel7cis_rule_4_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_2|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.2
+      - customcheck
+  check_mode: no
+
+# This can only be verified after the notify: generate new grub config
+- name: "SCORED | 4.1.3 | PATCH | Verify auditing for processes that start prior to auditd is enabled"
+  shell: |
+      grep "^\s*linux" /boot/grub2/grub.cfg | grep -v "audit=1";true
+  register:  rhel7cis_rule_4_1_3_out
+  changed_when: no
+  check_mode: no
+  when:
+      - (rhel7cis_rule_4_1_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_3|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.3
+      - customcheck
+
+- name: Display Output | 4.1.3 | When Compliant
+  block:
+    - block:
+        - name: Display Output | 4.1.3 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.1.3 |auditing for processes that start prior to auditd is enabled|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_4_1_3_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_1_3_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.1.3"] }}'
+      when: (rhel7cis_rule_4_1_3_out.stdout | length > 0 ) or (rhel7cis_rule_4_1_3_out.stderr | length > 0 )
+    - block:
+        - name: Display Output | 4.1.3 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.1.3 |auditing for processes that start prior to auditd is enabled|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_4_1_3_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_4_1_3_status: Compliant
+      when: (rhel7cis_rule_4_1_3_out.stdout | length == 0) and (rhel7cis_rule_4_1_3_out.stderr | length == 0 )
+  when:
+      - (rhel7cis_rule_4_1_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_3|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.3
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.1.3 | AFTER | Ensure auditing for processes that start prior to auditd is enabled"
+  block:
+  - shell: grep "^\s*linux" /boot/grub2/grub.cfg;true
+    register: ea_rhel7cis_rule_4_1_3
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.1.3","description":"Ensure auditing for processes that start prior to auditd is enabled","before":eb_rhel7cis_rule_4_1_3.stdout,"after":ea_rhel7cis_rule_4_1_3.stdout,"mode":mode_rhel7cis_rule_4_1_3,"status":cis_noncompliant_4_1_3_status }] }}'
+    when: eb_rhel7cis_rule_4_1_3.stdout is defined and ea_rhel7cis_rule_4_1_3.stdout is defined
+  when:
+      - (rhel7cis_rule_4_1_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_3|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.3
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.1.4 | AFTER | Ensure events that modify date and time information are collected"
+  block:
+  - shell: bash -x -c 'grep time-change /etc/audit/audit.rules;auditctl -l | grep time-change;grep time-change /etc/audit/rules.d/rhel7cis_rule_4_1_4.rules;true' 2>&1
+    register: ea_rhel7cis_rule_4_1_4
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.1.4","description":"Ensure events that modify date and time information are collected","before":eb_rhel7cis_rule_4_1_4.stdout,"after":ea_rhel7cis_rule_4_1_4.stdout,"mode":mode_rhel7cis_rule_4_1_4,"status":cis_noncompliant_4_1_4_status }] }}'
+    when: eb_rhel7cis_rule_4_1_4.stdout is defined and ea_rhel7cis_rule_4_1_4.stdout is defined
+  when:
+      - (rhel7cis_rule_4_1_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_4|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.4
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.1.5 | AFTER | Ensure events that modify user/group information are collected"
+  block:
+  - shell: bash -x -c 'grep identity /etc/audit/audit.rules;grep identity /etc/audit/rules.d/rhel7cis_rule_4_1_5.rules;auditctl -l | grep identity;true' 2>&1
+    register: ea_rhel7cis_rule_4_1_5
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.1.5","description":"Ensure events that modify user/group information are collected","before":eb_rhel7cis_rule_4_1_5.stdout,"after":ea_rhel7cis_rule_4_1_5.stdout,"mode":mode_rhel7cis_rule_4_1_5,"status":cis_noncompliant_4_1_5_status }] }}'
+    when: eb_rhel7cis_rule_4_1_5.stdout is defined and ea_rhel7cis_rule_4_1_5.stdout is defined
+  when:
+      - (rhel7cis_rule_4_1_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_5|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.5
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.1.6 | AFTER | Ensure events that modify the system's network environment are collected"
+  block:
+  - shell: bash -x -c 'grep system-locale /etc/audit/audit.rules;grep system-locale /etc/audit/rules.d/rhel7cis_rule_4_1_6.rules;auditctl -l | grep system-locale;true' 2>&1
+    register: ea_rhel7cis_rule_4_1_6
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.1.6","description":"Ensure events that modify the system network environment are collected","before":eb_rhel7cis_rule_4_1_6.stdout,"after":ea_rhel7cis_rule_4_1_6.stdout,"mode":mode_rhel7cis_rule_4_1_6,"status":cis_noncompliant_4_1_6_status }] }}'
+    when: eb_rhel7cis_rule_4_1_6.stdout is defined and ea_rhel7cis_rule_4_1_6.stdout is defined
+  when:
+      - (rhel7cis_rule_4_1_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_6|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.6
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.1.7 | AFTER | Ensure events that modify the system's Mandatory Access Controls are collected"
+  block:
+  - shell: bash -x -c 'grep MAC-policy /etc/audit/audit.rules;grep MAC-policy /etc/audit/rules.d/rhel7cis_rule_4_1_7.rules;true' 2>&1
+    register: ea_rhel7cis_rule_4_1_7
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.1.7","description":"Ensure events that modify the system Mandatory Access Controls are collected","before":eb_rhel7cis_rule_4_1_7.stdout,"after":ea_rhel7cis_rule_4_1_7.stdout,"mode":mode_rhel7cis_rule_4_1_7,"status":cis_noncompliant_4_1_7_status }] }}'
+    when: eb_rhel7cis_rule_4_1_7.stdout is defined and ea_rhel7cis_rule_4_1_7.stdout is defined
+  when:
+      - (rhel7cis_rule_4_1_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_7|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.7
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.1.8 | AFTER | Ensure login and logout events are collected"
+  block:
+  - shell: bash -x -c 'grep logins /etc/audit/audit.rules;grep logins /etc/audit/rules.d/rhel7cis_rule_4_1_8.rules;true' 2>&1
+    register: ea_rhel7cis_rule_4_1_8
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.1.8","description":"Ensure login and logout events are collected","before":eb_rhel7cis_rule_4_1_8.stdout,"after":ea_rhel7cis_rule_4_1_8.stdout,"mode":mode_rhel7cis_rule_4_1_8,"status":cis_noncompliant_4_1_8_status }] }}'
+    when: eb_rhel7cis_rule_4_1_8.stdout is defined and ea_rhel7cis_rule_4_1_8.stdout is defined
+  when:
+      - (rhel7cis_rule_4_1_8|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_8|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.8
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.1.9 | AFTER | Ensure session initiation information is collected"
+  block:
+  - shell: bash -x -c 'grep session /etc/audit/audit.rules;grep session /etc/audit/rules.d/rhel7cis_rule_4_1_9.rules;auditctl -l | grep session;true' 2>&1
+    register: ea_rhel7cis_rule_4_1_9
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.1.9","description":"Ensure session initiation information is collected","before":eb_rhel7cis_rule_4_1_9.stdout,"after":ea_rhel7cis_rule_4_1_9.stdout,"mode":mode_rhel7cis_rule_4_1_9,"status":cis_noncompliant_4_1_9_status }] }}'
+    when: eb_rhel7cis_rule_4_1_9.stdout is defined and ea_rhel7cis_rule_4_1_9.stdout is defined
+  when:
+      - (rhel7cis_rule_4_1_9|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_9|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.9
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.1.10 | AFTER | Ensure discretionary access control permission modification events are collected"
+  block:
+  - shell: bash -x -c 'grep perm_mod /etc/audit/audit.rules;grep perm_mod /etc/audit/rules.d/rhel7cis_rule_4_1_10.rules;auditctl -l | grep perm_mod;true' 2>&1
+    register: ea_rhel7cis_rule_4_1_10
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.1.10","description":"Ensure discretionary access control permission modification events are collected","before":eb_rhel7cis_rule_4_1_10.stdout,"after":ea_rhel7cis_rule_4_1_10.stdout,"mode":mode_rhel7cis_rule_4_1_10,"status":cis_noncompliant_4_1_10_status }] }}'
+    when: eb_rhel7cis_rule_4_1_10.stdout is defined and ea_rhel7cis_rule_4_1_10.stdout is defined
+  when:
+      - (rhel7cis_rule_4_1_10|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_10|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.10
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.1.11 | AFTER | Ensure unsuccessful unauthorized file access attempts are collected"
+  block:
+  - shell: bash -x -c 'grep access /etc/audit/audit.rules;grep access /etc/audit/rules.d/rhel7cis_rule_4_1_11.rules;auditctl -l | grep access;true' 2>&1
+    register: ea_rhel7cis_rule_4_1_11
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.1.11","description":"Ensure unsuccessful unauthorized file access attempts are collected","before":eb_rhel7cis_rule_4_1_11.stdout,"after":ea_rhel7cis_rule_4_1_11.stdout,"mode":mode_rhel7cis_rule_4_1_11,"status":cis_noncompliant_4_1_11_status }] }}'
+    when: eb_rhel7cis_rule_4_1_11.stdout is defined and ea_rhel7cis_rule_4_1_11.stdout is defined
+  when:
+      - (rhel7cis_rule_4_1_11|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_11|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.11
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.1.12 | AFTER | Ensure use of privileged commands is collected"
+  block:
+  - shell: for i in  $(df | grep '^/dev' | awk '{ print $NF }'); do find $i -xdev -type f -perm -4000 -o -type f -perm -2000 | awk '{print "-a always,exit -F path=" $1 " -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged" }'; done;true
+    register: ea_rhel7cis_rule_4_1_12
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.1.12","description":"Ensure use of privileged commands is collected","before":eb_rhel7cis_rule_4_1_12.stdout,"after":ea_rhel7cis_rule_4_1_12.stdout,"mode":mode_rhel7cis_rule_4_1_12,"status":cis_noncompliant_4_1_12_status }] }}'
+    when: eb_rhel7cis_rule_4_1_12.stdout is defined and ea_rhel7cis_rule_4_1_12.stdout is defined
+  when:
+      - (rhel7cis_rule_4_1_12|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_12|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.12
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.1.13 | AFTER | Ensure successful file system mounts are collected"
+  block:
+  - shell: bash -x -c 'grep mounts /etc/audit/audit.rules;auditctl -l | grep mounts;grep mounts /etc/audit/rules.d/rhel7cis_rule_4_1_13.rules;true' 2>&1
+    register: ea_rhel7cis_rule_4_1_13
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.1.13","description":"Ensure successful file system mounts are collected","before":eb_rhel7cis_rule_4_1_13.stdout,"after":ea_rhel7cis_rule_4_1_13.stdout,"mode":mode_rhel7cis_rule_4_1_13,"status":cis_noncompliant_4_1_13_status }] }}'
+    when: eb_rhel7cis_rule_4_1_13.stdout is defined and ea_rhel7cis_rule_4_1_13.stdout is defined
+  when:
+      - (rhel7cis_rule_4_1_13|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_13|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.13
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.1.14 | AFTER | Ensure file deletion events by users are collected"
+  block:
+  - shell: bash -x -c 'grep delete /etc/audit/audit.rules;auditctl -l | grep delete;grep delete /etc/audit/rules.d/rhel7cis_rule_4_1_14.rules;true' 2>&1
+    register: ea_rhel7cis_rule_4_1_14
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.1.14","description":"Ensure file deletion events by users are collected","before":eb_rhel7cis_rule_4_1_14.stdout,"after":ea_rhel7cis_rule_4_1_14.stdout,"mode":mode_rhel7cis_rule_4_1_14,"status":cis_noncompliant_4_1_14_status }] }}'
+    when: eb_rhel7cis_rule_4_1_14.stdout is defined and ea_rhel7cis_rule_4_1_14.stdout is defined
+  when:
+      - (rhel7cis_rule_4_1_14|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_14|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.14
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.1.15 | AFTER | Ensure changes to system administration scope (sudoers) is collected"
+  block:
+  - shell: bash -x -c 'grep scope /etc/audit/audit.rules;auditctl -l | grep scope;grep scope /etc/audit/rules.d/rhel7cis_rule_4_1_15.rules;true' 2>&1
+    register: ea_rhel7cis_rule_4_1_15
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.1.15","description":"Ensure changes to system administration scope (sudoers) is collected","before":eb_rhel7cis_rule_4_1_15.stdout,"after":ea_rhel7cis_rule_4_1_15.stdout,"mode":mode_rhel7cis_rule_4_1_15,"status":cis_noncompliant_4_1_15_status }] }}'
+    when: eb_rhel7cis_rule_4_1_15.stdout is defined and ea_rhel7cis_rule_4_1_15.stdout is defined
+  when:
+      - (rhel7cis_rule_4_1_15|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_15|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.15
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.1.16 | AFTER | Ensure system administrator actions (sudolog) are collected"
+  block:
+  - shell: bash -x -c 'grep actions /etc/audit/audit.rules;auditctl -l | grep actions;grep actions /etc/audit/rules.d/rhel7cis_rule_4_1_16.rules;true' 2>&1
+    register: ea_rhel7cis_rule_4_1_16
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.1.16","description":"Ensure system administrator actions (sudolog) are collected","before":eb_rhel7cis_rule_4_1_16.stdout,"after":ea_rhel7cis_rule_4_1_16.stdout,"mode":mode_rhel7cis_rule_4_1_16,"status":cis_noncompliant_4_1_16_status }] }}'
+    when: eb_rhel7cis_rule_4_1_16.stdout is defined and ea_rhel7cis_rule_4_1_16.stdout is defined
+  when:
+      - (rhel7cis_rule_4_1_16|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_16|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.16
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.1.17 | AFTER | Ensure kernel module loading and unloading is collected"
+  block:
+  - shell: bash -x -c 'grep modules /etc/audit/audit.rules;auditctl -l | grep modules;grep modules /etc/audit/rules.d/rhel7cis_rule_4_1_17.rules;true' 2>&1
+    register: ea_rhel7cis_rule_4_1_17
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.1.17","description":"Ensure kernel module loading and unloading is collected","before":eb_rhel7cis_rule_4_1_17.stdout,"after":ea_rhel7cis_rule_4_1_17.stdout,"mode":mode_rhel7cis_rule_4_1_17,"status":cis_noncompliant_4_1_17_status }] }}'
+    when: eb_rhel7cis_rule_4_1_17.stdout is defined and ea_rhel7cis_rule_4_1_17.stdout is defined
+  when:
+      - (rhel7cis_rule_4_1_17|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_17|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.17
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.1.18 | AFTER | Ensure the audit configuration is immutable"
+  block:
+  - shell: bash -x -c 'grep "^\s*[^#]*-e 2" /etc/audit/audit.rules;grep "^\s*[^#]" /etc/audit/rules.d/rhel7cis_rule_4_1_18.rules;true' 2>&1
+    register: ea_rhel7cis_rule_4_1_18
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.1.18","description":"Ensure the audit configuration is immutable","before":eb_rhel7cis_rule_4_1_18.stdout,"after":ea_rhel7cis_rule_4_1_18.stdout,"mode":mode_rhel7cis_rule_4_1_18,"status":cis_noncompliant_4_1_18_status }] }}'
+    when: eb_rhel7cis_rule_4_1_18.stdout is defined and ea_rhel7cis_rule_4_1_18.stdout is defined
+  when:
+      - (rhel7cis_rule_4_1_18|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_1_18|bool)
+  tags:
+      - level2
+      - auditd
+      - patch
+      - rule_4.1.18
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.2.3 | BEFORE | Ensure rsyslog or syslog-ng is installed"
+  block:
+  - shell: rpm -q rsyslog;rpm -q syslog-ng;true
+    register: eb_rhel7cis_rule_4_2_3
+  - set_fact:
+      mode_rhel7cis_rule_4_2_3: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_2_3|bool) else 'check_only'}}"
+      cis_noncompliant_4_2_3_status: Unknown
+  when:
+      - (rhel7cis_rule_4_2_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.3
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.2.3 | PATCH | Ensure rsyslog or syslog-ng is installed"
+  yum:
+      name: "{{ rhel7cis_syslog }}"
+      state: present
+  register:  rhel7cis_rule_4_2_3_out
+  when:
+      - (rhel7cis_rule_4_2_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.3
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_2_3|bool)) }}"
+
+- name: Display Output | 4.2.3 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.2.3 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.2.3 |rsyslog or syslog-ng is installed|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_2_3_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_2_3_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.2.3"] }}'
+      when:
+          - rhel7cis_rule_4_2_3_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_2_3|bool))
+    - block:
+        - name: Display Output | 4.2.3 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.2.3 |rsyslog or syslog-ng is installed|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_2_3_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_2_3_status: Compliant
+      when:
+          - not rhel7cis_rule_4_2_3_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_3|bool)
+  when:
+      - (rhel7cis_rule_4_2_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.3
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.2.3 | AFTER | Ensure rsyslog or syslog-ng is installed"
+  block:
+  - shell: rpm -q rsyslog;rpm -q syslog-ng;true
+    register: ea_rhel7cis_rule_4_2_3
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.2.3","description":"Ensure rsyslog or syslog-ng is installed","before":eb_rhel7cis_rule_4_2_3.stdout,"after":ea_rhel7cis_rule_4_2_3.stdout,"mode":mode_rhel7cis_rule_4_2_3,"status":cis_noncompliant_4_2_3_status }] }}'
+    when: eb_rhel7cis_rule_4_2_3.stdout is defined and ea_rhel7cis_rule_4_2_3.stdout is defined
+  when:
+      - (rhel7cis_rule_4_2_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.3
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.2.1.1 | BEFORE | Ensure rsyslog Service is enabled"
+  block:
+  - shell: systemctl is-enabled rsyslog;true
+    register: eb_rhel7cis_rule_4_2_1_1
+  - set_fact:
+      mode_rhel7cis_rule_4_2_1_1: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_2_1_1|bool) else 'check_only'}}"
+      cis_noncompliant_4_2_1_1_status: Unknown
+  when:
+      - (rhel7cis_rule_4_2_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.1.1
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.2.1.1 | PATCH | Ensure rsyslog Service is enabled"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (rhel7cis_rule_4_2_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_1|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_4.2.1.1
+      - notimplemented
+
+- name: "SCORED | 4.2.1.1 | PATCH | Ensure rsyslog Service is enabled"
+  shell: |
+      systemctl is-enabled rsyslog | grep enabled
+  register:  rhel7cis_rule_4_2_1_1_out
+  failed_when: no
+  changed_when: no
+  when:
+      - (rhel7cis_rule_4_2_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.1.1
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 4.2.1.1 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.2.1.1 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.2.1.1 |rsyslog Service is enabled|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_4_2_1_1_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_2_1_1_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.2.1.1"] }}'
+      when: (rhel7cis_rule_4_2_1_1_out.stdout | length == 0) or (rhel7cis_rule_4_2_1_1_out.stderr | length > 0 )
+    - block:
+        - name: Display Output | 4.2.1.1 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.2.1.1 |rsyslog Service is enabled|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_4_2_1_1_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_2_1_1_status: Compliant
+      when: (rhel7cis_rule_4_2_1_1_out.stdout | length > 0 ) and (rhel7cis_rule_4_2_1_1_out.stderr | length == 0 )
+  when:
+      - (rhel7cis_rule_4_2_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.1.1
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.2.1.1 | AFTER | Ensure rsyslog Service is enabled"
+  block:
+  - shell: systemctl is-enabled rsyslog;true
+    register: ea_rhel7cis_rule_4_2_1_1
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.2.1.1","description":"Ensure rsyslog Service is enabled (Check only)","before":eb_rhel7cis_rule_4_2_1_1.stdout,"after":ea_rhel7cis_rule_4_2_1_1.stdout,"mode":mode_rhel7cis_rule_4_2_1_1,"status":cis_noncompliant_4_2_1_1_status }] }}'
+    when: eb_rhel7cis_rule_4_2_1_1.stdout is defined and ea_rhel7cis_rule_4_2_1_1.stdout is defined
+  when:
+      - (rhel7cis_rule_4_2_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.1.1
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.2.1.2 | BEFORE | Ensure logging is configured"
+  block:
+  - shell: grep '\*.emerg\|mail.\*\|mail.info\|mail.warning\|mail.err\|news.crit\|news.err\|news.notice\|\*.=warning\|\*.=err\|\*.crit\|\*.\*\|mail.none\|news.none\|local0.\*\|local1.\*\|local2.\*\|local3.\*\|local4.\*\|local5.\*\|local6.\*\|local7.\*' /etc/rsyslog.conf /etc/rsyslog.d/*;true
+    register: eb_rhel7cis_rule_4_2_1_2
+  - set_fact:
+      mode_rhel7cis_rule_4_2_1_2: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_2_1_2|bool) else 'check_only'}}"
+      cis_noncompliant_4_2_1_2_status: Manual
+  when:
+      - (rhel7cis_rule_4_2_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.1.2
+      - customcheck
+  check_mode: no
+
+- name: "NOTSCORED | 4.2.1.2 | PATCH | Ensure logging is configured"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (rhel7cis_rule_4_2_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_2|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_4.2.1.2
+      - notimplemented
+
+- name: "NOTSCORED | 4.2.1.2 | PATCH | Ensure logging is configured"
+  shell: |
+      cat /etc/rsyslog.conf
+      ls -l /var/log/
+  register: rhel7cis_rule_4_2_1_2_out
+  changed_when: no
+  when:
+      - (rhel7cis_rule_4_2_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.1.2
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 4.2.1.2 | When Compliant
+  debug:
+      msg="MANUAL_CHECK_REQUIRED|CIS_RESULT| 4.2.1.2 |logging is configured|{{ansible_hostname}}|MANUAL_VERIFICATION_REQUIRED|{{rhel7cis_rule_4_2_1_2_out.stdout}}"
+  when:
+      - (rhel7cis_rule_4_2_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.1.2
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.2.1.2 | AFTER | Ensure logging is configured"
+  block:
+  - shell: grep '\*.emerg\|mail.\*\|mail.info\|mail.warning\|mail.err\|news.crit\|news.err\|news.notice\|\*.=warning\|\*.=err\|\*.crit\|\*.\*\|mail.none\|news.none\|local0.\*\|local1.\*\|local2.\*\|local3.\*\|local4.\*\|local5.\*\|local6.\*\|local7.\*' /etc/rsyslog.conf /etc/rsyslog.d/*;true
+    register: ea_rhel7cis_rule_4_2_1_2
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.2.1.2","description":"Ensure logging is configured (Manual)","before":eb_rhel7cis_rule_4_2_1_2.stdout,"after":ea_rhel7cis_rule_4_2_1_2.stdout,"mode":mode_rhel7cis_rule_4_2_1_2,"status":cis_noncompliant_4_2_1_2_status }] }}'
+    when: eb_rhel7cis_rule_4_2_1_2.stdout is defined and ea_rhel7cis_rule_4_2_1_2.stdout is defined
+  when:
+      - (rhel7cis_rule_4_2_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.1.2
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.2.1.3 | BEFORE | Ensure rsyslog default file permissions configured"
+  block:
+  - shell:  grep ^\$FileCreateMode /etc/rsyslog.conf /etc/rsyslog.d/*.conf;true
+    register: eb_rhel7cis_rule_4_2_1_3
+  - set_fact:
+      mode_rhel7cis_rule_4_2_1_3: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_2_1_3|bool) else 'check_only'}}"
+      cis_noncompliant_4_2_1_3_status: Unknown
+  when:
+      - (rhel7cis_rule_4_2_1_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.1.3
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.2.1.3 | PATCH | Ensure rsyslog default file permissions configured"
+  lineinfile:
+      dest: /etc/rsyslog.conf
+      regexp: '^\$FileCreateMode'
+      line: '$FileCreateMode 0640'
+  register:  rhel7cis_rule_4_2_1_3_out
+  when:
+      - (rhel7cis_rule_4_2_1_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.1.3
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_2|bool)) }}"
+
+- name: Display Output | 4.2.1.3 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.2.1.3 | When Not Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.2.1.3 |rsyslog default file permissions configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_2_1_3_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_2_1_3_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.2.1.3"] }}'
+      when:
+          - rhel7cis_rule_4_2_1_3_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_3|bool))
+    - block:
+        - name: Display Output | 4.2.1.3 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.2.1.3 |rsyslog default file permissions configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_2_1_3_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_2_1_3_status: Compliant
+      when:
+          - not rhel7cis_rule_4_2_1_3_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_3|bool)
+  when:
+      - (rhel7cis_rule_4_2_1_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.1.3
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.2.1.3 | AFTER | Ensure rsyslog default file permissions configured"
+  block:
+  - shell:  grep ^\$FileCreateMode /etc/rsyslog.conf /etc/rsyslog.d/*.conf;true
+    register: ea_rhel7cis_rule_4_2_1_3
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.2.1.3","description":"Ensure rsyslog default file permissions configured","before":eb_rhel7cis_rule_4_2_1_3.stdout,"after":ea_rhel7cis_rule_4_2_1_3.stdout,"mode":mode_rhel7cis_rule_4_2_1_3,"status":cis_noncompliant_4_2_1_3_status }] }}'
+    when: eb_rhel7cis_rule_4_2_1_3.stdout is defined and ea_rhel7cis_rule_4_2_1_3.stdout is defined
+  when:
+      - (rhel7cis_rule_4_2_1_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.1.3
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.2.1.4 | BEFORE | Ensure rsyslog is configured to send logs to a remote log host"
+  block:
+  - shell: grep "^*.*[^I][^I]*@" /etc/rsyslog.conf /etc/rsyslog.d/*.conf;true
+    register: eb_rhel7cis_rule_4_2_1_4
+  - set_fact:
+      mode_rhel7cis_rule_4_2_1_4: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_2_1_4|bool) else 'check_only'}}"
+      cis_noncompliant_4_2_1_4_status: Manual
+  when:
+      - (rhel7cis_rule_4_2_1_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.1.4
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.2.1.4 | PATCH | Ensure rsyslog is configured to send logs to a remote log host"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (rhel7cis_rule_4_2_1_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_4|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_4.2.1.4
+      - notimplemented
+
+- name: Display Output | 4.2.1.4 | When Compliant
+  debug:
+      msg="MANUAL_CHECK_REQUIRED|CIS_RESULT| 4.2.1.4 |rsyslog is configured to send logs to a remote log host|{{ansible_hostname}}|NOT_AUTOMATED|SKIPPED"
+  when:
+      - (rhel7cis_rule_4_2_1_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.1.4
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.2.1.4 | AFTER | Ensure rsyslog is configured to send logs to a remote log host"
+  block:
+  - shell: grep "^*.*[^I][^I]*@" /etc/rsyslog.conf /etc/rsyslog.d/*.conf;true
+    register: ea_rhel7cis_rule_4_2_1_4
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.2.1.4","description":"Ensure rsyslog is configured to send logs to a remote log host (Manual)","before":eb_rhel7cis_rule_4_2_1_4.stdout,"after":ea_rhel7cis_rule_4_2_1_4.stdout,"mode":mode_rhel7cis_rule_4_2_1_4,"status":cis_noncompliant_4_2_1_4_status }] }}'
+    when: eb_rhel7cis_rule_4_2_1_4.stdout is defined and ea_rhel7cis_rule_4_2_1_4.stdout is defined
+  when:
+      - (rhel7cis_rule_4_2_1_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.1.4
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.2.1.5 | BEFORE | Ensure remote rsyslog messages are only accepted on designated log hosts"
+  block:
+  - shell: grep '$ModLoad imtcp' /etc/rsyslog.conf /etc/rsyslog.d/*.conf;grep '$InputTCPServerRun' /etc/rsyslog.conf /etc/rsyslog.d/*.conf;true
+    register: eb_rhel7cis_rule_4_2_1_5
+  - set_fact:
+      mode_rhel7cis_rule_4_2_1_5: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_2_1_5|bool) else 'check_only'}}"
+      cis_noncompliant_4_2_1_5_status: Manual
+  when:
+      - (rhel7cis_rule_4_2_1_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.1.5
+      - customcheck
+  check_mode: no
+
+- name: "NOTSCORED | 4.2.1.5 | PATCH | Ensure remote rsyslog messages are only accepted on designated log hosts"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (rhel7cis_rule_4_2_1_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_5|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_4.2.1.5
+      - notimplemented
+
+- name: Display Output | 4.2.1.5 | When Compliant
+  debug:
+      msg="MANUAL_CHECK_REQUIRED|CIS_RESULT| 4.2.1.5 |remote rsyslog messages are only accepted on designated log hosts|{{ansible_hostname}}|NOT_AUTOMATED|SKIPPED"
+  when:
+      - (rhel7cis_rule_4_2_1_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.1.5
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.2.1.5 | AFTER | Ensure remote rsyslog messages are only accepted on designated log hosts"
+  block:
+  - shell: grep '$ModLoad imtcp' /etc/rsyslog.conf /etc/rsyslog.d/*.conf;grep '$InputTCPServerRun' /etc/rsyslog.conf /etc/rsyslog.d/*.conf;true
+    register: ea_rhel7cis_rule_4_2_1_5
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.2.1.5","description":"Ensure remote rsyslog messages are only accepted on designated log hosts (Manual)","before":eb_rhel7cis_rule_4_2_1_5.stdout,"after":ea_rhel7cis_rule_4_2_1_5.stdout,"mode":mode_rhel7cis_rule_4_2_1_5,"status":cis_noncompliant_4_2_1_5_status }] }}'
+    when: eb_rhel7cis_rule_4_2_1_5.stdout is defined and ea_rhel7cis_rule_4_2_1_5.stdout is defined
+  when:
+      - (rhel7cis_rule_4_2_1_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_1_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.1.5
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.2.2.1 | BEFORE | Ensure syslog-ng service is enabled"
+  block:
+  - shell: systemctl is-enabled syslog-ng;true
+    register: eb_rhel7cis_rule_4_2_2_1
+  - set_fact:
+      mode_rhel7cis_rule_4_2_2_1: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_2_2_1|bool) else 'check_only'}}"
+      cis_noncompliant_4_2_2_1_status: Manual
+  when:
+      - (rhel7cis_rule_4_2_2_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_2_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.2.1
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.2.2.1 | PATCH | Ensure syslog-ng service is enabled"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (rhel7cis_rule_4_2_2_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_2_1|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_4.2.2.1
+      - notimplemented
+
+- name: Display Output | 4.2.2.1 | When Compliant
+  debug:
+      msg="MANUAL_CHECK_REQUIRED|CIS_RESULT| 4.2.2.1 | syslog-ng service is enabled|{{ansible_hostname}}|NOT_AUTOMATED|SKIPPED"
+  when:
+      - (rhel7cis_rule_4_2_2_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_2_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.2.1
+      - notimplemented
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.2.2.1 | AFTER | Ensure syslog-ng service is enabled"
+  block:
+  - shell: systemctl is-enabled syslog-ng;true
+    register: ea_rhel7cis_rule_4_2_2_1
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.2.2.1","description":"Ensure syslog-ng service is enabled (Manual)","before":eb_rhel7cis_rule_4_2_2_1.stdout,"after":ea_rhel7cis_rule_4_2_2_1.stdout,"mode":mode_rhel7cis_rule_4_2_2_1,"status":cis_noncompliant_4_2_2_1_status }] }}'
+    when: eb_rhel7cis_rule_4_2_2_1.stdout is defined and ea_rhel7cis_rule_4_2_2_1.stdout is defined
+  when:
+      - (rhel7cis_rule_4_2_2_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_2_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.2.1
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.2.2.2 | BEFORE | Ensure logging is configured"
+  block:
+  - shell: cat /etc/syslog-ng/syslog-ng.conf;true
+    register: eb_rhel7cis_rule_4_2_2_2
+  - set_fact:
+      mode_rhel7cis_rule_4_2_2_2: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_2_2_2|bool) else 'check_only'}}"
+      cis_noncompliant_4_2_2_2_status: Manual
+  when:
+      - (rhel7cis_rule_4_2_2_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_2_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.2.2
+      - customcheck
+  check_mode: no
+
+- name: "NOTSCORED | 4.2.2.2 | PATCH | Ensure logging is configured"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (rhel7cis_rule_4_2_2_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_2_2|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_4.2.2.2
+      - notimplemented
+
+- name: Display Output | 4.2.2.2 | When Compliant
+  debug:
+      msg="MANUAL_CHECK_REQUIRED|CIS_RESULT| 4.2.2.2 |logging is configured|{{ansible_hostname}}|NOT_AUTOMATED|SKIPPED"
+  when:
+      - (rhel7cis_rule_4_2_2_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_2_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.2.2
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.2.2.2 | AFTER | Ensure logging is configured"
+  block:
+  - shell: cat /etc/syslog-ng/syslog-ng.conf;true
+    register: ea_rhel7cis_rule_4_2_2_2
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.2.2.2","description":"Ensure logging is configured (Manual)","before":eb_rhel7cis_rule_4_2_2_2.stdout,"after":ea_rhel7cis_rule_4_2_2_2.stdout,"mode":mode_rhel7cis_rule_4_2_2_2,"status":cis_noncompliant_4_2_2_2_status }] }}'
+    when: eb_rhel7cis_rule_4_2_2_2.stdout is defined and ea_rhel7cis_rule_4_2_2_2.stdout is defined
+  when:
+      - (rhel7cis_rule_4_2_2_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_2_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.2.2
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.2.2.3 | BEFORE | Ensure syslog-ng default file permissions configured"
+  block:
+  - shell: grep ^options /etc/syslog-ng/syslog-ng.conf 2>&1 || true
+    register: eb_rhel7cis_rule_4_2_2_3
+  - set_fact:
+      mode_rhel7cis_rule_4_2_2_3: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_2_2_3|bool) else 'check_only'}}"
+      cis_noncompliant_4_2_2_3_status: Manual
+  when:
+      - (rhel7cis_rule_4_2_2_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_2_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.2.3
+      - customcheck
+  check_mode: no
+  #check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_2_2_3|bool)) }}"
+
+- name: "SCORED | 4.2.2.3 | PATCH | Ensure syslog-ng default file permissions configured"
+  command: /bin/true
+  changed_when: no
+  when:
+      - rhel7cis_rule_4_2_2_3|bool
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_4.2.2.3
+      - notimplemented
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_2_2_3|bool)) }}"
+
+- name: Display Output | 4.2.2.3 | When Compliant
+  debug:
+      msg="MANUAL_CHECK_REQUIRED|CIS_RESULT| 4.2.2.3 |syslog-ng default file permissions configured|{{ansible_hostname}}|NOT_AUTOMATED|SKIPPED"
+  when:
+      - (rhel7cis_rule_4_2_2_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_2_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.2.3
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.2.2.3 | AFTER | Ensure syslog-ng default file permissions configured"
+  block:
+  - shell: grep ^options /etc/syslog-ng/syslog-ng.conf 2>&1 || true
+    register: ea_rhel7cis_rule_4_2_2_3
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.2.2.3","description":"Ensure syslog-ng default file permissions configured (Manual)","before":eb_rhel7cis_rule_4_2_2_3.stdout,"after":ea_rhel7cis_rule_4_2_2_3.stdout,"mode":mode_rhel7cis_rule_4_2_2_3,"status":cis_noncompliant_4_2_2_3_status}] }}'
+    when: eb_rhel7cis_rule_4_2_2_3.stdout is defined and ea_rhel7cis_rule_4_2_2_3.stdout is defined
+  when:
+      - (rhel7cis_rule_4_2_2_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_2_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.2.3
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.2.2.4 | BEFORE | Ensure syslog-ng is configured to send logs to a remote log host"
+  block:
+  - shell: cat /etc/syslog-ng/syslog-ng.conf|grep "^(destination\|log)";true
+    register: eb_rhel7cis_rule_4_2_2_4
+  - set_fact:
+      mode_rhel7cis_rule_4_2_2_4: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_2_2_4|bool) else 'check_only'}}"
+      cis_noncompliant_4_2_2_4_status: Manual
+  when:
+      - (rhel7cis_rule_4_2_2_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_2_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.2.4
+      - customcheck
+  check_mode: no
+
+- name: "NOTSCORED | 4.2.2.4 | PATCH | Ensure syslog-ng is configured to send logs to a remote log host"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (rhel7cis_rule_4_2_2_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_2_4|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_4.2.2.4
+      - notimplemented
+
+- name: Display Output | 4.2.2.4 | When Compliant
+  debug:
+      msg="MANUAL_CHECK_REQUIRED|CIS_RESULT| 4.2.2.4 |syslog-ng is configured to send logs to a remote log host|{{ansible_hostname}}|NOT_AUTOMATED|SKIPPED"
+  when:
+      - (rhel7cis_rule_4_2_2_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_2_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.2.4
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.2.2.4 | AFTER | Ensure syslog-ng is configured to send logs to a remote log host"
+  block:
+  - shell: cat /etc/syslog-ng/syslog-ng.conf|grep "^(destination\|log)";true
+    register: ea_rhel7cis_rule_4_2_2_4
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.2.2.4","description":"Ensure syslog-ng is configured to send logs to a remote log host (Manual)","before":eb_rhel7cis_rule_4_2_2_4.stdout,"after":ea_rhel7cis_rule_4_2_2_4.stdout,"mode":mode_rhel7cis_rule_4_2_2_4,"status":cis_noncompliant_4_2_2_4_status }] }}'
+    when: eb_rhel7cis_rule_4_2_2_4.stdout is defined and ea_rhel7cis_rule_4_2_2_4.stdout is defined
+  when:
+      - (rhel7cis_rule_4_2_2_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_2_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.2.4
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.2.2.5 | BEFORE | Ensure remote syslog-ng messages are only accepted on designated log hosts"
+  block:
+  - shell: cat /etc/syslog-ng/syslog-ng.conf|grep "^(source\|destination\|log)";true
+    register: eb_rhel7cis_rule_4_2_2_5
+  - set_fact:
+      mode_rhel7cis_rule_4_2_2_5: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_2_2_5|bool) else 'check_only'}}"
+      cis_noncompliant_4_2_2_5_status: Manual
+  when:
+      - (rhel7cis_rule_4_2_2_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_2_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.2.5
+      - customcheck
+  check_mode: no
+
+- name: "NOTSCORED | 4.2.2.5 | PATCH | Ensure remote syslog-ng messages are only accepted on designated log hosts"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (rhel7cis_rule_4_2_2_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_2_5|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_4.2.2.5
+      - notimplemented
+
+- name: "NOTSCORED | 4.2.2.5 | PATCH | Verify remote syslog-ng messages are only accepted on designated log hosts"
+  shell: cat /etc/syslog-ng/syslog-ng.conf|grep "^(source\|destination\|log)";true
+  register: rhel7cis_rule_4_2_2_5_out
+  failed_when: no
+  changed_when: no
+  when:
+      - (rhel7cis_rule_4_2_2_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_2_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.2.5
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 4.2.2.5 | When Compliant
+  debug:
+      msg="MANUAL_CHECK_REQUIRED|CIS_RESULT| 4.2.2.5 |remote syslog-ng messages are only accepted on designated log hosts|{{ansible_hostname}}|MANUAL_VERIFICATION_REQUIRED|{{rhel7cis_rule_4_2_2_5_out.stdout}}"
+  when:
+      - (rhel7cis_rule_4_2_2_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_2_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.2.5
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.2.2.5 | AFTER | Ensure remote syslog-ng messages are only accepted on designated log hosts"
+  block:
+  - shell: cat /etc/syslog-ng/syslog-ng.conf|grep "^(source\|destination\|log)";true
+    register: ea_rhel7cis_rule_4_2_2_5
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.2.2.5","description":"Ensure remote syslog-ng messages are only accepted on designated log hosts (Manual)","before":eb_rhel7cis_rule_4_2_2_5.stdout,"after":ea_rhel7cis_rule_4_2_2_5.stdout,"mode":mode_rhel7cis_rule_4_2_2_5,"status":cis_noncompliant_4_2_2_5_status }] }}'
+    when: eb_rhel7cis_rule_4_2_2_5.stdout is defined and ea_rhel7cis_rule_4_2_2_5.stdout is defined
+  when:
+      - (rhel7cis_rule_4_2_2_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_2_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.2.5
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.2.4 | BEFORE | Ensure permissions on all logfiles are configured"
+  block:
+  - shell: ls -d /var/log/* | xargs -I '{}' find '{}' -type f -perm /037 | xargs -r ls -las;true # checks if write or execute permissions from group or read write or execute permissions from other users are set
+    register: eb_rhel7cis_rule_4_2_4
+  - set_fact:
+      mode_rhel7cis_rule_4_2_4: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_2_4|bool) else 'check_only'}}"
+      cis_noncompliant_4_2_4_status: Unknown
+  when:
+      - (rhel7cis_rule_4_2_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.4
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 4.2.4 | PATCH | Ensure permissions on all logfiles are configured"
+  command: find /var/log -type f -exec chmod g-wx,o-rwx {} + # removes write, execute permissions from group; removes read, write, execute permissions from other users. It will not change permissions for the user that owns the file
+  failed_when: no
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_4_2_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.4
+  check_mode: no
+
+- name: "SCORED | 4.2.4 | PATCH | Ensure permissions on all logfiles are configured"
+  shell: ls -d /var/log/* | xargs -I '{}' find '{}' -type f -perm /037 | xargs -r ls -las;true # checks if write or execute permissions from group or read write or execute permissions from other users are set
+  register: rhel7cis_rule_4_2_4_out
+  changed_when: no
+  failed_when: no
+  when:
+      - (rhel7cis_rule_4_2_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.4
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 4.2.4 | When Compliant
+  block:
+    - block:
+        - name: Display Output | 4.2.4 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.2.4 |permissions on all logfiles are configured|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_4_2_4_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_2_4_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.2.4"] }}'
+      when: (rhel7cis_rule_4_2_4_out.stdout | length > 0 ) or (rhel7cis_rule_4_2_4_out.stderr | length > 0 )
+    - block:
+        - name: Display Output | 4.2.4 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.2.4 |permissions on all logfiles are configured|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_4_2_4_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_4_2_4_status: Compliant
+      when: (rhel7cis_rule_4_2_4_out.stdout | length == 0) and (rhel7cis_rule_4_2_4_out.stderr | length == 0 )
+  when:
+      - (rhel7cis_rule_4_2_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.4
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.2.4 | AFTER | Ensure permissions on all logfiles are configured"
+  block:
+  - shell: ls -d /var/log/* | xargs -I '{}' find '{}' -type f -perm /037 | xargs -r ls -las;true # checks if write or execute permissions from group or read write or execute permissions from other users are set
+    register: ea_rhel7cis_rule_4_2_4
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.2.4","description":"Ensure permissions on all logfiles are configured","before":eb_rhel7cis_rule_4_2_4.stdout,"after":ea_rhel7cis_rule_4_2_4.stdout,"mode":mode_rhel7cis_rule_4_2_4,"status":cis_noncompliant_4_2_4_status }] }}'
+    when: eb_rhel7cis_rule_4_2_4.stdout is defined and ea_rhel7cis_rule_4_2_4.stdout is defined
+  when:
+      - (rhel7cis_rule_4_2_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_2_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.2.4
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 4.3 | BEFORE | Ensure logrotate is configured"
+  block:
+  - shell: find /etc/logrotate.conf /etc/logrotate.d/* | xargs tail -n +1 | grep "^==>\|^/\|^\s*monthly$\|^\s*hourly$\|^\s*weekly$\|^\s*yearly$";true
+    register: eb_rhel7cis_rule_4_3
+  - set_fact:
+      mode_rhel7cis_rule_4_3: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_4_3|bool) else 'check_only'}}"
+      cis_noncompliant_4_3_status: Unknown
+  when:
+      - (rhel7cis_rule_4_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.3
+      - customcheck
+  check_mode: no
+
+- name: "NOTSCORED | 4.3 | PATCH | Ensure logrotate is configured"
+  find:
+    paths: /etc/logrotate.d/
+  register: log_rotates
+  when:
+      - (rhel7cis_rule_4_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.3
+      - customcheck
+
+- name: "NOTSCORED | 4.3 | PATCH | Ensure logrotate is configured"
+  replace:
+    path: "{{ item.path }}"
+    regexp: '^(\s*)(daily|weekly|monthly|yearly)$'
+    replace: "\\1{{ rhel7cis_logrotate }}"
+  register:  rhel7cis_rule_4_3_out
+  when:
+      - (rhel7cis_rule_4_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_3|bool)
+  with_items:
+    - "{{ log_rotates.files }}"
+    - { path: "/etc/logrotate.conf" }
+  tags:
+      - level1
+      - patch
+      - rule_4.3
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_4_3|bool)) }}"
+
+- name: Display Output | 4.3 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 4.3 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 4.3 | logrotate is configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_3_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_4_3_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["4.3"] }}'
+      when:
+          - rhel7cis_rule_4_3_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_4_3|bool))
+    - block:
+        - name: Display Output | 4.3 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 4.3 | logrotate is configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_4_3_out.changed}}"
+        - set_fact:
+            cis_noncompliant_4_3_status: Compliant
+      when:
+          - not rhel7cis_rule_4_3_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_4_3|bool)
+  when:
+      - (rhel7cis_rule_4_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.3
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 4.3 | AFTER | Ensure logrotate is configured"
+  block:
+  - shell: find /etc/logrotate.conf /etc/logrotate.d/* | xargs tail -n +1 | grep "^==>\|^/\|^\s*monthly$\|^\s*hourly$\|^\s*weekly$\|^\s*yearly$";true
+    register: ea_rhel7cis_rule_4_3
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"4.3","description":"Ensure logrotate is configured","before":eb_rhel7cis_rule_4_3.stdout,"after":ea_rhel7cis_rule_4_3.stdout,"mode":mode_rhel7cis_rule_4_3,"status":cis_noncompliant_4_3_status }] }}'
+    when: eb_rhel7cis_rule_4_3.stdout is defined and ea_rhel7cis_rule_4_3.stdout is defined
+  when:
+      - (rhel7cis_rule_4_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_4_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_4.3
+      - customcheck
+  check_mode: no
+#*********************************************************************************

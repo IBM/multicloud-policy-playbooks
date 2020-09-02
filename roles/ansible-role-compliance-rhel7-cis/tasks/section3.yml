@@ -1,0 +1,2848 @@
+- set_fact:
+      fix_rhel7cis_rule_3_1_1: true
+      fix_rhel7cis_rule_3_1_2: true
+  when: (rhel7cis_is_router|bool == false) and (fix_serviceconfig|bool)
+
+- name: "EVIDENCE | 3.1.1| BEFORE | Ensure IP forwarding is disabled"
+  block:
+  - name: Initialize facts for 3.1.1
+    set_fact:
+      cis_noncompliant_3_1_1_status: Unknown
+      mode_rhel7cis_rule_3_1_1: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_1_1|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.1.1 | BEFORE | Ensure IP forwarding is disabled"
+    shell: sysctl net.ipv4.ip_forward;grep "net\.ipv4\.ip_forward" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: eb_rhel7cis_rule_3_1_1
+  when:
+      - (rhel7cis_rule_3_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_1_1|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.1.1
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.1.1 | PATCH | Ensure IP forwarding is disabled"
+  sysctl:
+      name: net.ipv4.ip_forward
+      value: '0'
+      state: present
+      reload: yes
+      ignoreerrors: yes
+  register:  rhel7cis_rule_3_1_1_out
+  notify:
+      - sysctl flush ipv4 route table
+  when:
+      - (rhel7cis_rule_3_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_1_1|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.1.1
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_1_1|bool)) }}"
+
+- name: Display Output | 3.1.1 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.1.1 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.1.1 |IP forwarding is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_1_1_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_3_1_1_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.1.1"] }}'
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_1_1_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_1_1|bool))
+    - block:
+        - name: Display Output SCORED | 3.1.1 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.1.1 |IP forwarding is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_1_1_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_1_1_status: Compliant
+      when:
+          - not rhel7cis_rule_3_1_1_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_1_1|bool)
+  when:
+      - (rhel7cis_rule_3_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_1_1|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.1.1
+      - customcheck
+
+- name: "EVIDENCE | 3.1.1 | AFTER | Ensure IP forwarding is disabled"
+  block:
+  - name: "EVIDENCE | 3.1.1 | AFTER | Ensure IP forwarding is disabled"
+    shell: sysctl net.ipv4.ip_forward;grep "net\.ipv4\.ip_forward" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: ea_rhel7cis_rule_3_1_1
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.1.1","description":"Ensure IP forwarding is disabled","before":eb_rhel7cis_rule_3_1_1.stdout,"after":ea_rhel7cis_rule_3_1_1.stdout,"mode":mode_rhel7cis_rule_3_1_1,"status":cis_noncompliant_3_1_1_status}] }}'
+    when: eb_rhel7cis_rule_3_1_1.stdout is defined and ea_rhel7cis_rule_3_1_1.stdout is defined
+  when:
+      - (rhel7cis_rule_3_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_1_1|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.1.1
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.1.2| BEFORE | Ensure packet redirect sending is disabled"
+  block:
+  - name: Initialize facts for 3.1.2
+    set_fact:
+      cis_noncompliant_3_1_2_status: Unknown
+      mode_rhel7cis_rule_3_1_2: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_1_2|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.1.2 | BEFORE | Ensure packet redirect sending is disabled"
+    shell: sysctl net.ipv4.conf.all.send_redirects;sysctl net.ipv4.conf.default.send_redirects;grep "net\.ipv4\.conf\.all\.send_redirects" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;grep "net\.ipv4\.conf\.default\.send_redirects" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: eb_rhel7cis_rule_3_1_2
+  when:
+      - (rhel7cis_rule_3_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_1_2|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.1.2
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.1.2 | PATCH | Ensure packet redirect sending is disabled"
+  sysctl:
+      name: '{{ item.name }}'
+      value: '{{ item.value }}'
+      sysctl_set: yes
+      state: present
+      reload: yes
+      ignoreerrors: yes
+  register:  rhel7cis_rule_3_1_2_out
+  with_items:
+      - { name: net.ipv4.conf.all.send_redirects, value: '0' }
+      - { name: net.ipv4.conf.default.send_redirects, value: '0' }
+  notify:
+      - sysctl flush ipv4 route table
+  when:
+      - (rhel7cis_rule_3_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_1_2|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.1.2
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_1_2|bool)) }}"
+
+- name: Display Output SCORED | 3.1.2 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.1.2 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.1.2 |packet redirect sending is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_1_2_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_3_1_2_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.1.2"] }}'
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_1_2_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_1_2|bool))
+    - block:
+        - name: Display Output SCORED | 3.1.2 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.1.2 |packet redirect sending is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_1_2_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_1_2_status: Compliant
+      when:
+          - not rhel7cis_rule_3_1_2_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_1_2|bool)
+  when:
+      - (rhel7cis_rule_3_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_1_2|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.1.2
+      - customcheck
+
+- name: "EVIDENCE | 3.1.2 | AFTER | Ensure packet redirect sending is disabled"
+  block:
+  - name: "EVIDENCE | 3.1.2 | AFTER | Ensure packet redirect sending is disabled"
+    shell: sysctl net.ipv4.conf.all.send_redirects;sysctl net.ipv4.conf.default.send_redirects;grep "net\.ipv4\.conf\.all\.send_redirects" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;grep "net\.ipv4\.conf\.default\.send_redirects" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: ea_rhel7cis_rule_3_1_2
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.1.2","description":"Ensure packet redirect sending is disabled","before":eb_rhel7cis_rule_3_1_2.stdout,"after":ea_rhel7cis_rule_3_1_2.stdout,"mode":mode_rhel7cis_rule_3_1_2,"status":cis_noncompliant_3_1_2_status}] }}'
+    when: eb_rhel7cis_rule_3_1_2.stdout is defined and ea_rhel7cis_rule_3_1_2.stdout is defined
+  when:
+      - (rhel7cis_rule_3_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_1_2|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.1.2
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.2.1| BEFORE | Ensure source routed packets are not accepted"
+  block:
+  - name: Initialize facts for 3.2.1
+    set_fact:
+      cis_noncompliant_3_2_1_status: Unknown
+      mode_rhel7cis_rule_3_2_1: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_2_1|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.2.1 | BEFORE | Ensure source routed packets are not accepted"
+    shell: sysctl net.ipv4.conf.all.accept_source_route;sysctl net.ipv4.conf.default.accept_source_route;grep "net\.ipv4\.conf\.all\.accept_source_route" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;grep "net\.ipv4\.conf\.default\.accept_source_route" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: eb_rhel7cis_rule_3_2_1
+  when:
+      - (rhel7cis_rule_3_2_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_1|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.1
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.2.1 | PATCH | Ensure source routed packets are not accepted"
+  sysctl:
+      name: '{{ item.name }}'
+      value: '{{ item.value }}'
+      sysctl_set: yes
+      state: present
+      reload: yes
+      ignoreerrors: yes
+  with_items:
+      - { name: net.ipv4.conf.all.accept_source_route, value: '0' }
+      - { name: net.ipv4.conf.default.accept_source_route, value: '0' }
+  register:  rhel7cis_rule_3_2_1_out
+  notify:
+      - sysctl flush ipv4 route table
+  when:
+      - (rhel7cis_rule_3_2_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_1|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.1
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_2_1|bool)) }}"
+
+- name: Display Output SCORED | 3.2.1 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.2.1 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.2.1 |source routed packets are not accepted|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_2_1_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_3_2_1_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.2.1"] }}'
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_2_1_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_2_1|bool))
+    - block:
+        - name: Display Output SCORED | 3.2.1 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.2.1 |source routed packets are not accepted|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_2_1_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_2_1_status: Compliant
+      when:
+          - not rhel7cis_rule_3_2_1_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_1|bool)
+  when:
+      - (rhel7cis_rule_3_2_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_1|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.1
+      - customcheck
+
+- name: "EVIDENCE | 3.2.1 | AFTER | Ensure source routed packets are not accepted"
+  block:
+  - name: "EVIDENCE | 3.2.1 | AFTER | Ensure source routed packets are not accepted"
+    shell: sysctl net.ipv4.conf.all.accept_source_route;sysctl net.ipv4.conf.default.accept_source_route;grep "net\.ipv4\.conf\.all\.accept_source_route" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;grep "net\.ipv4\.conf\.default\.accept_source_route" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: ea_rhel7cis_rule_3_2_1
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.2.1","description":"Ensure source routed packets are not accepted","before":eb_rhel7cis_rule_3_2_1.stdout,"after":ea_rhel7cis_rule_3_2_1.stdout,"mode":mode_rhel7cis_rule_3_2_1,"status":cis_noncompliant_3_2_1_status}] }}'
+    when: eb_rhel7cis_rule_3_2_1.stdout is defined and ea_rhel7cis_rule_3_2_1.stdout is defined
+  when:
+      - (rhel7cis_rule_3_2_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_1|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.1
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.2.2| BEFORE | Ensure ICMP redirects are not accepted"
+  block:
+  - name: Initialize facts for 3.2.2
+    set_fact:
+      cis_noncompliant_3_2_2_status: Unknown
+      mode_rhel7cis_rule_3_2_2: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_2_2|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.2.2 | BEFORE | Ensure ICMP redirects are not accepted"
+    shell: sysctl net.ipv4.conf.all.accept_redirects;sysctl net.ipv4.conf.default.accept_redirects;grep "net\.ipv4\.conf\.all\.accept_redirects" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;grep "net\.ipv4\.conf\.default\.accept_redirects" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: eb_rhel7cis_rule_3_2_2
+  when:
+      - (rhel7cis_rule_3_2_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_2|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.2
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.2.2 | PATCH | Ensure ICMP redirects are not accepted"
+  sysctl:
+      name: '{{ item.name }}'
+      value: '{{ item.value }}'
+      sysctl_set: yes
+      state: present
+      reload: yes
+      ignoreerrors: yes
+  with_items:
+      - { name: net.ipv4.conf.all.accept_redirects, value: '0' }
+      - { name: net.ipv4.conf.default.accept_redirects, value: '0' }
+  register:  rhel7cis_rule_3_2_2_out
+  notify:
+      - sysctl flush ipv4 route table
+  when:
+      - (rhel7cis_rule_3_2_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_2|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.2
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_2_2|bool)) }}"
+
+- name: Display Output SCORED | 3.2.2 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.2.2 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.2.2 |ICMP redirects are not accepted|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_2_2_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_3_2_2_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.2.2"] }}'
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_2_2_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_2_2|bool))
+    - block:
+        - name: Display Output SCORED | 3.2.2 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.2.2 |ICMP redirects are not accepted|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_2_2_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_2_2_status: Compliant
+      when:
+          - not rhel7cis_rule_3_2_2_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_2|bool)
+  when:
+      - (rhel7cis_rule_3_2_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_2|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.2
+      - customcheck
+
+- name: "EVIDENCE | 3.2.2 | AFTER | Ensure ICMP redirects are not accepted"
+  block:
+  - name: "EVIDENCE | 3.2.2 | AFTER | Ensure ICMP redirects are not accepted"
+    shell: sysctl net.ipv4.conf.all.accept_redirects;sysctl net.ipv4.conf.default.accept_redirects;grep "net\.ipv4\.conf\.all\.accept_redirects" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;grep "net\.ipv4\.conf\.default\.accept_redirects" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: ea_rhel7cis_rule_3_2_2
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.2.2","description":"Ensure ICMP redirects are not accepted","before":eb_rhel7cis_rule_3_2_2.stdout,"after":ea_rhel7cis_rule_3_2_2.stdout,"mode":mode_rhel7cis_rule_3_2_2,"status":cis_noncompliant_3_2_2_status}] }}'
+    when: eb_rhel7cis_rule_3_2_2.stdout is defined and ea_rhel7cis_rule_3_2_2.stdout is defined
+  when:
+      - (rhel7cis_rule_3_2_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_2|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.2
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.2.3| BEFORE | Ensure secure ICMP redirects are not accepted"
+  block:
+  - name: Initialize facts for 3.2.3
+    set_fact:
+      cis_noncompliant_3_2_3_status: Unknown
+      mode_rhel7cis_rule_3_2_3: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_2_3|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.2.3 | BEFORE | Ensure secure ICMP redirects are not accepted"
+    shell: sysctl net.ipv4.conf.all.secure_redirects;sysctl net.ipv4.conf.default.secure_redirects;grep "net\.ipv4\.conf\.all\.secure_redirects" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;grep "net\.ipv4\.conf\.default\.secure_redirects" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: eb_rhel7cis_rule_3_2_3
+  when:
+      - (rhel7cis_rule_3_2_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_3|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.3
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.2.3 | PATCH | Ensure secure ICMP redirects are not accepted"
+  sysctl:
+      name: '{{ item.name }}'
+      value: '{{ item.value }}'
+      sysctl_set: yes
+      state: present
+      reload: yes
+      ignoreerrors: yes
+  register:  rhel7cis_rule_3_2_3_out
+  with_items:
+      - { name: net.ipv4.conf.all.secure_redirects, value: '0' }
+      - { name: net.ipv4.conf.default.secure_redirects, value: '0' }
+  notify:
+      - sysctl flush ipv4 route table
+  when:
+      - (rhel7cis_rule_3_2_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_3|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.3
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_2_3|bool)) }}"
+
+- name: Display Output SCORED | 3.2.3 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.2.3 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.2.3 |ICMP redirects are not accepted|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_2_3_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_3_2_3_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.2.3"] }}'
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_2_3_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_2_3|bool))
+    - block:
+        - name: Display Output SCORED | 3.2.3 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.2.3 |ICMP redirects are not accepted|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_2_3_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_2_3_status: Compliant
+      when:
+          - not rhel7cis_rule_3_2_3_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_3|bool)
+  when:
+      - (rhel7cis_rule_3_2_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_3|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.3
+      - customcheck
+
+- name: "EVIDENCE | 3.2.3 | AFTER | Ensure secure ICMP redirects are not accepted"
+  block:
+  - name: "EVIDENCE | 3.2.3 | AFTER | Ensure secure ICMP redirects are not accepted"
+    shell: sysctl net.ipv4.conf.all.secure_redirects;sysctl net.ipv4.conf.default.secure_redirects;grep "net\.ipv4\.conf\.all\.secure_redirects" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;grep "net\.ipv4\.conf\.default\.secure_redirects" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: ea_rhel7cis_rule_3_2_3
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.2.3","description":"Ensure secure ICMP redirects are not accepted","before":eb_rhel7cis_rule_3_2_3.stdout,"after":ea_rhel7cis_rule_3_2_3.stdout,"mode":mode_rhel7cis_rule_3_2_3,"status":cis_noncompliant_3_2_3_status}] }}'
+    when: eb_rhel7cis_rule_3_2_3.stdout is defined and ea_rhel7cis_rule_3_2_3.stdout is defined
+  when:
+      - (rhel7cis_rule_3_2_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_3|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.3
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.2.4| BEFORE | Ensure suspicious packets are logged"
+  block:
+  - name: Initialize facts for 3.2.4
+    set_fact:
+      cis_noncompliant_3_2_4_status: Unknown
+      mode_rhel7cis_rule_3_2_4: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_2_4|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.2.4 | BEFORE | Ensure suspicious packets are logged"
+    shell: sysctl net.ipv4.conf.all.log_martians;sysctl net.ipv4.conf.default.log_martians;grep "net\.ipv4\.conf\.all\.log_martians" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;grep "net\.ipv4\.conf\.default\.log_martians" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: eb_rhel7cis_rule_3_2_4
+  when:
+      - (rhel7cis_rule_3_2_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_4|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.4
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.2.4 | PATCH | Ensure suspicious packets are logged"
+  sysctl:
+      name: '{{ item.name }}'
+      value: '{{ item.value }}'
+      sysctl_set: yes
+      state: present
+      reload: yes
+      ignoreerrors: yes
+  register:  rhel7cis_rule_3_2_4_out
+  with_items:
+      - { name: net.ipv4.conf.all.log_martians, value: '1' }
+      - { name: net.ipv4.conf.default.log_martians, value: '1' }
+  notify:
+      - sysctl flush ipv4 route table
+  when:
+      - (rhel7cis_rule_3_2_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_4|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.4
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_2_4|bool)) }}"
+
+- name: Display Output SCORED | 3.2.4 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.2.4 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.2.4 |suspicious packets are logged|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_2_4_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_3_2_4_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.2.4"] }}'
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_2_4_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_2_4|bool))
+    - block:
+        - name: Display Output SCORED | 3.2.4 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.2.4 |suspicious packets are logged|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_2_4_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_2_4_status: Compliant
+      when:
+          - not rhel7cis_rule_3_2_4_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_4|bool)
+  when:
+      - (rhel7cis_rule_3_2_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_4|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.4
+      - customcheck
+
+- name: "EVIDENCE | 3.2.4 | AFTER | Ensure suspicious packets are logged"
+  block:
+  - name: "EVIDENCE | 3.2.4 | AFTER | Ensure suspicious packets are logged"
+    shell: sysctl net.ipv4.conf.all.log_martians;sysctl net.ipv4.conf.default.log_martians;grep "net\.ipv4\.conf\.all\.log_martians" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;grep "net\.ipv4\.conf\.default\.log_martians" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: ea_rhel7cis_rule_3_2_4
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.2.4","description":"Ensure suspicious packets are logged","before":eb_rhel7cis_rule_3_2_4.stdout,"after":ea_rhel7cis_rule_3_2_4.stdout,"mode":mode_rhel7cis_rule_3_2_4,"status":cis_noncompliant_3_2_4_status}] }}'
+    when: eb_rhel7cis_rule_3_2_4.stdout is defined and ea_rhel7cis_rule_3_2_4.stdout is defined
+  when:
+      - (rhel7cis_rule_3_2_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_4|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.4
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.2.5| BEFORE | Ensure broadcast ICMP requests are ignored"
+  block:
+  - name: Initialize facts for 3.2.5
+    set_fact:
+      cis_noncompliant_3_2_5_status: Unknown
+      mode_rhel7cis_rule_3_2_5: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_2_5|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.2.5 | BEFORE | Ensure broadcast ICMP requests are ignored"
+    shell: sysctl net.ipv4.icmp_echo_ignore_broadcasts;grep "net\.ipv4\.icmp_echo_ignore_broadcasts" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: eb_rhel7cis_rule_3_2_5
+  when:
+      - (rhel7cis_rule_3_2_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_5|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.5
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.2.5 | PATCH | Ensure broadcast ICMP requests are ignored"
+  sysctl:
+      name: net.ipv4.icmp_echo_ignore_broadcasts
+      value: '1'
+      state: present
+      reload: yes
+      ignoreerrors: yes
+  register:  rhel7cis_rule_3_2_5_out
+  notify:
+      - sysctl flush ipv4 route table
+  when:
+      - (rhel7cis_rule_3_2_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_5|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.5
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_2_5|bool)) }}"
+
+- name: Display Output SCORED | 3.2.5 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.2.5 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.2.5 |broadcast ICMP requests are ignored|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_2_5_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_3_2_5_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.2.5"] }}'
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_2_5_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_2_5|bool))
+    - block:
+        - name: Display Output SCORED | 3.2.5 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.2.5 |broadcast ICMP requests are ignored|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_2_5_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_2_5_status: Compliant
+      when:
+          - not rhel7cis_rule_3_2_5_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_5|bool)
+  when:
+      - (rhel7cis_rule_3_2_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_5|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.5
+      - customcheck
+
+- name: "EVIDENCE | 3.2.5 | AFTER | Ensure broadcast ICMP requests are ignored"
+  block:
+  - name: "EVIDENCE | 3.2.5 | AFTER | Ensure broadcast ICMP requests are ignored"
+    shell: sysctl net.ipv4.icmp_echo_ignore_broadcasts;grep "net\.ipv4\.icmp_echo_ignore_broadcasts" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: ea_rhel7cis_rule_3_2_5
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.2.5","description":"Ensure broadcast ICMP requests are ignored","before":eb_rhel7cis_rule_3_2_5.stdout,"after":ea_rhel7cis_rule_3_2_5.stdout,"mode":mode_rhel7cis_rule_3_2_5,"status":cis_noncompliant_3_2_5_status}] }}'
+    when: eb_rhel7cis_rule_3_2_5.stdout is defined and ea_rhel7cis_rule_3_2_5.stdout is defined
+  when:
+      - (rhel7cis_rule_3_2_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_5|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.5
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.2.6| BEFORE | Ensure bogus ICMP responses are ignored"
+  block:
+  - name: Initialize facts for 3.2.6
+    set_fact:
+      cis_noncompliant_3_2_6_status: Unknown
+      mode_rhel7cis_rule_3_2_6: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_2_6|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.2.6 | BEFORE | Ensure bogus ICMP responses are ignored"
+    shell: sysctl net.ipv4.icmp_ignore_bogus_error_responses;grep "net\.ipv4\.icmp_ignore_bogus_error_responses" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: eb_rhel7cis_rule_3_2_6
+  when:
+      - (rhel7cis_rule_3_2_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_6|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.6
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.2.6 | PATCH | Ensure bogus ICMP responses are ignored"
+  sysctl:
+      name: net.ipv4.icmp_ignore_bogus_error_responses
+      value: '1'
+      state: present
+      reload: yes
+      ignoreerrors: yes
+  register:  rhel7cis_rule_3_2_6_out
+  notify:
+      - sysctl flush ipv4 route table
+  when:
+      - (rhel7cis_rule_3_2_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_6|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.6
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_2_6|bool)) }}"
+
+- name: Display Output SCORED | 3.2.6 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.2.6 | When Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.2.6 |bogus ICMP responses are ignored|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_2_6_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_3_2_6_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.2.6"] }}'
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_2_6_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_2_6|bool))
+    - block:
+        - name: Display Output SCORED | 3.2.6 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.2.6 |bogus ICMP responses are ignored|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_2_6_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_2_6_status: Compliant
+      when:
+          - not rhel7cis_rule_3_2_6_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_6|bool)
+  when:
+      - (rhel7cis_rule_3_2_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_6|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.6
+      - customcheck
+
+- name: "EVIDENCE | 3.2.6 | AFTER | Ensure bogus ICMP responses are ignored"
+  block:
+  - name: "EVIDENCE | 3.2.6 | AFTER | Ensure bogus ICMP responses are ignored"
+    shell: sysctl net.ipv4.icmp_ignore_bogus_error_responses;grep "net\.ipv4\.icmp_ignore_bogus_error_responses" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: ea_rhel7cis_rule_3_2_6
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.2.6","description":"Ensure bogus ICMP responses are ignored","before":eb_rhel7cis_rule_3_2_6.stdout,"after":ea_rhel7cis_rule_3_2_6.stdout,"mode":mode_rhel7cis_rule_3_2_6,"status":cis_noncompliant_3_2_6_status}] }}'
+    when: eb_rhel7cis_rule_3_2_6.stdout is defined and ea_rhel7cis_rule_3_2_6.stdout is defined
+  when:
+      - (rhel7cis_rule_3_2_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_6|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.6
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.2.7| BEFORE | Ensure Reverse Path Filtering is enabled"
+  block:
+  - name: Initialize facts for 3.2.7
+    set_fact:
+      cis_noncompliant_3_2_7_status: Unknown
+      mode_rhel7cis_rule_3_2_7: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_2_7|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.2.7 | BEFORE | Ensure Reverse Path Filtering is enabled"
+    shell: sysctl net.ipv4.conf.all.rp_filter;sysctl net.ipv4.conf.default.rp_filter;grep "net\.ipv4\.conf\.all\.rp_filter" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;grep "net\.ipv4\.conf\.default\.rp_filter" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: eb_rhel7cis_rule_3_2_7
+  when:
+      - (rhel7cis_rule_3_2_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_7|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.7
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.2.7 | PATCH | Ensure Reverse Path Filtering is enabled"
+  sysctl:
+      name: '{{ item.name }}'
+      value: '{{ item.value }}'
+      sysctl_set: yes
+      state: present
+      reload: yes
+      ignoreerrors: yes
+  register:  rhel7cis_rule_3_2_7_out
+  with_items:
+      - { name: net.ipv4.conf.all.rp_filter, value: '1' }
+      - { name: net.ipv4.conf.default.rp_filter, value: '1' }
+  notify:
+      - sysctl flush ipv4 route table
+  when:
+      - (rhel7cis_rule_3_2_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_7|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.7
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_2_7|bool)) }}"
+
+- name: Display Output SCORED | 3.2.7 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.2.7 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.2.7 |reverse Path Filtering is enabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_2_7_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_3_2_7_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.2.7"] }}'
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_2_7_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_2_7|bool))
+    - block:
+        - name: Display Output SCORED | 3.2.7 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.2.7 |reverse Path Filtering is enabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_2_7_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_2_7_status: Compliant
+      when:
+          - not rhel7cis_rule_3_2_7_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_7|bool)
+  when:
+      - (rhel7cis_rule_3_2_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_7|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.7
+      - customcheck
+
+- name: "EVIDENCE | 3.2.7 | AFTER | Ensure Reverse Path Filtering is enabled"
+  block:
+  - name: "EVIDENCE | 3.2.7 | AFTER | Ensure Reverse Path Filtering is enabled"
+    shell: sysctl net.ipv4.conf.all.rp_filter;sysctl net.ipv4.conf.default.rp_filter;grep "net\.ipv4\.conf\.all\.rp_filter" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;grep "net\.ipv4\.conf\.default\.rp_filter" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: ea_rhel7cis_rule_3_2_7
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.2.7","description":"Ensure Reverse Path Filtering is enabled","before":eb_rhel7cis_rule_3_2_7.stdout,"after":ea_rhel7cis_rule_3_2_7.stdout,"mode":mode_rhel7cis_rule_3_2_7,"status":cis_noncompliant_3_2_7_status}] }}'
+    when: eb_rhel7cis_rule_3_2_7.stdout is defined and ea_rhel7cis_rule_3_2_7.stdout is defined
+  when:
+      - (rhel7cis_rule_3_2_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_7|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.7
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.2.8| BEFORE | Ensure TCP SYN Cookies is enabled"
+  block:
+  - name: Initialize facts for 3.2.8
+    set_fact:
+      cis_noncompliant_3_2_8_status: Unknown
+      mode_rhel7cis_rule_3_2_8: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_2_8|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.2.8 | BEFORE | Ensure TCP SYN Cookies is enabled"
+    shell: sysctl net.ipv4.tcp_syncookies;grep "net\.ipv4\.tcp_syncookies" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: eb_rhel7cis_rule_3_2_8
+  when:
+      - (rhel7cis_rule_3_2_8|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_8|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.8
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.2.8 | PATCH | Ensure TCP SYN Cookies is enabled"
+  sysctl:
+      name: net.ipv4.tcp_syncookies
+      value: '1'
+      state: present
+      reload: yes
+      ignoreerrors: yes
+  register:  rhel7cis_rule_3_2_8_out
+  notify:
+      - sysctl flush ipv4 route table
+  when:
+      - (rhel7cis_rule_3_2_8|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_8|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.8
+
+- name: Display Output SCORED | 3.2.8 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.2.8 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.2.8 |TCP SYN Cookies is enabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_2_8_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_3_2_8_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.2.8"] }}'
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_2_8_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_2_8|bool))
+    - block:
+        - name: Display Output SCORED | 3.2.8 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.2.8 |TCP SYN Cookies is enabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_2_8_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_2_8_status: Compliant
+      when:
+          - not rhel7cis_rule_3_2_8_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_8|bool)
+  when:
+      - (rhel7cis_rule_3_2_8|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_8|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.8
+      - customcheck
+
+- name: "EVIDENCE | 3.2.8 | AFTER | Ensure TCP SYN Cookies is enabled"
+  block:
+  - name: "EVIDENCE | 3.2.8 | AFTER | Ensure TCP SYN Cookies is enabled"
+    shell: sysctl net.ipv4.tcp_syncookies;grep "net\.ipv4\.tcp_syncookies" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: ea_rhel7cis_rule_3_2_8
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.2.8","description":"Ensure TCP SYN Cookies is enabled","before":eb_rhel7cis_rule_3_2_8.stdout,"after":ea_rhel7cis_rule_3_2_8.stdout,"mode":mode_rhel7cis_rule_3_2_8,"status":cis_noncompliant_3_2_8_status}] }}'
+    when: eb_rhel7cis_rule_3_2_8.stdout is defined and ea_rhel7cis_rule_3_2_8.stdout is defined
+  when:
+      - (rhel7cis_rule_3_2_8|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_2_8|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.2.8
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.3.1| BEFORE | Ensure IPv6 router advertisements are not accepted"
+  block:
+  - name: Initialize facts for 3.3.1
+    set_fact:
+      cis_noncompliant_3_3_1_status: Unknown
+      mode_rhel7cis_rule_3_3_1: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_3_1|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.3.1 | BEFORE | Ensure IPv6 router advertisements are not accepted"
+    shell: sysctl net.ipv6.conf.all.accept_ra;sysctl net.ipv6.conf.default.accept_ra;grep "net\.ipv6\.conf\.all\.accept_ra" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;grep "net\.ipv6\.conf\.default\.accept_ra" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: eb_rhel7cis_rule_3_3_1
+  when:
+      - (rhel7cis_rule_3_3_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_3_1|bool)
+      - rhel7cis_ipv6_required == true
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.3.1
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.3.1 | PATCH | Ensure IPv6 router advertisements are not accepted"
+  sysctl:
+      name: '{{ item.name }}'
+      value: '{{ item.value }}'
+      sysctl_set: yes
+      state: present
+      reload: yes
+      ignoreerrors: yes
+  register:  rhel7cis_rule_3_3_1_out
+  with_items:
+      - { name: net.ipv6.conf.all.accept_ra, value: '0' }
+      - { name: net.ipv6.conf.default.accept_ra, value: '0' }
+  notify:
+      - sysctl flush ipv6 route table
+  when:
+      - (rhel7cis_rule_3_3_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_3_1|bool)
+      - rhel7cis_ipv6_required == true
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.3.1
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_3_1|bool)) }}"
+
+- name: Display Output SCORED | 3.3.1 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.3.1 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.3.1 |IPv6 router advertisements are not accepted|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_3_1_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_3_3_1_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.3.1"] }}'
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_3_1_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_3_1|bool))
+    - block:
+        - name: Display Output SCORED | 3.3.1 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.3.1 |IPv6 router advertisements are not accepted|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_3_1_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_3_1_status: Compliant
+      when:
+          - not rhel7cis_rule_3_3_1_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_3_1|bool)
+  when:
+      - (rhel7cis_rule_3_3_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_3_1|bool)
+      - rhel7cis_ipv6_required == true
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.3.1
+      - customcheck
+
+- name: "EVIDENCE | 3.3.1 | AFTER | Ensure IPv6 router advertisements are not accepted"
+  block:
+  - name: "EVIDENCE | 3.3.1 | AFTER | Ensure IPv6 router advertisements are not accepted"
+    shell: sysctl net.ipv6.conf.all.accept_ra;sysctl net.ipv6.conf.default.accept_ra;grep "net\.ipv6\.conf\.all\.accept_ra" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;grep "net\.ipv6\.conf\.default\.accept_ra" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: ea_rhel7cis_rule_3_3_1
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.3.1","description":"Ensure IPv6 router advertisements are not accepted","before":eb_rhel7cis_rule_3_3_1.stdout,"after":ea_rhel7cis_rule_3_3_1.stdout,"mode":mode_rhel7cis_rule_3_3_1,"status":cis_noncompliant_3_3_1_status}] }}'
+    when: eb_rhel7cis_rule_3_3_1.stdout is defined and ea_rhel7cis_rule_3_3_1.stdout is defined
+  when:
+      - (rhel7cis_rule_3_3_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_3_1|bool)
+      - rhel7cis_ipv6_required == true
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.3.1
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.3.2| BEFORE | Ensure IPv6 redirects are not accepted"
+  block:
+  - name: Initialize facts for 3.3.2
+    set_fact:
+      cis_noncompliant_3_3_2_status: Unknown
+      mode_rhel7cis_rule_3_3_2: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_3_2|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.3.2 | BEFORE | Ensure IPv6 redirects are not accepted"
+    shell: sysctl net.ipv6.conf.all.accept_redirects;sysctl net.ipv6.conf.default.accept_redirects;grep "net\.ipv6\.conf\.all\.accept_redirect" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;grep "net\.ipv6\.conf\.default\.accept_redirect" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: eb_rhel7cis_rule_3_3_2
+  when:
+      - (rhel7cis_rule_3_3_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_3_2|bool)
+      - rhel7cis_ipv6_required == true
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.3.2
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.3.2 | PATCH | Ensure IPv6 redirects are not accepted"
+  sysctl:
+      name: '{{ item.name }}'
+      value: '{{ item.value }}'
+      sysctl_set: yes
+      state: present
+      reload: yes
+      ignoreerrors: yes
+  register:  rhel7cis_rule_3_3_2_out
+  with_items:
+      - { name: net.ipv6.conf.all.accept_redirects, value: '0' }
+      - { name: net.ipv6.conf.default.accept_redirects, value: '0' }
+  notify:
+      - sysctl flush ipv6 route table
+  when:
+      - (rhel7cis_rule_3_3_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_3_2|bool)
+      - rhel7cis_ipv6_required == true
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.3.2
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_3_2|bool)) }}"
+
+- name: Display Output SCORED | 3.3.2 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.3.2 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.3.2 |IPv6 redirects are not accepted|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_3_2_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_3_3_2_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.3.2"] }}'
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_3_2_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_3_2|bool))
+    - block:
+        - name: Display Output SCORED | 3.3.2 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.3.2 |IPv6 redirects are not accepted|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_3_2_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_3_2_status: Compliant
+      when:
+          - not rhel7cis_rule_3_3_2_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_3_2|bool)
+  when:
+      - (rhel7cis_rule_3_3_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_3_2|bool)
+      - rhel7cis_ipv6_required == true
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.3.2
+      - customcheck
+
+- name: "EVIDENCE | 3.3.2 | AFTER | Ensure IPv6 redirects are not accepted"
+  block:
+  - name: "EVIDENCE | 3.3.2 | AFTER | Ensure IPv6 redirects are not accepted"
+    shell: sysctl net.ipv6.conf.all.accept_redirects;sysctl net.ipv6.conf.default.accept_redirects;grep "net\.ipv6\.conf\.all\.accept_redirect" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;grep "net\.ipv6\.conf\.default\.accept_redirect" /etc/sysctl.conf /etc/sysctl.d/* 2>&1;true
+    register: ea_rhel7cis_rule_3_3_2
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.3.2","description":"Ensure IPv6 redirects are not accepted","before":eb_rhel7cis_rule_3_3_2.stdout,"after":ea_rhel7cis_rule_3_3_2.stdout,"mode":mode_rhel7cis_rule_3_3_2,"status":cis_noncompliant_3_3_2_status}] }}'
+    when: eb_rhel7cis_rule_3_3_2.stdout is defined and ea_rhel7cis_rule_3_3_2.stdout is defined
+  when:
+      - (rhel7cis_rule_3_3_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_3_2|bool)
+      - rhel7cis_ipv6_required == true
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.3.2
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.3.3| BEFORE | Ensure IPv6 is disabled"
+  block:
+  - name: Initialize facts for 3.3.3
+    set_fact:
+      cis_noncompliant_3_3_3_status: Unknown
+      mode_rhel7cis_rule_3_3_3: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_3_3|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.3.3 | BEFORE | Ensure IPv6 is disabled"
+    shell: grep "^\s*linux" /boot/grub2/grub.cfg 2>&1;true
+    register: eb_rhel7cis_rule_3_3_3
+  when:
+      - (rhel7cis_rule_3_3_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_3_3|bool)
+      - rhel7cis_ipv6_required == false
+  tags:
+      - level1
+      - patch
+      - rule_3.3.3
+      - customcheck
+  check_mode: no
+
+- name: "NOTSCORED | 3.3.3 | PATCH | Ensure IPv6 is disabled"
+  lineinfile:
+    dest: /etc/default/grub
+    regexp: '^(GRUB_CMDLINE_LINUX=.*(?!.*ipv6\.disable=1)\"[^\"]+)(\".*)'
+    line: '\1 ipv6.disable=1\2'
+    backrefs: yes
+  register:  rhel7cis_rule_3_3_3_out
+  notify:
+    - grub2cfg
+  when:
+      - (rhel7cis_rule_3_3_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_3_3|bool)
+      - rhel7cis_ipv6_required == false
+  tags:
+      - level1
+      - patch
+      - rule_3.3.3
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_3_3|bool)) }}"
+
+- name: Display Output SCORED | 3.3.3 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.3.3 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.3.3 |IPv6 is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_3_3_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_3_3_3_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.3.3"] }}'
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_3_3_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_3_3|bool))
+    - block:
+        - name: Display Output SCORED | 3.3.3 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.3.3 |IPv6 is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_3_3_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_3_3_status: Compliant
+      when:
+          - not rhel7cis_rule_3_3_3_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_3_3|bool)
+  when:
+      - (rhel7cis_rule_3_3_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_3_3|bool)
+      - rhel7cis_ipv6_required == false
+  tags:
+      - level1
+      - patch
+      - rule_3.3.3
+      - customcheck
+
+- block:
+    - name: Display Output SCORED | 3.3.3 | When Compliant
+      debug:
+        msg="SUCCESS_NOT_REQUIRED|CIS_RESULT| 3.3.3 |IPv6 is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|False - see rhel7cis_ipv6_required"
+  when:
+      not rhel7cis_ipv6_required == false
+  tags:
+      - level1
+      - patch
+      - rule_3.3.3
+      - customcheck
+
+- name: "EVIDENCE | 3.3.3 | AFTER | Ensure IPv6 is disabled"
+  block:
+  - name: "EVIDENCE | 3.3.3 | AFTER | Ensure IPv6 is disabled"
+    shell: grep "^\s*linux" /boot/grub2/grub.cfg 2>&1;true
+    register: ea_rhel7cis_rule_3_3_3
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.3.3","description":"Ensure IPv6 is disabled","before":eb_rhel7cis_rule_3_3_3.stdout,"after":ea_rhel7cis_rule_3_3_3.stdout,"mode":mode_rhel7cis_rule_3_3_3,"status":cis_noncompliant_3_3_3_status}] }}'
+    when: eb_rhel7cis_rule_3_3_3.stdout is defined and ea_rhel7cis_rule_3_3_3.stdout is defined
+  when:
+      - (rhel7cis_rule_3_3_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_3_3|bool)
+      - rhel7cis_ipv6_required == false
+  tags:
+      - level1
+      - patch
+      - rule_3.3.3
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.4.1| BEFORE | Ensure TCP Wrappers is installed"
+  block:
+  - name: Initialize facts for 3.4.1
+    set_fact:
+      cis_noncompliant_3_4_1_status: Unknown
+      mode_rhel7cis_rule_3_4_1: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_4_1|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.4.1 | BEFORE | Ensure TCP Wrappers is installed"
+    shell: rpm -q tcp_wrappers 2>&1;rpm -q tcp_wrappers-libs 2>&1;true
+    register: eb_rhel7cis_rule_3_4_1
+  when:
+      - (rhel7cis_rule_3_4_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.4.1
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.4.1 | PATCH | Ensure TCP Wrappers is installed"
+  yum:
+    name: tcp_wrappers
+    state: present
+  register:  rhel7cis_rule_3_4_1_out
+  when:
+      - (rhel7cis_rule_3_4_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.4.1
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_4_1|bool)) }}"
+
+- name: Display Output SCORED | 3.4.1 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.4.1 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.4.1 |TCP Wrappers is installed|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_4_1_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_3_4_1_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.4.1"] }}'
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_4_1_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_4_1|bool))
+    - block:
+        - name: Display Output SCORED | 3.4.1 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.4.1 |TCP Wrappers is installed|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_4_1_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_4_1_status: Compliant
+      when:
+          - not rhel7cis_rule_3_4_1_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_1|bool)
+  when:
+      - (rhel7cis_rule_3_4_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.4.1
+      - customcheck
+
+- name: "EVIDENCE | 3.4.1 | AFTER | Ensure TCP Wrappers is installed"
+  block:
+  - name: "EVIDENCE | 3.4.1 | AFTER | Ensure TCP Wrappers is installed"
+    shell: rpm -q tcp_wrappers 2>&1;rpm -q tcp_wrappers-libs 2>&1;true
+    register: ea_rhel7cis_rule_3_4_1
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.4.1","description":"Ensure TCP Wrappers is installed","before":eb_rhel7cis_rule_3_4_1.stdout,"after":ea_rhel7cis_rule_3_4_1.stdout,"mode":mode_rhel7cis_rule_3_4_1,"status":cis_noncompliant_3_4_1_status}] }}'
+    when: eb_rhel7cis_rule_3_4_1.stdout is defined and ea_rhel7cis_rule_3_4_1.stdout is defined
+  when:
+      - (rhel7cis_rule_3_4_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.4.1
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.4.2| BEFORE | Ensure /etc/hosts.allow is configured"
+  block:
+  - name: Initialize facts for 3.4.2
+    set_fact:
+      cis_noncompliant_3_4_2_status: Unknown
+      mode_rhel7cis_rule_3_4_2: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_4_2|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.4.2 | BEFORE | Ensure /etc/hosts.allow is configured"
+    shell: grep -v "^#" /etc/hosts.allow 2>&1;true
+    register: eb_rhel7cis_rule_3_4_2
+  when:
+      - (rhel7cis_rule_3_4_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_2|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.4.2
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.4.2 | PATCH | Ensure /etc/hosts.allow is configured"
+  template:
+      src: hosts.allow.j2
+      dest: /etc/hosts.allow
+      owner: root
+      group: root
+      mode: 0644
+  register:  rhel7cis_rule_3_4_2_out
+  when:
+      - (rhel7cis_rule_3_4_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.4.2
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_4_2|bool)) }}"
+
+- name: Display Output SCORED | 3.4.2 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.4.2 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.4.2 |/etc/hosts.allow is configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_4_2_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_3_4_2_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.4.2"] }}'
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_4_2_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_4_2|bool))
+    - block:
+        - name: Display Output SCORED | 3.4.2 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.4.2 |/etc/hosts.allow is configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_4_2_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_4_2_status: Compliant
+      when:
+          - not rhel7cis_rule_3_4_2_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_2|bool)
+  when:
+      - (rhel7cis_rule_3_4_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.4.2
+      - customcheck
+
+- name: "EVIDENCE | 3.4.2 | AFTER | Ensure /etc/hosts.allow is configured"
+  block:
+  - name: "EVIDENCE | 3.4.2 | AFTER | Ensure /etc/hosts.allow is configured"
+    shell: grep -v "^#" /etc/hosts.allow 2>&1;true
+    register: ea_rhel7cis_rule_3_4_2
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.4.2","description":"Ensure /etc/hosts.allow is configured","before":eb_rhel7cis_rule_3_4_2.stdout,"after":ea_rhel7cis_rule_3_4_2.stdout,"mode":mode_rhel7cis_rule_3_4_2,"status":cis_noncompliant_3_4_2_status}] }}'
+    when: eb_rhel7cis_rule_3_4_2.stdout is defined and ea_rhel7cis_rule_3_4_2.stdout is defined
+  when:
+      - (rhel7cis_rule_3_4_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_2|bool)
+  tags:
+      - level1
+      - sysctl
+      - patch
+      - rule_3.4.2
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.4.3| BEFORE | Ensure /etc/hosts.deny is configured"
+  block:
+  - name: Initialize facts for 3.4.3
+    set_fact:
+      cis_noncompliant_3_4_3_status: Unknown
+      mode_rhel7cis_rule_3_4_3: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_4_3|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.4.3 | BEFORE | Ensure /etc/hosts.deny is configured"
+    shell: grep -v "^#" /etc/hosts.deny 2>&1;true
+    register: eb_rhel7cis_rule_3_4_3
+  when:
+      - (rhel7cis_rule_3_4_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.4.3
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.4.3 | PATCH | Ensure /etc/hosts.deny is configured"
+  lineinfile:
+      dest: /etc/hosts.deny
+      regexp: "^(#)?ALL"
+      line: "ALL: ALL"
+  register:  rhel7cis_rule_3_4_3_out
+  when:
+      - (rhel7cis_rule_3_4_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.4.3
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_4_3|bool)) }}"
+
+- name: Display Output SCORED | 3.4.3 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.4.3 | When Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.4.3 |/etc/hosts.deny is configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_4_3_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_3_4_3_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.4.3"] }}'
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_4_3_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_4_3|bool))
+    - block:
+        - name: Display Output SCORED | 3.4.3 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.4.3 |/etc/hosts.deny is configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_4_3_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_4_3_status: Compliant
+      when:
+          - not rhel7cis_rule_3_4_3_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_3|bool)
+  when:
+      - (rhel7cis_rule_3_4_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.4.3
+      - customcheck
+
+- name: "EVIDENCE | 3.4.3 | AFTER | Ensure /etc/hosts.deny is configured"
+  block:
+  - name: "EVIDENCE | 3.4.3 | AFTER | Ensure /etc/hosts.deny is configured"
+    shell: grep -v "^#" /etc/hosts.deny 2>&1;true
+    register: ea_rhel7cis_rule_3_4_3
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.4.3","description":"Ensure /etc/hosts.deny is configured","before":eb_rhel7cis_rule_3_4_3.stdout,"after":ea_rhel7cis_rule_3_4_3.stdout,"mode":mode_rhel7cis_rule_3_4_3,"status":cis_noncompliant_3_4_3_status}] }}'
+    when: eb_rhel7cis_rule_3_4_3.stdout is defined and ea_rhel7cis_rule_3_4_3.stdout is defined
+  when:
+      - (rhel7cis_rule_3_4_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.4.3
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.4.4| BEFORE | Ensure permissions on /etc/hosts.allow are configured"
+  block:
+  - name: Initialize facts for 3.4.4
+    set_fact:
+      cis_noncompliant_3_4_4_status: Unknown
+      mode_rhel7cis_rule_3_4_4: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_4_4|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.4.4 | BEFORE | Ensure permissions on /etc/hosts.allow are configured"
+    shell: stat /etc/hosts.allow 2>&1;true
+    register: eb_rhel7cis_rule_3_4_4
+  when:
+      - (rhel7cis_rule_3_4_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.4.4
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.4.4 | PATCH | Ensure permissions on /etc/hosts.allow are configured"
+  file:
+      dest: /etc/hosts.allow
+      owner: root
+      group: root
+      mode: 0644
+  register:  rhel7cis_rule_3_4_4_out
+  when:
+      - (rhel7cis_rule_3_4_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.4.4
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_4_4|bool)) }}"
+
+- name: Display Output SCORED | 3.4.4 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.4.4 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.4.4 |permissions on /etc/hosts.allow are configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_4_4_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_3_4_4_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.4.4"] }}'
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_4_4_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_4_4|bool))
+    - block:
+        - name: Display Output SCORED | 3.4.4 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.4.4 |permissions on /etc/hosts.allow are configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_4_4_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_4_4_status: Compliant
+      when:
+          - not rhel7cis_rule_3_4_4_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_4|bool)
+  when:
+      - (rhel7cis_rule_3_4_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.4.4
+      - customcheck
+
+- name: "EVIDENCE | 3.4.4 | AFTER | Ensure permissions on /etc/hosts.allow are configured"
+  block:
+  - name: "EVIDENCE | 3.4.4 | AFTER | Ensure permissions on /etc/hosts.allow are configured"
+    shell: stat /etc/hosts.allow 2>&1;true
+    register: ea_rhel7cis_rule_3_4_4
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.4.4","description":"Ensure permissions on /etc/hosts.allow are configured","before":eb_rhel7cis_rule_3_4_4.stdout,"after":ea_rhel7cis_rule_3_4_4.stdout,"mode":mode_rhel7cis_rule_3_4_4,"status":cis_noncompliant_3_4_4_status}] }}'
+    when: eb_rhel7cis_rule_3_4_4.stdout is defined and ea_rhel7cis_rule_3_4_4.stdout is defined
+  when:
+      - (rhel7cis_rule_3_4_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.4.4
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.4.5| BEFORE | Ensure permissions on /etc/hosts.deny are 644"
+  block:
+  - name: Initialize facts for 3.4.5
+    set_fact:
+      cis_noncompliant_3_4_5_status: Unknown
+      mode_rhel7cis_rule_3_4_5: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_4_5|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.4.5 | BEFORE | Ensure permissions on /etc/hosts.deny are 644"
+    shell: stat /etc/hosts.deny 2>&1;true
+    register: eb_rhel7cis_rule_3_4_5
+  when:
+      - (rhel7cis_rule_3_4_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.4.5
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.4.5 | PATCH | Ensure permissions on /etc/hosts.deny are 644"
+  file:
+      dest: /etc/hosts.deny
+      owner: root
+      group: root
+      mode: 0644
+  register:  rhel7cis_rule_3_4_5_out
+  when:
+      - (rhel7cis_rule_3_4_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.4.5
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_4_5|bool)) }}"
+
+- name: Display Output SCORED | 3.4.5 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.4.5 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.4.5 |permissions on /etc/hosts.deny are 644|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_4_5_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_3_4_5_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.4.5"] }}'
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_4_5_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_4_5|bool))
+    - block:
+        - name: Display Output SCORED | 3.4.5 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.4.5 |permissions on /etc/hosts.deny are 644|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_4_5_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_4_5_status: Compliant
+      when:
+          - not rhel7cis_rule_3_4_5_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_5|bool)
+  when:
+      - (rhel7cis_rule_3_4_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.4.5
+      - customcheck
+
+- name: "EVIDENCE | 3.4.5 | AFTER | Ensure permissions on /etc/hosts.deny are 644"
+  block:
+  - name: "EVIDENCE | 3.4.5 | AFTER | Ensure permissions on /etc/hosts.deny are 644"
+    shell: stat /etc/hosts.deny 2>&1;true
+    register: ea_rhel7cis_rule_3_4_5
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.4.5","description":"Ensure permissions on /etc/hosts.deny are 644","before":eb_rhel7cis_rule_3_4_5.stdout,"after":ea_rhel7cis_rule_3_4_5.stdout,"mode":mode_rhel7cis_rule_3_4_5,"status":cis_noncompliant_3_4_5_status}] }}'
+    when: eb_rhel7cis_rule_3_4_5.stdout is defined and ea_rhel7cis_rule_3_4_5.stdout is defined
+  when:
+      - (rhel7cis_rule_3_4_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_4_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.4.5
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.5.1| BEFORE | Ensure DCCP is disabled"
+  block:
+  - name: Initialize facts for 3.5.1
+    set_fact:
+      cis_noncompliant_3_5_1_status: Unknown
+      mode_rhel7cis_rule_3_5_1: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_5_1|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.5.1 | BEFORE | Ensure DCCP is disabled"
+    shell: modprobe -n -v dccp 2>&1;lsmod | grep dccp 2>&1;true
+    register: eb_rhel7cis_rule_3_5_1
+  when:
+      - (rhel7cis_rule_3_5_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_5_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.5.1
+      - customcheck
+  check_mode: no
+
+- name: "NOTSCORED | 3.5.1 | PATCH | Ensure DCCP is disabled"
+  lineinfile:
+      dest: /etc/modprobe.d/CIS.conf
+      regexp: "^(#)?install dccp(\\s|$)"
+      line: "install dccp /bin/true"
+      create: yes
+  register:  rhel7cis_rule_3_5_1_out
+  when:
+      - (rhel7cis_rule_3_5_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_5_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.5.1
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_5_1|bool)) }}"
+
+- name: Display Output SCORED | 3.5.1 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.5.1 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.5.1 |DCCP is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_5_1_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_3_5_1_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.5.1"] }}'
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_5_1_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_5_1|bool))
+    - block:
+        - name: Display Output SCORED | 3.5.1 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.5.1 |DCCP is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_5_1_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_5_1_status: Compliant
+      when:
+          - not rhel7cis_rule_3_5_1_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_5_1|bool)
+  when:
+      - (rhel7cis_rule_3_5_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_5_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.5.1
+      - customcheck
+
+- name: "EVIDENCE | 3.5.1 | AFTER | Ensure DCCP is disabled"
+  block:
+  - name: "EVIDENCE | 3.5.1 | AFTER | Ensure DCCP is disabled"
+    shell: modprobe -n -v dccp 2>&1;lsmod | grep dccp 2>&1;true
+    register: ea_rhel7cis_rule_3_5_1
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.5.1","description":"Ensure DCCP is disabled","before":eb_rhel7cis_rule_3_5_1.stdout,"after":ea_rhel7cis_rule_3_5_1.stdout,"mode":mode_rhel7cis_rule_3_5_1,"status":cis_noncompliant_3_5_1_status}] }}'
+    when: eb_rhel7cis_rule_3_5_1.stdout is defined and ea_rhel7cis_rule_3_5_1.stdout is defined
+  when:
+      - (rhel7cis_rule_3_5_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_5_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.5.1
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.5.2| BEFORE | Ensure SCTP is disabled"
+  block:
+  - name: Initialize facts for 3.5.2
+    set_fact:
+      cis_noncompliant_3_5_2_status: Unknown
+      mode_rhel7cis_rule_3_5_2: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_5_2|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.5.2 | BEFORE | Ensure SCTP is disabled"
+    shell: modprobe -n -v sctp 2>&1;lsmod | grep sctp 2>&1;true
+    register: eb_rhel7cis_rule_3_5_2
+  when:
+      - (rhel7cis_rule_3_5_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_5_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.5.2
+      - customcheck
+  check_mode: no
+
+- name: "NOTSCORED | 3.5.2 | PATCH | Ensure SCTP is disabled"
+  lineinfile:
+      dest: /etc/modprobe.d/CIS.conf
+      regexp: "^(#)?install sctp(\\s|$)"
+      line: "install sctp /bin/true"
+      create: yes
+  register:  rhel7cis_rule_3_5_2_out
+  when:
+      - (rhel7cis_rule_3_5_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_5_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.5.2
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_5_2|bool)) }}"
+
+- name: Display Output SCORED | 3.5.2 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.5.2 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.5.2 |SCTP is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_5_2_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_3_5_2_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.5.2"] }}'
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_5_2_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_5_2|bool))
+    - block:
+        - name: Display Output SCORED | 3.5.2 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.5.2 |SCTP is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_5_2_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_5_2_status: Compliant
+      when:
+          - not rhel7cis_rule_3_5_2_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_5_2|bool)
+  when:
+      - (rhel7cis_rule_3_5_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_5_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.5.2
+      - customcheck
+
+- name: "EVIDENCE | 3.5.2 | AFTER | Ensure SCTP is disabled"
+  block:
+  - name: "EVIDENCE | 3.5.2 | AFTER | Ensure SCTP is disabled"
+    shell: modprobe -n -v sctp 2>&1;lsmod | grep sctp 2>&1;true
+    register: ea_rhel7cis_rule_3_5_2
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.5.2","description":"Ensure SCTP is disabled","before":eb_rhel7cis_rule_3_5_2.stdout,"after":ea_rhel7cis_rule_3_5_2.stdout,"mode":mode_rhel7cis_rule_3_5_2,"status":cis_noncompliant_3_5_2_status}] }}'
+    when: eb_rhel7cis_rule_3_5_2.stdout is defined and ea_rhel7cis_rule_3_5_2.stdout is defined
+  when:
+      - (rhel7cis_rule_3_5_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_5_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.5.2
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.5.3| BEFORE | Ensure RDS is disabled"
+  block:
+  - name: Initialize facts for 3.5.3
+    set_fact:
+      cis_noncompliant_3_5_3_status: Unknown
+      mode_rhel7cis_rule_3_5_3: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_5_3|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.5.3 | BEFORE | Ensure RDS is disabled"
+    shell: modprobe -n -v rds 2>&1;lsmod | grep rds 2>&1;true
+    register: eb_rhel7cis_rule_3_5_3
+  when:
+      - (rhel7cis_rule_3_5_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_5_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.5.3
+      - customcheck
+  check_mode: no
+
+- name: "NOTSCORED | 3.5.3 | PATCH | Ensure RDS is disabled"
+  lineinfile:
+      dest: /etc/modprobe.d/CIS.conf
+      regexp: "^(#)?install rds(\\s|$)"
+      line: "install rds /bin/true"
+      create: yes
+  register:  rhel7cis_rule_3_5_3_out
+  when:
+      - (rhel7cis_rule_3_5_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_5_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.5.3
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_5_3|bool)) }}"
+
+- name: Display Output SCORED | 3.5.3 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.5.3 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.5.3 |RDS is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_5_3_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_3_5_3_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.5.3"] }}'
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_5_3_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_5_3|bool))
+    - block:
+        - name: Display Output SCORED | 3.5.3 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.5.3 |RDS is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_5_3_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_5_3_status: Compliant
+      when:
+          - not rhel7cis_rule_3_5_3_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_5_3|bool)
+  when:
+      - (rhel7cis_rule_3_5_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_5_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.5.3
+      - customcheck
+
+- name: "EVIDENCE | 3.5.3 | AFTER | Ensure RDS is disabled"
+  block:
+  - name: "EVIDENCE | 3.5.3 | AFTER | Ensure RDS is disabled"
+    shell: modprobe -n -v rds 2>&1;lsmod | grep rds 2>&1;true
+    register: ea_rhel7cis_rule_3_5_3
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.5.3","description":"Ensure RDS is disabled","before":eb_rhel7cis_rule_3_5_3.stdout,"after":ea_rhel7cis_rule_3_5_3.stdout,"mode":mode_rhel7cis_rule_3_5_3,"status":cis_noncompliant_3_5_3_status}] }}'
+    when: eb_rhel7cis_rule_3_5_3.stdout is defined and ea_rhel7cis_rule_3_5_3.stdout is defined
+  when:
+      - (rhel7cis_rule_3_5_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_5_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.5.3
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.5.4| BEFORE | Ensure TIPC is disabled"
+  block:
+  - name: Initialize facts for 3.5.4
+    set_fact:
+      cis_noncompliant_3_5_4_status: Unknown
+      mode_rhel7cis_rule_3_5_4: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_5_4|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.5.4 | BEFORE | Ensure TIPC is disabled"
+    shell: modprobe -n -v tipc 2>&1;lsmod | grep tipc 2>&1;true
+    register: eb_rhel7cis_rule_3_5_4
+  when:
+      - (rhel7cis_rule_3_5_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_5_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.5.4
+      - customcheck
+  check_mode: no
+
+- name: "NOTSCORED | 3.5.4 | PATCH | Ensure TIPC is disabled"
+  lineinfile:
+      dest: /etc/modprobe.d/CIS.conf
+      regexp: "^(#)?install tipc(\\s|$)"
+      line: "install tipc /bin/true"
+      create: yes
+  register:  rhel7cis_rule_3_5_4_out
+  when:
+      - (rhel7cis_rule_3_5_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_5_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.5.4
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_5_4|bool)) }}"
+
+- name: Display Output SCORED | 3.5.4 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.5.4 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.5.4 |TIPC is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_5_4_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_3_5_4_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.5.4"] }}'
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_5_4_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_5_4|bool))
+    - block:
+        - name: Display Output SCORED | 3.5.4 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.5.4 |TIPC is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_5_4_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_5_4_status: Compliant
+      when:
+          - not rhel7cis_rule_3_5_4_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_5_4|bool)
+  when:
+      - (rhel7cis_rule_3_5_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_5_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.5.4
+      - customcheck
+
+- name: "EVIDENCE | 3.5.4 | AFTER | Ensure TIPC is disabled"
+  block:
+  - name: "EVIDENCE | 3.5.4 | AFTER | Ensure TIPC is disabled"
+    shell: modprobe -n -v tipc 2>&1;lsmod | grep tipc 2>&1;true
+    register: ea_rhel7cis_rule_3_5_4
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.5.4","description":"Ensure TIPC is disabled","before":eb_rhel7cis_rule_3_5_4.stdout,"after":ea_rhel7cis_rule_3_5_4.stdout,"mode":mode_rhel7cis_rule_3_5_4,"status":cis_noncompliant_3_5_4_status}] }}'
+    when: eb_rhel7cis_rule_3_5_4.stdout is defined and ea_rhel7cis_rule_3_5_4.stdout is defined
+  when:
+      - (rhel7cis_rule_3_5_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_5_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_3.5.4
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.6.1| BEFORE | Ensure firewalld is installed and started"
+  block:
+  - name: Initialize facts for 3.6.1
+    set_fact:
+      cis_noncompliant_3_6_1_status: Unknown
+      cis_noncompliant_3_6_1a_status: Unknown
+      cis_noncompliant_3_6_1b_status: Unknown
+      mode_rhel7cis_rule_3_6_1: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_6_1|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.6.1 | BEFORE | Ensure firewalld is installed and started"
+    shell: systemctl status firewalld 2>&1 | grep Active;true
+    register: eb_rhel7cis_rule_3_6_1
+  when:
+      - (rhel7cis_rule_3_6_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)
+      - rhel7cis_firewall == "firewalld"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.1
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.6.1 | PATCH | Ensure iptables is stopped"
+  service:
+      name: iptables
+      state: stopped
+      enabled: no
+  ignore_errors: yes
+  when:
+      - (rhel7cis_rule_3_6_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)
+      - rhel7cis_firewall == "firewalld"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.1
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)) }}"
+
+- name: "SCORED | 3.6.1 | PATCH | Ensure firewalld is installed and started | CUSTOM"
+  yum:
+      name: firewalld
+      state: present
+  register:  rhel7cis_rule_3_6_1a_out
+  when:
+      - (rhel7cis_rule_3_6_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)
+      - rhel7cis_firewall == "firewalld"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.1
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)) }}"
+
+- name: Display Output SCORED | 3.6.1 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.6.1 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.6.1 |firewalld is installed|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_6_1a_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_6_1a_status: NonCompliant
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_6_1a_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool))
+    - block:
+        - name: Display Output SCORED | 3.6.1 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.6.1 |firewalld is installed|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_6_1a_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_6_1a_status: Compliant
+      when:
+          - not rhel7cis_rule_3_6_1a_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)
+  when:
+      - (rhel7cis_rule_3_6_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)
+      - rhel7cis_firewall == "firewalld"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.1
+      - customcheck
+
+- name: "SCORED | 3.6.1 | PATCH | Ensure firewalld is installed and started | CUSTOM"
+  service:
+      name: firewalld
+      state: started
+      enabled: yes
+  register:  rhel7cis_rule_3_6_1b_out
+  when:
+      - (rhel7cis_rule_3_6_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)
+      - rhel7cis_firewall == "firewalld"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.1
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)) }}"
+
+- name: Display Output SCORED | 3.6.1 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.6.1 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.6.1 |firewalld is started|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_6_1b_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_6_1b_status: NonCompliant
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_6_1b_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool))
+    - block:
+        - name: Display Output SCORED | 3.6.1 | When Compliant
+          debug:
+              msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.6.1 |firewalld is started|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_6_1b_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_6_1b_status: Compliant
+      when:
+          - not rhel7cis_rule_3_6_1b_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)
+  when:
+      - (rhel7cis_rule_3_6_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)
+      - rhel7cis_firewall == "firewalld"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.1
+      - customcheck
+
+- name: "EVIDENCE | 3.6.1 | AFTER | Ensure firewalld is installed and started"
+  block:
+  - set_fact:
+      cis_noncompliant_3_6_1_status: "{{ 'Compliant' if (cis_noncompliant_3_6_1a_status=='Compliant' and cis_noncompliant_3_6_1b_status=='Compliant') else 'NonCompliant' }}"
+  - set_fact:
+      cis_noncompliant_status: true
+      cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.6.1"] }}'
+    when: cis_noncompliant_3_6_1_status=="NonCompliant"
+  - name: "EVIDENCE | 3.6.1 | AFTER | Ensure firewalld is installed and started"
+    shell: systemctl status firewalld 2>&1 | grep Active;true
+    register: ea_rhel7cis_rule_3_6_1
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.6.1","description":"Ensure firewalld is installed and started","before":eb_rhel7cis_rule_3_6_1.stdout,"after":ea_rhel7cis_rule_3_6_1.stdout,"mode":mode_rhel7cis_rule_3_6_1,"status":cis_noncompliant_3_6_1_status}] }}'
+    when: eb_rhel7cis_rule_3_6_1.stdout is defined and ea_rhel7cis_rule_3_6_1.stdout is defined
+  when:
+      - (rhel7cis_rule_3_6_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)
+      - rhel7cis_firewall == "firewalld"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.1
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.6.1| BEFORE | Ensure iptables is installed and started"
+  block:
+  - name: Initialize facts for 3.6.1
+    set_fact:
+      cis_noncompliant_3_6_1_status: Unknown
+      cis_noncompliant_3_6_1a_status: Unknown
+      cis_noncompliant_3_6_1b_status: Unknown
+      mode_rhel7cis_rule_3_6_1: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_6_1|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.6.1 | BEFORE | Ensure iptables is installed and started"
+    shell: systemctl status iptables 2>&1 | grep Active;true
+    register: eb_rhel7cis_rule_3_6_1
+  when:
+      - (rhel7cis_rule_3_6_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)
+      - rhel7cis_firewall == "iptables"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.1
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.6.1 | PATCH | Ensure firewalld is stopped | CUSTOM"
+  service:
+      name: firewalld
+      state: stopped
+      enabled: no
+  ignore_errors: yes
+  when:
+      - (rhel7cis_rule_3_6_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)
+      - rhel7cis_firewall == "iptables"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.1
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)) }}"
+
+- name: "SCORED | 3.6.1 | PATCH | Ensure iptables and iptables-services is installed"
+  yum:
+      name: ["iptables", "iptables-services"]
+      state: present
+  register:  rhel7cis_rule_3_6_1a_out
+  when:
+      - (rhel7cis_rule_3_6_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)
+      - rhel7cis_firewall == "iptables"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.1
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)) }}"
+
+- name: Display Output SCORED | 3.6.1 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.6.1 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.6.1 |iptables is installed|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_6_1a_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_6_1a_status: NonCompliant
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_6_1a_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool))
+    - block:
+        - name: Display Output SCORED | 3.6.1 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.6.1 |iptables is installed|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_6_1a_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_6_1a_status: Compliant
+      when:
+          - not rhel7cis_rule_3_6_1a_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)
+  when:
+      - (rhel7cis_rule_3_6_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)
+      - rhel7cis_firewall == "iptables"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.1
+      - customcheck
+
+- name: Display Output SCORED | 3.6.1 | When Not Required
+  debug:
+      msg="SUCCESS_NOT_REQUIRED|CIS_RESULT| 3.6.1 |iptables is installed|{{ansible_hostname}}|CHANGE_REQUIRED|False - See rhel7cis_firewall"
+  when:
+      - not rhel7cis_firewall == "iptables"
+
+- name: "SCORED | 3.6.1 | PATCH | Ensure iptables is installed and started"
+  service:
+      name: iptables
+      state: started
+      enabled: yes
+  register:  rhel7cis_rule_3_6_1b_out
+  when:
+      - (rhel7cis_rule_3_6_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)
+      - rhel7cis_firewall == "iptables"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.1
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)) }}"
+
+- name: Display Output SCORED | 3.6.1 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.6.1 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.6.1 |iptables is started - restart service|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_6_1b_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_6_1b_status: NonCompliant
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_6_1b_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool))
+    - block:
+        - name: Display Output SCORED | 3.6.1 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.6.1 |iptables is started - restart service|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_6_1b_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_6_1b_status: Compliant
+      when:
+          - not rhel7cis_rule_3_6_1b_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)
+  when:
+      - (rhel7cis_rule_3_6_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)
+      - rhel7cis_firewall == "iptables"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.1
+      - customcheck
+
+- name: "EVIDENCE | 3.6.1 | AFTER | Ensure iptables is installed and started"
+  block:
+  - set_fact:
+      cis_noncompliant_3_6_1_status: "{{ 'Compliant' if (cis_noncompliant_3_6_1a_status=='Compliant' and cis_noncompliant_3_6_1b_status=='Compliant') else 'NonCompliant' }}"
+  - set_fact:
+      cis_noncompliant_status: true
+      cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.6.1"] }}'
+    when: cis_noncompliant_3_6_1_status=="NonCompliant"
+  - name: "EVIDENCE | 3.6.1 | AFTER | Ensure iptables is installed and started"
+    shell: systemctl status iptables 2>&1 | grep Active;true
+    register: ea_rhel7cis_rule_3_6_1
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.6.1","description":"Ensure iptables is installed and started","before":eb_rhel7cis_rule_3_6_1.stdout,"after":ea_rhel7cis_rule_3_6_1.stdout,"mode":mode_rhel7cis_rule_3_6_1,"status":cis_noncompliant_3_6_1_status}] }}'
+    when: eb_rhel7cis_rule_3_6_1.stdout is defined and ea_rhel7cis_rule_3_6_1.stdout is defined
+  when:
+      - (rhel7cis_rule_3_6_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_1|bool)
+      - rhel7cis_firewall == "iptables"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.1
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.6.2| BEFORE | Ensure default deny firewall policy for firewalld"
+  block:
+  - name: Initialize facts for 3.6.2
+    set_fact:
+      cis_noncompliant_3_6_2_status: Unknown
+      cis_noncompliant_3_6_2a_status: Unknown
+      cis_noncompliant_3_6_2b_status: Unknown
+      mode_rhel7cis_rule_3_6_2: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_6_2|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.6.2 | BEFORE | Ensure default deny firewall policy for firewalld"
+    shell: firewall-cmd --list-all 2>&1;true
+    register: eb_rhel7cis_rule_3_6_2
+  when:
+      - (rhel7cis_rule_3_6_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_2|bool)
+      - rhel7cis_firewall == "firewalld"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.2
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.6.2 | PATCH | Ensure default deny firewall policy for firewalld"
+  lineinfile:
+      dest: /etc/firewalld/firewalld.conf
+      regexp: "^DefaultZone"
+      line: "DefaultZone=drop"
+  register:  rhel7cis_rule_3_6_2a_out
+  when:
+      - (rhel7cis_rule_3_6_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_2|bool)
+      - rhel7cis_firewall == "firewalld"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.2
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_6_2|bool)) }}"
+
+- name: Display Output SCORED | 3.6.2 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.6.2 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.6.2 |default deny firewall policy for firewalld|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_6_2a_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_6_2a_status: NonCompliant
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_6_2a_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_6_2|bool))
+    - block:
+        - name: Display Output SCORED | 3.6.2 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.6.2 |default deny firewall policy for firewalld|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_6_2a_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_6_2a_status: Compliant
+      when:
+          - not rhel7cis_rule_3_6_2a_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_2|bool)
+  when:
+      - (rhel7cis_rule_3_6_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_2|bool)
+      - rhel7cis_firewall == "firewalld"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.2
+      - customcheck
+
+- name: "SCORED | 3.6.2 | PATCH | Ensure default deny firewall policy for firewalld"
+  firewalld:
+      state: enabled
+      zone: drop
+      permanent: true
+  register:  rhel7cis_rule_3_6_2b_out
+  when:
+      - (rhel7cis_rule_3_6_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_2|bool)
+      - rhel7cis_firewall == "firewalld"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.2
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_6_2|bool)) }}"
+
+- name: Display Output SCORED | 3.6.2 | Check Compliant
+  block:
+    - block:
+        - name: Display Output SCORED | 3.6.2 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 3.6.2 |default deny firewall policy for firewalld|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_6_2b_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_6_2b_status: NonCompliant
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - rhel7cis_rule_3_6_2b_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_3_6_2|bool))
+    - block:
+        - name: Display Output SCORED | 3.6.2 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.6.2 |default deny firewall policy for firewalld|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_6_2b_out.changed}}"
+        - set_fact:
+            cis_noncompliant_3_6_2b_status: Compliant
+      when:
+          - not rhel7cis_rule_3_6_2b_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_2|bool)
+  when:
+      - (rhel7cis_rule_3_6_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_2|bool)
+      - rhel7cis_firewall == "firewalld"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.2
+      - customcheck
+
+- name: "EVIDENCE | 3.6.2 | AFTER | Ensure default deny firewall policy for firewalld"
+  block:
+  - set_fact:
+      cis_noncompliant_3_6_2_status: "{{ 'Compliant' if (cis_noncompliant_3_6_2a_status=='Compliant' and cis_noncompliant_3_6_2b_status=='Compliant') else 'NonCompliant' }}"
+  - set_fact:
+      cis_noncompliant_status: true
+      cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.6.2"] }}'
+    when: cis_noncompliant_3_6_2_status=="NonCompliant"
+  - name: "EVIDENCE | 3.6.2 | AFTER | Ensure default deny firewall policy for firewalld"
+    shell: firewall-cmd --list-all 2>&1;true
+    register: ea_rhel7cis_rule_3_6_2
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.6.2","description":"Ensure default deny firewall policy for firewalld","before":eb_rhel7cis_rule_3_6_2.stdout,"after":ea_rhel7cis_rule_3_6_2.stdout,"mode":mode_rhel7cis_rule_3_6_2,"status":cis_noncompliant_3_6_2_status}] }}'
+    when: eb_rhel7cis_rule_3_6_2.stdout is defined and ea_rhel7cis_rule_3_6_2.stdout is defined
+  when:
+      - (rhel7cis_rule_3_6_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_2|bool)
+      - rhel7cis_firewall == "firewalld"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.2
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.6.2| BEFORE | Ensure default deny firewall policy for iptables"
+  block:
+  - name: Initialize facts for 3.6.2
+    set_fact:
+      cis_noncompliant_3_6_2_status: Unknown
+      cis_noncompliant_3_6_2c_status: Unknown
+      mode_rhel7cis_rule_3_6_2: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_6_2|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.6.2 | BEFORE | Ensure default deny firewall policy for iptables"
+    shell: iptables -L 2>&1;true
+    register: eb_rhel7cis_rule_3_6_2
+  when:
+      - (rhel7cis_rule_3_6_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_2|bool)
+      - rhel7cis_firewall == "iptables"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.2
+      - customcheck
+      - notimplemented
+  check_mode: no
+
+- name: "SCORED | 3.6.2 | PATCH | Ensure default deny firewall policy for iptables"
+  shell: |
+    #iptables -P INPUT DROP # gives a default drop policy (Chain INPUT (policy DROP)). Add the other rules first! Otherwise you block yourself from the server
+    #iptables -A INPUT -j DROP # or add at the end of the ACCEPT chain
+    #iptables -P OUTPUT DROP
+    #iptables -P FORWARD DROP
+  changed_when: no
+  register:  rhel7cis_rule_3_6_2c_out
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_3_6_2|bool)
+      - rhel7cis_firewall == "iptables"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.2
+      - notimplemented
+      - customcheck
+
+- name: Display Output SCORED | 3.6.2 | Check Compliant
+  block:
+    - name: Display Output SCORED | 3.6.2 | When Not Compliant
+      debug:
+          msg="NOT_COMPLIANT|CIS_RESULT| 3.6.2 |default deny firewall policy for iptables|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_6_2c_out.changed}}"
+      when:
+          rhel7cis_rule_3_6_2c_out.changed
+    - name: Display Output SCORED | 3.6.2 | When Compliant
+      debug:
+          msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.6.2 |default deny firewall policy for iptables|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_6_2c_out.changed}}"
+      when:
+          not  rhel7cis_rule_3_6_2c_out.changed
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_3_6_2|bool)
+      - rhel7cis_firewall == "iptables"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.2
+      - notimplemented
+      - customcheck
+
+- name: "EVIDENCE | 3.6.2 | AFTER | Ensure default deny firewall policy for iptables"
+  block:
+  - set_fact:
+      cis_noncompliant_3_6_2_status: "Manual"
+  - set_fact:
+      cis_noncompliant_status: true
+      cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.6.2"] }}'
+  - name: "EVIDENCE | 3.6.2 | AFTER | Ensure default deny firewall policy for iptables"
+    shell: iptables -L 2>&1;true
+    register: ea_rhel7cis_rule_3_6_2
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.6.2","description":"Ensure default deny firewall policy for iptables (Manual)","before":eb_rhel7cis_rule_3_6_2.stdout,"after":ea_rhel7cis_rule_3_6_2.stdout,"mode":mode_rhel7cis_rule_3_6_2,"status":cis_noncompliant_3_6_2_status}] }}'
+    when: eb_rhel7cis_rule_3_6_2.stdout is defined and ea_rhel7cis_rule_3_6_2.stdout is defined
+  when:
+      - (rhel7cis_rule_3_6_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_2|bool)
+      - rhel7cis_firewall == "iptables"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.2
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.6.3| BEFORE | Ensure loopback traffic is configured"
+  block:
+  - name: Initialize facts for 3.6.3
+    set_fact:
+      cis_noncompliant_3_6_3_status: Unknown
+      mode_rhel7cis_rule_3_6_3: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_6_3|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.6.3 | BEFORE | Ensure loopback traffic is configured"
+    shell: iptables -L INPUT -v -n | grep "ACCEPT\s*all\|DROP\s*all" 2>&1;iptables -L OUTPUT -v -n | grep "ACCEPT\s*all" 2>&1;true
+    register: eb_rhel7cis_rule_3_6_3
+  when:
+      - (rhel7cis_rule_3_6_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_3|bool)
+      - rhel7cis_firewall == "iptables"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.3
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.6.3 | PATCH | Ensure loopback traffic is configured"
+  shell: |
+    iptables-save | grep "INPUT -i lo -j ACCEPT";if [ $? -ne 0 ]; then iptables -A INPUT -i lo -j ACCEPT; fi
+    iptables-save | grep "OUTPUT -o lo -j ACCEPT";if [ $? -ne 0 ]; then iptables -A OUTPUT -o lo -j ACCEPT; fi
+    iptables-save | grep "INPUT -s 127.0.0.0/8 -j DROP";if [ $? -ne 0 ]; then iptables -A INPUT -s 127.0.0.0/8 -j DROP; fi
+  changed_when: yes
+  register:  rhel7cis_rule_3_6_3_out
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_3_6_3|bool)
+      - rhel7cis_firewall == "iptables"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.3
+      - customcheck
+  check_mode: no
+
+- name: Display Output SCORED | 3.6.3 | Check Compliant
+  block:
+     - name: Display Output SCORED | 3.6.3 | When Not Compliant
+       debug:
+           msg="NOT_COMPLIANT|CIS_RESULT| 3.6.3 |loopback traffic is configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_6_3_out.changed}}"
+       when:
+           - (rhel7cis_rule_3_6_3|bool)
+     - name: Display Output SCORED | 3.6.3 | When Compliant
+       debug:
+           msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.6.3 |loopback traffic is configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_3_6_3_out.changed}}"
+       when:
+           - (fix_mode|bool) or (fix_rhel7cis_rule_3_6_3|bool)
+  when:
+      - (rhel7cis_rule_3_6_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_3|bool)
+      - rhel7cis_firewall == "iptables"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.3
+      - notimplemented
+      - customcheck
+
+- name: "EVIDENCE | 3.6.3 | AFTER | Ensure loopback traffic is configured"
+  block:
+  - set_fact:
+      cis_noncompliant_3_6_3_status: Manual
+  - set_fact:
+      cis_noncompliant_status: true
+      cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.6.3"] }}'
+  - name: "EVIDENCE | 3.6.3 | AFTER | Ensure loopback traffic is configured"
+    shell: iptables -L INPUT -v -n | grep "ACCEPT\s*all\|DROP\s*all" 2>&1;iptables -L OUTPUT -v -n | grep "ACCEPT\s*all" 2>&1;true
+    register: ea_rhel7cis_rule_3_6_3
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.6.3","description":"Ensure loopback traffic is configured (Manual)","before":eb_rhel7cis_rule_3_6_3.stdout,"after":ea_rhel7cis_rule_3_6_3.stdout,"mode":mode_rhel7cis_rule_3_6_3,"status":cis_noncompliant_3_6_3_status}] }}'
+    when: eb_rhel7cis_rule_3_6_3.stdout is defined and ea_rhel7cis_rule_3_6_3.stdout is defined
+  when:
+      - (rhel7cis_rule_3_6_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_3|bool)
+      - rhel7cis_firewall == "iptables"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.3
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.6.4| BEFORE | Ensure outbound and established connections are configured"
+  block:
+  - name: Initialize facts for 3.6.4
+    set_fact:
+      cis_noncompliant_3_6_4_status: Unknown
+      mode_rhel7cis_rule_3_6_4: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_6_4|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.6.4 | BEFORE | Ensure outbound and established connections are configured"
+    shell: iptables -L -v -n 2>&1;true
+    register: eb_rhel7cis_rule_3_6_4
+  when:
+      - (rhel7cis_rule_3_6_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_4|bool)
+      - rhel7cis_firewall == "iptables"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.4
+      - customcheck
+  check_mode: no
+
+- name: "NOTSCORED | 3.6.4 | PATCH | Ensure outbound and established connections are configured"
+  command: /bin/true
+  changed_when: no
+  register:  rhel7cis_rule_3_6_4_out
+  when:
+      - rhel7cis_firewall == "iptables"
+      - rhel7cis_rule_3_6_4|bool
+  tags:
+      - level1
+      - patch
+      - rule_3.6.4
+      - notimplemented
+
+- name: Display Output SCORED | 3.6.4 | Check Manual
+  debug:
+      msg="MANUAL_CHECK_REQUIRED|CIS_RESULT| 3.6.4 | outbound and established connections are configured|{{ansible_hostname}}|NOT_AUTOMATED|SKIPPED"
+  when:
+      - rhel7cis_firewall == "iptables"
+      - rhel7cis_rule_3_6_4|bool
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_3.6.4
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 3.6.4 | AFTER | Ensure outbound and established connections are configured"
+  block:
+  - set_fact:
+      cis_noncompliant_3_6_4_status: Manual
+  - set_fact:
+      cis_noncompliant_status: true
+      cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.6.4"] }}'
+  - name: "EVIDENCE | 3.6.4 | AFTER | Ensure outbound and established connections are configured"
+    shell: iptables -L -v -n 2>&1;true
+    register: ea_rhel7cis_rule_3_6_4
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.6.4","description":"Ensure outbound and established connections are configured (Manual)","before":eb_rhel7cis_rule_3_6_4.stdout,"after":ea_rhel7cis_rule_3_6_4.stdout,"mode":mode_rhel7cis_rule_3_6_4,"status":cis_noncompliant_3_6_4_status}] }}'
+    when: eb_rhel7cis_rule_3_6_4.stdout is defined and ea_rhel7cis_rule_3_6_4.stdout is defined
+  when:
+      - (rhel7cis_rule_3_6_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_4|bool)
+      - rhel7cis_firewall == "iptables"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.4
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.6.5| BEFORE | Ensure firewall rules exist for all open ports for firewalld"
+  block:
+  - name: Initialize facts for 3.6.5
+    set_fact:
+      cis_noncompliant_3_6_5_status: Manual
+      mode_rhel7cis_rule_3_6_5: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_6_5|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.6.5 | BEFORE | Ensure firewall rules exist for all open ports for firewalld"
+    shell: systemctl status firewalld | grep loaded;netstat -ln;firewall-cmd --list-all | grep "services:" 2>&1;true
+    register: eb_rhel7cis_rule_3_6_5
+  when:
+      - (rhel7cis_rule_3_6_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_5|bool)
+      - rhel7cis_firewall == "firewalld"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.5
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.6.5 | PATCH | Verify firewall rules exist for all open ports - Check firewall running"
+  shell: |
+      systemctl status firewalld | grep loaded;netstat -ln;firewall-cmd --list-all | grep "services:"
+  failed_when: no
+  changed_when: no
+  register:  rhel7cis_rule_3_6_5_out
+  with_items: "{{ rhel7cis_firewall_services }}"
+  when:
+      - (rhel7cis_rule_3_6_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_5|bool)
+      - rhel7cis_firewall == "firewalld"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.5
+      - customcheck
+  check_mode: no
+
+- name: Display Output SCORED | 3.6.5 | Check Compliant
+  block:
+    - name: Display Output SCORED | 3.6.5 | When Not Compliant
+      debug:
+        msg="NOT_COMPLIANT|CIS_RESULT| 3.6.5 |firewall rules exist for all open ports - Check firewall running|{{ansible_hostname}}|CHANGE_REQUIRED|{{item.stdout_lines}}"
+      when: ( item.stdout | length == 0 ) or ( item.stderr | length > 0 )
+      with_items: "{{ rhel7cis_rule_3_6_5_out.results }}"
+    - name: Display Output SCORED | 3.6.5 | When Compliant
+      debug:
+        msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.6.5 |firewall rules exist for all open ports - Check firewall running|{{ansible_hostname}}|CHANGE_REQUIRED|{{item.stdout_lines}}"
+      when: ( item.stdout  | length > 0) and ( item.stderr | length == 0 )
+      with_items: "{{ rhel7cis_rule_3_6_5_out.results }}"
+  when:
+      - (rhel7cis_rule_3_6_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_5|bool)
+      - rhel7cis_firewall == "firewalld"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.5
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.6.5 | PATCH | Ensure firewall rules exist for all open ports for firewalld"
+  firewalld:
+    service: "{{ item }}"
+    state: enabled
+    zone: drop
+    permanent: true
+    immediate: true
+  register:  rhel7cis_rule_3_6_5a_out
+  notify: restart firewalld
+  with_items: "{{ rhel7cis_firewall_services }}"
+  when:
+      - (rhel7cis_rule_3_6_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_5|bool)
+      - rhel7cis_firewall == "firewalld"
+      - cis_noncompliant_3_6_1_status is defined and cis_noncompliant_3_6_1_status=="Compliant"
+      #- not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_3.6.5
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_3_6_2|bool)) }}"
+
+- name: "EVIDENCE | 3.6.5 | AFTER | Ensure firewall rules exist for all open ports for firewalld"
+  block:
+  - set_fact:
+      cis_noncompliant_3_6_5_status: Manual
+  - set_fact:
+      cis_noncompliant_status: true
+      cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.6.5"] }}'
+  - name: "EVIDENCE | 3.6.5 | AFTER | Ensure firewall rules exist for all open ports for firewalld"
+    shell: systemctl status firewalld | grep loaded;netstat -ln;firewall-cmd --list-all | grep "services:" 2>&1;true
+    register: ea_rhel7cis_rule_3_6_5
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.6.5","description":"Ensure firewall rules exist for all open ports for firewalld (Manual)","before":eb_rhel7cis_rule_3_6_5.stdout,"after":ea_rhel7cis_rule_3_6_5.stdout,"mode":mode_rhel7cis_rule_3_6_5,"status":cis_noncompliant_3_6_5_status}] }}'
+    when: eb_rhel7cis_rule_3_6_5.stdout is defined and ea_rhel7cis_rule_3_6_5.stdout is defined
+  when:
+      - (rhel7cis_rule_3_6_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_5|bool)
+      - rhel7cis_firewall == "firewalld"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.5
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+#- name: Display Output SCORED | 3.6.5 | Check Compliant
+#  block:
+#    - name: Display Output SCORED | 3.6.5 | When Not Compliant
+#      debug:
+#        msg="NOT_COMPLIANT|CIS_RESULT| 3.6.5 |firewall rules exist for all open ports - When firewall running|{{ansible_hostname}}|CHANGE_REQUIRED|{{item.stdout_lines}}"
+#      when: ( item.stdout | length == 0 ) or ( item.stderr | length > 0 )
+#      with_items: "{{ rhel7cis_rule_3_6_5a_out.results }}"
+#    - name: Display Output SCORED | 3.6.5 | When Compliant
+#      debug:
+#        msg="SUCCESS_COMPLIANT|CIS_RESULT| 3.6.5 |firewall rules exist for all open ports - When firewall running|{{ansible_hostname}}|CHANGE_REQUIRED|{{item.stdout_lines}}"
+#      when: ( item.stdout  | length > 0) and ( item.stderr | length == 0 )
+#      with_items: "{{ rhel7cis_rule_3_6_5a_out.results }}"
+#  when:
+#      - rhel7cis_firewall == "firewalld"
+#      - rhel7cis_rule_3_6_5|bool
+#      - not ansible_check_mode
+#  tags:
+#      - level1
+#      - patch
+#      - rule_3.6.5
+#      - customcheck
+#*********************************************************************************
+- name: "EVIDENCE | 3.6.5| BEFORE | Ensure firewall rules exist for all open ports for iptables"
+  block:
+  - name: Initialize facts for 3.6.5
+    set_fact:
+      cis_noncompliant_3_6_5_status: Unknown
+      mode_rhel7cis_rule_3_6_5: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_6_5|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.6.5 | BEFORE | Ensure firewall rules exist for all open ports for iptables"
+    shell: netstat -ln;iptables -L INPUT -v -n 2>&1;true
+    register: eb_rhel7cis_rule_3_6_5
+  when:
+      - (rhel7cis_rule_3_6_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_5|bool)
+      - rhel7cis_firewall == "iptables"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.5
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 3.6.5 | PATCH | Ensure firewall rules exist for all open ports for iptables"
+  command: /bin/true
+  changed_when: no
+  register:  rhel7cis_rule_3_6_5b_out
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_3_6_5|bool)
+      - rhel7cis_firewall == "iptables"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.5
+      - notimplemented
+      - customcheck
+  check_mode: no
+
+- name: Display Output SCORED | 3.6.5 | When Not Implemented
+  debug:
+      msg="MANUAL_CHECK_REQUIRED|CIS_RESULT| 3.6.5 |firewall rules exist for all open ports(2)|{{ansible_hostname}}|MANUAL_VERIFICATION_REQUIRED|{{rhel7cis_rule_3_6_5b_out.stdout}}"
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_3_6_5|bool)
+      - rhel7cis_firewall == "iptables"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.5
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 3.6.5 | AFTER | Ensure firewall rules exist for all open ports for iptables"
+  block:
+  - set_fact:
+      cis_noncompliant_3_6_5_status: Manual
+  - set_fact:
+      cis_noncompliant_status: true
+      cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.6.5"] }}'
+  - name: "EVIDENCE | 3.6.5 | AFTER | Ensure firewall rules exist for all open ports for iptables"
+    shell: netstat -ln;iptables -L INPUT -v -n 2>&1;true
+    register: ea_rhel7cis_rule_3_6_5
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.6.5","description":"Ensure firewall rules exist for all open ports for iptables (Manual)","before":eb_rhel7cis_rule_3_6_5.stdout,"after":ea_rhel7cis_rule_3_6_5.stdout,"mode":mode_rhel7cis_rule_3_6_5,"status":cis_noncompliant_3_6_5_status}] }}'
+    when: eb_rhel7cis_rule_3_6_5.stdout is defined and ea_rhel7cis_rule_3_6_5.stdout is defined
+  when:
+      - (rhel7cis_rule_3_6_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_6_5|bool)
+      - rhel7cis_firewall == "iptables"
+  tags:
+      - level1
+      - patch
+      - rule_3.6.5
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 3.7 | BEFORE | Ensure wireless interfaces are disabled"
+  block:
+  - name: Initialize facts for 3.7
+    set_fact:
+      cis_noncompliant_3_7_status: Manual
+      mode_rhel7cis_rule_3_7: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_3_7|bool) else 'check_only'}}"
+  - name: "EVIDENCE | 3.7 | BEFORE | Ensure wireless interfaces are disabled"
+    shell: which iwconfig;if [ $? -eq 0 ]; then iwconfig; else echo iwconfig not found; fi; ip link show up 2>&1;true
+    register: eb_rhel7cis_rule_3_7
+  when:
+      - (rhel7cis_rule_3_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_7|bool)
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_3.7
+      - customcheck
+  check_mode: no
+
+- name: "NOTSCORED | 3.7 | PATCH | Ensure wireless interfaces are disabled"
+  command: /bin/true
+  changed_when: no
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_3.7
+
+- name: "NOTSCORED | 3.7 | PATCH | Verify wireless interfaces are disabled"
+  shell: |
+      # yum -y install wireless-tools
+      which iwconfig
+      if [ $? -eq 0 ]; then
+        iwconfig
+      else
+        echo iwconfig not found
+      fi
+      ip link show up
+  register:  rhel7cis_rule_3_7_out
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_3.7
+      - customcheck
+  check_mode: no
+
+- name: Display Output SCORED | 3.7 | Check Manual
+  debug:
+      msg="MANUAL_CHECK_REQUIRED|CIS_RESULT| 3.7 |wireless interfaces are disabled|{{ansible_hostname}}|MANUAL_VERIFICATION_REQUIRED|{{rhel7cis_rule_3_7_out.stdout}}"
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_3.7
+      - customcheck
+
+- name: "EVIDENCE | 3.7 | AFTER | Ensure wireless interfaces are disabled"
+  block:
+  - set_fact:
+      cis_noncompliant_3_7_status: Manual
+  - set_fact:
+      cis_noncompliant_status: true
+      cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["3.7"] }}'
+  - name: "EVIDENCE | 3.7 | AFTER | Ensure wireless interfaces are disabled"
+    shell: which iwconfig;if [ $? -eq 0 ]; then iwconfig; else echo iwconfig not found; fi; ip link show up 2>&1;true
+    register: ea_rhel7cis_rule_3_7
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"3.7","description":"Ensure wireless interfaces are disabled (Manual)","before":eb_rhel7cis_rule_3_7.stdout,"after":ea_rhel7cis_rule_3_7.stdout,"mode":mode_rhel7cis_rule_3_7,"status":cis_noncompliant_3_7_status}] }}'
+    when: eb_rhel7cis_rule_3_7.stdout is defined and ea_rhel7cis_rule_3_7.stdout is defined
+  when:
+      - (rhel7cis_rule_3_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_3_7|bool)
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_3.7
+      - customcheck
+  check_mode: no

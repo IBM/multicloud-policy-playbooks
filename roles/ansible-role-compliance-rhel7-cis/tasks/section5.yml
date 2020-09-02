@@ -1,0 +1,3496 @@
+#There are two options:
+#
+#    If --check, then don't run: Force a task to run in check mode, even when the playbook is called without --check. This is called check_mode: yes.
+#    Ignore --check: Force a task to run in normal mode and make changes to the system, even when the playbook is called with --check. This is called check_mode: no.
+#*********************************************************************************
+- name: "EVIDENCE | 5.1.1 | BEFORE | Ensure cron daemon is enabled"
+  block:
+    - set_fact:
+        cis_noncompliant_5_1_1_status: Unknown
+    - shell: systemctl is-enabled crond 2>&1
+      ignore_errors: true
+      register: eb_rhel7cis_rule_5_1_1
+      changed_when: false
+    - set_fact:
+        mode_rhel7cis_rule_5_1_1: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_1_1|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.1
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.1.1 | PATCH | Ensure cron daemon is enabled"
+  service:
+      name: crond
+      enabled: yes
+  register:  rhel7cis_rule_5_1_1_out
+  when:
+      - ((rhel7cis_rule_5_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_1|bool)) and eb_rhel7cis_rule_5_1_1.stdout != "enabled"
+  tags:
+      - level1
+      - patch
+      - rule_5.1.1
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_1_1|bool)) }}"
+
+- name: Display Output | 5.1.1 | Check Compliant
+  block:
+    - block:
+      - shell: systemctl is-enabled crond 2>&1
+        ignore_errors: true
+        register: ea_rhel7cis_rule_5_1_1
+        changed_when: false
+    - block:
+        - name: Display Output | 5.1.1 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.1.1 |permissions on cron daemon is enabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{ea_rhel7cis_rule_5_1_1.stdout != 'enabled'}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_5_1_1_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.1.1"] }}'
+      when:
+          # wanted to be changed but run in check_mode:false means not fixed, it is not made compliant
+          - ((rhel7cis_rule_5_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_1|bool)) and ea_rhel7cis_rule_5_1_1.stdout != 'enabled'
+    - block:
+        - name: Display Output | 5.1.1 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.1.1 |permissions on cron daemon is enabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{ea_rhel7cis_rule_5_1_1.stdout != 'enabled'}}"
+        - set_fact:
+            cis_noncompliant_5_1_1_status: Compliant
+      when:
+          - ((rhel7cis_rule_5_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_1|bool)) and ea_rhel7cis_rule_5_1_1.stdout == 'enabled'
+  when:
+      - (rhel7cis_rule_5_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.1
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.1.1 | AFTER | Ensure cron daemon is enabled"
+  block:
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.1.1","description":"Ensure cron daemon is enabled","before":eb_rhel7cis_rule_5_1_1.stdout,"after":ea_rhel7cis_rule_5_1_1.stdout,"mode":mode_rhel7cis_rule_5_1_1,"status":cis_noncompliant_5_1_1_status}] }}'
+    when: eb_rhel7cis_rule_5_1_1.stdout is defined and ea_rhel7cis_rule_5_1_1.stdout is defined
+  when:
+      - (rhel7cis_rule_5_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.1
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.1.2 | BEFORE | Ensure permissions on /etc/crontab are configured"
+  block:
+  - set_fact:
+      cis_noncompliant_5_1_2_status: Unknown
+  - shell: stat /etc/crontab --format="%a  %u %g"
+    register: eb_rhel7cis_rule_5_1_2
+  - set_fact:
+      mode_rhel7cis_rule_5_1_2: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_1_2|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.2
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.1.2 | PATCH | Ensure permissions on /etc/crontab are configured"
+  file:
+      dest: /etc/crontab
+      owner: root
+      group: root
+      mode: 0600
+  register:  rhel7cis_rule_5_1_2_out
+  when:
+      - (rhel7cis_rule_5_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.2
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_1_2|bool)) }}"
+
+- name: Display Output | 5.1.2 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 5.1.2 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.1.2 |permissions on /etc/crontab are configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_1_2_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_5_1_2_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.1.2"] }}'
+      when:
+          - rhel7cis_rule_5_1_2_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_1_2|bool))
+    - block:
+        - name: Display Output | 5.1.2 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.1.2 |permissions on /etc/crontab are configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_1_2_out.changed}}"
+        - set_fact:
+            cis_noncompliant_5_1_2_status: Compliant
+      when:
+          - not rhel7cis_rule_5_1_2_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_2|bool)
+  when:
+      - (rhel7cis_rule_5_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.2
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.1.2 | AFTER | Ensure permissions on /etc/crontab are configured"
+  block:
+  - shell: stat /etc/crontab
+    register: ea_rhel7cis_rule_5_1_2
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.1.2","description":"Ensure permissions on /etc/crontab are configured","before":eb_rhel7cis_rule_5_1_2.stdout,"after":ea_rhel7cis_rule_5_1_2.stdout,"mode":mode_rhel7cis_rule_5_1_2,"status":cis_noncompliant_5_1_2_status }] }}'
+    when: eb_rhel7cis_rule_5_1_2.stdout is defined and ea_rhel7cis_rule_5_1_2.stdout is defined
+  when:
+      - (rhel7cis_rule_5_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.2
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.1.3 | BEFORE | Ensure permissions on /etc/cron.hourly are configured"
+  block:
+  - shell: stat /etc/cron.hourly
+    register: eb_rhel7cis_rule_5_1_3
+  - set_fact:
+      mode_rhel7cis_rule_5_1_3: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_1_3|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_1_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.3
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.1.3 | PATCH | Ensure permissions on /etc/cron.hourly are configured"
+  file:
+      dest: /etc/cron.hourly
+      state: directory
+      owner: root
+      group: root
+      mode: 0700
+  register:  rhel7cis_rule_5_1_3_out
+  when:
+      - (rhel7cis_rule_5_1_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.3
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_1_3|bool)) }}"
+
+- name: Display Output | 5.1.3 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_1_3_status: Unknown
+    - block:
+        - name: Display Output | 5.1.3 | When Not Compliant
+          debug:
+              msg="NOT_COMPLIANT|CIS_RESULT| 5.1.3 |permissions on /etc/cron.hourly are configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_1_3_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_5_1_3_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.1.3"] }}'
+      when:
+          - rhel7cis_rule_5_1_3_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_1_3|bool))
+    - block:
+        - name: Display Output | 5.1.3 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.1.3 |permissions on /etc/cron.hourly are configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_1_3_out.changed}}"
+        - set_fact:
+            cis_noncompliant_5_1_3_status: Compliant
+      when:
+           - not rhel7cis_rule_5_1_3_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_3|bool)
+  when:
+      - (rhel7cis_rule_5_1_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.3
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.1.3 | AFTER | Ensure permissions on /etc/cron.hourly are configured"
+  block:
+  - shell: stat /etc/cron.hourly
+    register: ea_rhel7cis_rule_5_1_3
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.1.3","description":"Ensure permissions on /etc/cron.hourly are configured","before":eb_rhel7cis_rule_5_1_3.stdout,"after":ea_rhel7cis_rule_5_1_3.stdout,"mode":mode_rhel7cis_rule_5_1_3,"status":cis_noncompliant_5_1_3_status}] }}'
+    when: eb_rhel7cis_rule_5_1_3.stdout is defined and ea_rhel7cis_rule_5_1_3.stdout is defined
+  when:
+      - (rhel7cis_rule_5_1_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.3
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.1.4 | BEFORE | Ensure permissions on /etc/cron.daily are configured"
+  block:
+  - shell: stat /etc/cron.daily
+    register: eb_rhel7cis_rule_5_1_4
+  - set_fact:
+      mode_rhel7cis_rule_5_1_4: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_1_4|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_1_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.4
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.1.4 | PATCH | Ensure permissions on /etc/cron.daily are configured"
+  file:
+      dest: /etc/cron.daily
+      state: directory
+      owner: root
+      group: root
+      mode: 0700
+  register:  rhel7cis_rule_5_1_4_out
+  when:
+      - (rhel7cis_rule_5_1_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.4
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_1_4|bool)) }}"
+
+- name: Display Output | 5.1.4 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_1_4_status: Unknown
+    - block:
+        - name: Display Output | 5.1.4 | When not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.1.4 |permissions on /etc/cron.daily are configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_1_4_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_5_1_4_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.1.4"] }}'
+      when:
+          - rhel7cis_rule_5_1_4_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_1_4|bool))
+    - block:
+        - name: Display Output | 5.1.4 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.1.4 |permissions on /etc/cron.daily are configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_1_4_out.changed}}"
+        - set_fact:
+            cis_noncompliant_5_1_4_status: Compliant
+      when:
+           - not rhel7cis_rule_5_1_4_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_4|bool)
+  when:
+      - (rhel7cis_rule_5_1_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.4
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.1.4 | AFTER | Ensure permissions on /etc/cron.daily are configured"
+  block:
+  - shell: stat /etc/cron.daily
+    register: ea_rhel7cis_rule_5_1_4
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.1.4","description":"Ensure permissions on /etc/cron.daily are configured","before":eb_rhel7cis_rule_5_1_4.stdout,"after":ea_rhel7cis_rule_5_1_4.stdout,"mode":mode_rhel7cis_rule_5_1_4,"status":cis_noncompliant_5_1_4_status}] }}'
+    when: eb_rhel7cis_rule_5_1_4.stdout is defined and ea_rhel7cis_rule_5_1_4.stdout is defined
+  when:
+      - (rhel7cis_rule_5_1_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.4
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.1.5 | BEFORE | Ensure permissions on /etc/cron.weekly are configured"
+  block:
+  - shell: stat /etc/cron.weekly
+    register: eb_rhel7cis_rule_5_1_5
+  - set_fact:
+      mode_rhel7cis_rule_5_1_5: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_1_5|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_1_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.5
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.1.5 | PATCH | Ensure permissions on /etc/cron.weekly are configured"
+  file:
+      dest: /etc/cron.weekly
+      state: directory
+      owner: root
+      group: root
+      mode: 0700
+  register:  rhel7cis_rule_5_1_5_out
+  when:
+      - (rhel7cis_rule_5_1_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.5
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_1_5|bool)) }}"
+
+- name: Display Output | 5.1.5 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_1_5_status: Unknown
+    - block:
+        - name: Display Output | 5.1.5 | When Not Compliant
+          debug:
+              msg="NOT_COMPLIANT|CIS_RESULT| 5.1.5 |permissions on /etc/cron.weekly are configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_1_5_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_5_1_5_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.1.5"] }}'
+      when:
+          - rhel7cis_rule_5_1_5_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_1_5|bool))
+    - block:
+        - name: Display Output | 5.1.5 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.1.5 |permissions on /etc/cron.weekly are configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_1_5_out.changed}}"
+        - set_fact:
+            cis_noncompliant_5_1_5_status: Compliant
+      when:
+           - not rhel7cis_rule_5_1_5_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_5|bool)
+  when:
+      - (rhel7cis_rule_5_1_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.5
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.1.5 | AFTER | Ensure permissions on /etc/cron.weekly are configured"
+  block:
+  - shell: stat /etc/cron.weekly
+    register: ea_rhel7cis_rule_5_1_5
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.1.5","description":"Ensure permissions on /etc/cron.weekly are configured","before":eb_rhel7cis_rule_5_1_5.stdout,"after":ea_rhel7cis_rule_5_1_5.stdout,"mode":mode_rhel7cis_rule_5_1_5,"status":cis_noncompliant_5_1_5_status}] }}'
+    when: eb_rhel7cis_rule_5_1_5.stdout is defined and ea_rhel7cis_rule_5_1_5.stdout is defined
+  when:
+      - (rhel7cis_rule_5_1_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.5
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.1.6 | BEFORE | Ensure permissions on /etc/cron.monthly are configured"
+  block:
+  - shell: stat /etc/cron.monthly
+    register: eb_rhel7cis_rule_5_1_6
+  - set_fact:
+      mode_rhel7cis_rule_5_1_6: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_1_6|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_1_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_6|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.6
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.1.6 | PATCH | Ensure permissions on /etc/cron.monthly are configured"
+  file:
+      dest: /etc/cron.monthly
+      state: directory
+      owner: root
+      group: root
+      mode: 0700
+  register:  rhel7cis_rule_5_1_6_out
+  when:
+      - (rhel7cis_rule_5_1_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_6|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.6
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_1_6|bool)) }}"
+
+- name: Display Output | 5.1.6 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_1_6_status: Unknown
+    - block:
+        - name: Display Output | 5.1.6 | When Not Compliant
+          debug:
+              msg="NOT_COMPLIANT|CIS_RESULT| 5.1.6 |permissions on /etc/cron.monthly are configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_1_6_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_5_1_6_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.1.6"] }}'
+      when:
+          - rhel7cis_rule_5_1_6_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_1_6|bool))
+    - block:
+        - name: Display Output | 5.1.6 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.1.6 |permissions on /etc/cron.monthly are configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_1_6_out.changed}}"
+        - set_fact:
+            cis_noncompliant_5_1_6_status: Compliant
+      when:
+           - not rhel7cis_rule_5_1_6_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_6|bool)
+  when:
+      - (rhel7cis_rule_5_1_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_6|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.6
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.1.6 | AFTER | Ensure permissions on /etc/cron.monthly are configured"
+  block:
+  - shell: stat /etc/cron.monthly
+    register: ea_rhel7cis_rule_5_1_6
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.1.6","description":"Ensure permissions on /etc/cron.monthly are configured","before":eb_rhel7cis_rule_5_1_6.stdout,"after":ea_rhel7cis_rule_5_1_6.stdout,"mode":mode_rhel7cis_rule_5_1_6,"status":cis_noncompliant_5_1_6_status}] }}'
+    when: eb_rhel7cis_rule_5_1_6.stdout is defined and ea_rhel7cis_rule_5_1_6.stdout is defined
+  when:
+      - (rhel7cis_rule_5_1_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_6|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.6
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.1.7 | BEFORE | Ensure permissions on /etc/cron.d are configured"
+  block:
+  - shell: stat /etc/cron.d
+    register: eb_rhel7cis_rule_5_1_7
+  - set_fact:
+      mode_rhel7cis_rule_5_1_7: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_1_7|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_1_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_7|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.7
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.1.7 | PATCH | Ensure permissions on /etc/cron.d are configured"
+  file:
+      dest: /etc/cron.d
+      state: directory
+      owner: root
+      group: root
+      mode: 0700
+  register:  rhel7cis_rule_5_1_7_out
+  when:
+      - (rhel7cis_rule_5_1_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_7|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.7
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_1_7|bool)) }}"
+
+- name: Display Output | 5.1.7 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_1_7_status: Unknown
+    - block:
+        - name: Display Output | 5.1.7 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.1.7 |permissions on /etc/cron.d are configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_1_7_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_5_1_7_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.1.7"] }}'
+      when:
+          - rhel7cis_rule_5_1_7_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_1_7|bool))
+    - block:
+        - name: Display Output | 5.1.7 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.1.7 |permissions on /etc/cron.d are configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_1_7_out.changed}}"
+        - set_fact:
+            cis_noncompliant_5_1_7_status: Compliant
+      when:
+          - not rhel7cis_rule_5_1_7_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_7|bool)
+  when:
+      - (rhel7cis_rule_5_1_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_7|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.7
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.1.7 | AFTER | Ensure permissions on /etc/cron.d are configured"
+  block:
+  - shell: stat /etc/cron.d
+    register: ea_rhel7cis_rule_5_1_7
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.1.7","description":"Ensure permissions on /etc/cron.d are configured","before":eb_rhel7cis_rule_5_1_7.stdout,"after":ea_rhel7cis_rule_5_1_7.stdout,"mode":mode_rhel7cis_rule_5_1_7,"status":cis_noncompliant_5_1_7_status}] }}'
+    when: eb_rhel7cis_rule_5_1_7.stdout is defined and ea_rhel7cis_rule_5_1_7.stdout is defined
+  when:
+      - (rhel7cis_rule_5_1_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_7|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.7
+      - customcheck
+  check_mode: no
+
+#*********************************************************************************
+- name: "EVIDENCE | 5.1.8 | BEFORE | Ensure at/cron is restricted to authorized users"
+  block:
+    - name: "EVIDENCE | 5.1.8 | BEFORE | Ensure at/cron is restricted to authorized users - check /etc/at.deny"
+      stat:
+        path: /etc/at.deny
+      register: eb_rhel7cis_rule_5_1_8_at_deny
+    - name: "EVIDENCE | 5.1.8 | BEFORE | Ensure at/cron is restricted to authorized users - check /etc/cron.deny"
+      stat:
+        path: /etc/cron.deny
+      register: eb_rhel7cis_rule_5_1_8_cron_deny
+    - name: "EVIDENCE | 5.1.8 | BEFORE | Ensure at/cron is restricted to authorized users - check /etc/at.allow"
+      stat:
+        path: /etc/at.allow
+      register: eb_rhel7cis_rule_5_1_8_at_allow
+    - name: "EVIDENCE | 5.1.8 | BEFORE | Ensure at/cron is restricted to authorized users - check /etc/cron.allow"
+      stat:
+        path: /etc/cron.allow
+      register: eb_rhel7cis_rule_5_1_8_cron_allow
+    - set_fact:
+        mode_rhel7cis_rule_5_1_8: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_1_8|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_1_8|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_8|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.8
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.1.8 | PATCH | Ensure at/cron is restricted to authorized users"
+  block:
+    - name: "SCORED | 5.1.8 | PATCH | Ensure at/cron is restricted to authorized users - at.deny doesn't exist"
+      file:
+          dest: /etc/at.deny
+          state: absent
+      register:  rhel7cis_rule_5_1_8a_out
+      when:  eb_rhel7cis_rule_5_1_8_at_deny.stat.exists
+
+    - name: "SCORED | 5.1.8 | PATCH | Ensure at/cron is restricted to authorized users - at.allow exists"
+      file:
+          dest: /etc/at.allow
+          state: '{{ "file" if  eb_rhel7cis_rule_5_1_8_at_allow.stat.exists else "touch"}}'
+          owner: root
+          group: root
+          mode: 0600
+      register:  rhel7cis_rule_5_1_8b_out
+      when: (not eb_rhel7cis_rule_5_1_8_at_allow.stat.exists) or (((eb_rhel7cis_rule_5_1_8_at_allow.stat.mode != "0600") or (eb_rhel7cis_rule_5_1_8_at_allow.stat.gid != 0) or (eb_rhel7cis_rule_5_1_8_at_allow.stat.uid != 0)))
+
+    - name: "SCORED | 5.1.8 | PATCH | Ensure at/cron is restricted to authorized users - cron.deny doesn't exist"
+      file:
+          dest: /etc/cron.deny
+          state: absent
+      register:  rhel7cis_rule_5_1_8c_out
+      when: eb_rhel7cis_rule_5_1_8_cron_deny.stat.exists
+
+    - name: "SCORED | 5.1.8 | PATCH | Ensure at/cron is restricted to authorized users - cron.allow doesn't exist"
+      file:
+          dest: /etc/cron.allow
+          state: '{{ "file" if  eb_rhel7cis_rule_5_1_8_cron_allow.stat.exists else "touch"}}'
+          owner: root
+          group: root
+          mode: 0600
+      register:  rhel7cis_rule_5_1_8d_out
+      when: (not eb_rhel7cis_rule_5_1_8_cron_allow.stat.exists) or (((eb_rhel7cis_rule_5_1_8_cron_allow.stat.mode != "0600") or (eb_rhel7cis_rule_5_1_8_cron_allow.stat.gid != 0) or (eb_rhel7cis_rule_5_1_8_cron_allow.stat.uid != 0)))
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_5_1_8|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.8
+
+- name: Display Output | 5.1.8 | Check Compliant
+  block:
+    - name: "Display Output | 5.1.8 | check /etc/at.deny"
+      stat:
+        path: /etc/at.deny
+      register: ea_rhel7cis_rule_5_1_8_at_deny
+    - name: "Display Output | 5.1.8 | check /etc/cron.deny"
+      stat:
+        path: /etc/cron.deny
+      register: ea_rhel7cis_rule_5_1_8_cron_deny
+    - name: "Display Output | 5.1.8 | check /etc/at.allow"
+      stat:
+        path: /etc/at.allow
+      register: ea_rhel7cis_rule_5_1_8_at_allow
+    - name: "Display Output | 5.1.8 | check /etc/cron.allow"
+      stat:
+        path: /etc/cron.allow
+      register: ea_rhel7cis_rule_5_1_8_cron_allow
+    - name: Display Output | 5.1.8 (1) | When Not Compliant
+      debug:
+          msg="NOT_COMPLIANT|CIS_RESULT| 5.1.8 |Ensure at/cron is restricted to authorized users - at.deny exists|{{ansible_hostname}}|CHANGE_REQUIRED|{{ea_rhel7cis_rule_5_1_8_at_deny.stat.exists}}"
+      when:
+          - ea_rhel7cis_rule_5_1_8_at_deny.stat.exists
+    - name: Display Output | 5.1.8 (1) | When Compliant
+      debug:
+          msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.1.8 |Ensure at/cron is restricted to authorized users - at.deny doesn't exist|{{ansible_hostname}}|CHANGE_REQUIRED|{{ea_rhel7cis_rule_5_1_8_at_deny.stat.exists}}"
+      when:
+           - not ea_rhel7cis_rule_5_1_8_at_deny.stat.exists
+    - name: Display Output | 5.1.8 (2) | When Not Compliant
+      debug:
+          msg="NOT_COMPLIANT|CIS_RESULT| 5.1.8 |Ensure at/cron is restricted to authorized users - at.allow|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_1_8b_out.changed}}"
+      when:
+          - (not ea_rhel7cis_rule_5_1_8_at_allow.stat.exists) 
+    - name: Display Output | 5.1.8 (2) | When Compliant
+      debug:
+          msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.1.8 |Ensure at/cron is restricted to authorized users - at.allow|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_1_8b_out.changed}}"
+      when:
+          - (ea_rhel7cis_rule_5_1_8_at_allow.stat.exists)
+    - name: Display Output | 5.1.8 (3) | When Not Compliant - cron.deny exists
+      debug:
+          msg="NOT_COMPLIANT|CIS_RESULT| 5.1.8 |Ensure at/cron is restricted to authorized users - cron.deny|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_1_8c_out.changed}}"
+      when:
+          - ea_rhel7cis_rule_5_1_8_cron_deny.stat.exists
+    - name: Display Output | 5.1.8 (3) | When Compliant - cron.deny doesn't exists
+      debug:
+          msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.1.8 |Ensure at/cron is restricted to authorized users - cron.deny|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_1_8c_out.changed}}"
+      when:
+          - not ea_rhel7cis_rule_5_1_8_cron_deny.stat.exists
+    - name: Display Output | 5.1.8 (4) | When Not Compliant - crow.allow doesn't exist
+      debug:
+          msg="NOT_COMPLIANT|CIS_RESULT| 5.1.8 |Ensure at/cron is restricted to authorized users - cron.allow|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_1_8d_out.changed}}"
+      when:
+          - (not ea_rhel7cis_rule_5_1_8_cron_allow.stat.exists)
+    - name: Display Output | 5.1.8 (4) | When Compliant
+      debug:
+          msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.1.8 |Ensure at/cron is restricted to authorized users-cron.allow|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_1_8d_out.changed}}"
+      when:
+          - (ea_rhel7cis_rule_5_1_8_cron_allow.stat.exists)
+    - name: Set non compliance facts  
+      set_fact:
+        cis_noncompliant_status: true
+        cis_noncompliant_5_1_8_status: NonCompliant
+        cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.1.8"] }}'
+      when: (ea_rhel7cis_rule_5_1_8_at_deny.stat.exists) or (ea_rhel7cis_rule_5_1_8_cron_deny.stat.exists) or (not ea_rhel7cis_rule_5_1_8_cron_allow.stat.exists) or (not ea_rhel7cis_rule_5_1_8_at_allow.stat.exists)
+    - name: Set compliance facts  
+      set_fact:
+        cis_noncompliant_5_1_8_status: Compliant
+      when: (not ea_rhel7cis_rule_5_1_8_at_deny.stat.exists) and (not ea_rhel7cis_rule_5_1_8_cron_deny.stat.exists) and (ea_rhel7cis_rule_5_1_8_cron_allow.stat.exists) and (ea_rhel7cis_rule_5_1_8_at_allow.stat.exists)
+  when:
+      - (rhel7cis_rule_5_1_8|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_8|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.8
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.1.8 | AFTER | Ensure at/cron is restricted to authorized users"
+  block:
+  - set_fact:
+      before_out: "at.deny exists: {{ eb_rhel7cis_rule_5_1_8_at_deny.stat.exists }}, cron.deny exists: {{ eb_rhel7cis_rule_5_1_8_cron_deny.stat.exists }}, at.allow exists: {{ eb_rhel7cis_rule_5_1_8_at_allow.stat.exists }} {{ '(mode:'+eb_rhel7cis_rule_5_1_8_at_allow.stat.mode+', uid:'+(eb_rhel7cis_rule_5_1_8_at_allow.stat.uid|string)+', gid:'+(eb_rhel7cis_rule_5_1_8_at_allow.stat.gid|string)+')' if (eb_rhel7cis_rule_5_1_8_at_allow.stat.exists) else '(mode: , uid: , gid: )' }}, cron.allow exists: {{ eb_rhel7cis_rule_5_1_8_cron_allow.stat.exists }} {{ '(mode:'+eb_rhel7cis_rule_5_1_8_cron_allow.stat.mode+', uid:'+(eb_rhel7cis_rule_5_1_8_cron_allow.stat.uid|string)+', gid:'+(eb_rhel7cis_rule_5_1_8_cron_allow.stat.gid|string)+')' if (eb_rhel7cis_rule_5_1_8_cron_allow.stat.exists) else '(mode: , uid: , gid: )' }}"
+      after_out: "at.deny exists: {{ ea_rhel7cis_rule_5_1_8_at_deny.stat.exists }}, cron.deny exists: {{ ea_rhel7cis_rule_5_1_8_cron_deny.stat.exists }}, at.allow exists: {{ ea_rhel7cis_rule_5_1_8_at_allow.stat.exists }} {{ '(mode:'+ea_rhel7cis_rule_5_1_8_at_allow.stat.mode+', uid:'+(ea_rhel7cis_rule_5_1_8_at_allow.stat.uid|string)+', gid:'+(ea_rhel7cis_rule_5_1_8_at_allow.stat.gid|string)+')' if (ea_rhel7cis_rule_5_1_8_at_allow.stat.exists) else '(mode: , uid: , gid: )' }}, cron.allow exists: {{ ea_rhel7cis_rule_5_1_8_cron_allow.stat.exists }} {{ '(mode:'+ea_rhel7cis_rule_5_1_8_cron_allow.stat.mode+', uid:'+(ea_rhel7cis_rule_5_1_8_cron_allow.stat.uid|string)+', gid:'+(ea_rhel7cis_rule_5_1_8_cron_allow.stat.gid|string)+')' if (ea_rhel7cis_rule_5_1_8_cron_allow.stat.exists) else '(mode: , uid: , gid: )' }}"
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.1.8","description":"Ensure at/cron is restricted to authorized users","before":before_out,"after":after_out,"mode":mode_rhel7cis_rule_5_1_8,"status":cis_noncompliant_5_1_8_status}] }}'
+  when:
+      - (rhel7cis_rule_5_1_8|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_1_8|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.1.8
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.2.1 | BEFORE | Ensure permissions on /etc/ssh/sshd_config are configured"
+  block:
+  - shell: stat /etc/ssh/sshd_config
+    register: eb_rhel7cis_rule_5_2_1
+  - set_fact:
+      mode_rhel7cis_rule_5_2_1: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_2_1|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_2_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.1
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.2.1 | PATCH | Ensure permissions on /etc/ssh/sshd_config are configured"
+  file:
+      dest: /etc/ssh/sshd_config
+      state: file
+      owner: root
+      group: root
+      mode: 0600
+  register:  rhel7cis_rule_5_2_1_out
+  notify:
+      - restart sshd
+  when:
+      - (rhel7cis_rule_5_2_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.1
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_1|bool)) }}"
+
+- name: Display Output | 5.2.1 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_2_1_status: Unknown
+    - block:
+      - name: Display Output | 5.2.1 | When Not Compliant
+        debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.2.1 |permissions on /etc/ssh/sshd_config are configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_1_out.changed}}"
+      - set_fact:
+          cis_noncompliant_status: true
+          cis_noncompliant_5_2_1_status: NonCompliant
+          cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.2.1"] }}'
+      when:
+          - rhel7cis_rule_5_2_1_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_1|bool))
+    - block:
+      - name: Display Output | 5.2.1 | When Compliant
+        debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.2.1 |permissions on /etc/ssh/sshd_config are configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_1_out.changed}}"
+      - set_fact:
+          cis_noncompliant_5_2_1_status: Compliant
+      when:
+          - not rhel7cis_rule_5_2_1_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_1|bool)
+  when:
+      - (rhel7cis_rule_5_2_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.1
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.2.1 | AFTER | Ensure permissions on /etc/ssh/sshd_config are configured"
+  block:
+  - shell: stat /etc/ssh/sshd_config
+    register: ea_rhel7cis_rule_5_2_1
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.2.1","description":"Ensure permissions on /etc/ssh/sshd_config are configured","before":eb_rhel7cis_rule_5_2_1.stdout,"after":ea_rhel7cis_rule_5_2_1.stdout,"mode":mode_rhel7cis_rule_5_2_1,"status":cis_noncompliant_5_2_1_status}] }}'
+    when: eb_rhel7cis_rule_5_2_1.stdout is defined and ea_rhel7cis_rule_5_2_1 is defined
+  when:
+      - (rhel7cis_rule_5_2_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.1
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.2.2 | BEFORE | Ensure SSH Protocol is set to 2"
+  block:
+  - shell: grep "Protocol" /etc/ssh/sshd_config 2>&1;true
+    register: eb_rhel7cis_rule_5_2_2
+  - set_fact:
+      mode_rhel7cis_rule_5_2_2: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_2_2|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_2_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.2
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.2.2 | PATCH | Ensure SSH Protocol is set to 2"
+  lineinfile:
+      state: present
+      dest: /etc/ssh/sshd_config
+      regexp: '^Protocol'
+      line: 'Protocol 2'
+  register:  rhel7cis_rule_5_2_2_out
+  notify:
+      - restart sshd
+  when:
+      - (rhel7cis_rule_5_2_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.2
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_2|bool)) }}"
+
+- name: Display Output | 5.2.2 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_2_2_status: Unknown
+    - block:    
+      - name: Display Output | 5.2.2 | When Not Compliant
+        debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.2.2 |SSH Protocol is set to 2|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_2_out.changed}}"
+      - set_fact:
+          cis_noncompliant_status: true
+          cis_noncompliant_5_2_2_status: NonCompliant
+          cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.2.2"] }}'  
+      when:
+          - rhel7cis_rule_5_2_2_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_2|bool))
+    - block:
+      - name: Display Output | 5.2.2 | When Compliant
+        debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.2.2 |SSH Protocol is set to 2|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_2_out.changed}}"
+      - set_fact:
+          cis_noncompliant_5_2_2_status: Compliant
+      when:
+          - not rhel7cis_rule_5_2_2_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_2|bool)
+  when:
+      - (rhel7cis_rule_5_2_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.2
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.2.2 | AFTER | Ensure SSH Protocol is set to 2"
+  block:
+  - shell: grep "Protocol" /etc/ssh/sshd_config 2>&1;true
+    register: ea_rhel7cis_rule_5_2_2
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.2.2","description":"Ensure SSH Protocol is set to 2","before":eb_rhel7cis_rule_5_2_2.stdout,"after":ea_rhel7cis_rule_5_2_2.stdout,"mode":mode_rhel7cis_rule_5_2_2,"status":cis_noncompliant_5_2_2_status}] }}'
+    when: eb_rhel7cis_rule_5_2_2.stdout is defined and ea_rhel7cis_rule_5_2_2 is defined
+  when:
+      - (rhel7cis_rule_5_2_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.2
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.2.3 | BEFORE | Ensure SSH LogLevel is set to INFO"
+  block:
+  - shell: grep "LogLevel" /etc/ssh/sshd_config 2>&1;true
+    register: eb_rhel7cis_rule_5_2_3
+  - set_fact:
+      mode_rhel7cis_rule_5_2_3: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_2_3|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_2_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.3
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.2.3 | PATCH | Ensure SSH LogLevel is set to INFO"
+  lineinfile:
+      state: present
+      dest: /etc/ssh/sshd_config
+      regexp: '^LogLevel'
+      line: 'LogLevel INFO'
+  register:  rhel7cis_rule_5_2_3_out
+  notify:
+      - restart sshd
+  when:
+      - (rhel7cis_rule_5_2_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.3
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_3|bool)) }}"
+
+- name: Display Output | 5.2.3 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_2_3_status: Unknown
+    - block:
+      - name: Display Output | 5.2.3 | When Not Compliant
+        debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.2.3 |SSH Protocol is set to SSH LogLevel is set to INFO|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_3_out.changed}}"
+      - set_fact:
+          cis_noncompliant_status: true
+          cis_noncompliant_5_2_3_status: NonCompliant
+          cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.2.3"] }}'
+      when:
+          - rhel7cis_rule_5_2_3_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_3|bool))
+    - block:
+      - name: Display Output | 5.2.3 | When Compliant
+        debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.2.3 |SSH Protocol is set to SSH LogLevel is set to INFO|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_3_out.changed}}"
+      - set_fact:
+          cis_noncompliant_5_2_3_status: Compliant  
+      when:
+          - not rhel7cis_rule_5_2_3_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_3|bool)
+  when:
+      - (rhel7cis_rule_5_2_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.3
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.2.3 | AFTER | Ensure SSH LogLevel is set to INFO"
+  block:
+  - shell: grep "LogLevel" /etc/ssh/sshd_config 2>&1;true
+    register: ea_rhel7cis_rule_5_2_3
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.2.3","description":"Ensure SSH LogLevel is set to INFO","before":eb_rhel7cis_rule_5_2_3.stdout,"after":ea_rhel7cis_rule_5_2_3.stdout,"mode":mode_rhel7cis_rule_5_2_3,"status":cis_noncompliant_5_2_3_status}] }}'
+    when: eb_rhel7cis_rule_5_2_3.stdout is defined and ea_rhel7cis_rule_5_2_3 is defined
+  when:
+      - (rhel7cis_rule_5_2_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.3
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.2.4 | BEFORE | Ensure SSH X11 forwarding is disabled"
+  block:
+  - shell: grep "X11Forwarding" /etc/ssh/sshd_config 2>&1;true
+    register: eb_rhel7cis_rule_5_2_4
+  - set_fact:
+      mode_rhel7cis_rule_5_2_4: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_2_4|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_2_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.4
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.2.4 | PATCH | Ensure SSH X11 forwarding is disabled"
+  lineinfile:
+      state: present
+      dest: /etc/ssh/sshd_config
+      regexp: '^X11Forwarding'
+      line: 'X11Forwarding no'
+  register:  rhel7cis_rule_5_2_4_out
+  notify:
+      - restart sshd
+  when:
+      - (rhel7cis_rule_5_2_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.4
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_4|bool)) }}"
+
+- name: Display Output | 5.2.4 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_2_4_status: Unknown
+    - block:    
+      - name: Display Output | 5.2.4 | When Not Compliant
+        debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.2.4 |SSH X11 forwarding is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_4_out.changed}}"
+      - set_fact:
+          cis_noncompliant_status: true
+          cis_noncompliant_5_2_4_status: NonCompliant
+          cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.2.4"] }}'
+      when:
+          - rhel7cis_rule_5_2_4_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_4|bool))
+    - block:
+      - name: Display Output | 5.2.4 | When Compliant
+        debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.2.4 |SSH X11 forwarding is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_4_out.changed}}"
+      - set_fact:
+          cis_noncompliant_5_2_4_status: Compliant
+      when:
+          - not rhel7cis_rule_5_2_4_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_4|bool)
+  when:
+      - rhel7cis_rule_5_2_4|bool or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.4
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.2.4 | AFTER | Ensure SSH X11 forwarding is disabled"
+  block:
+  - shell: grep "X11Forwarding" /etc/ssh/sshd_config 2>&1;true
+    register: ea_rhel7cis_rule_5_2_4
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.2.4","description":"Ensure SSH X11 forwarding is disabled","before":eb_rhel7cis_rule_5_2_4.stdout,"after":ea_rhel7cis_rule_5_2_4.stdout,"mode":mode_rhel7cis_rule_5_2_4,"status":cis_noncompliant_5_2_4_status}] }}'
+    when: eb_rhel7cis_rule_5_2_4.stdout is defined and ea_rhel7cis_rule_5_2_4 is defined
+  when:
+      - (rhel7cis_rule_5_2_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.4
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.2.5 | BEFORE | Ensure SSH MaxAuthTries is set to 4 or less"
+  block:
+  - shell: grep "MaxAuthTries" /etc/ssh/sshd_config 2>&1;true
+    register: eb_rhel7cis_rule_5_2_5
+  - set_fact:
+      mode_rhel7cis_rule_5_2_5: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_2_5|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_2_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.5
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.2.5 | PATCH | Ensure SSH MaxAuthTries is set to 4 or less"
+  lineinfile:
+      state: present
+      dest: /etc/ssh/sshd_config
+      regexp: '^(#)?MaxAuthTries \d'
+      line: 'MaxAuthTries 4'
+  register:  rhel7cis_rule_5_2_5_out
+  notify:
+      - restart sshd
+  when:
+      - (rhel7cis_rule_5_2_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.5
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_5|bool)) }}"
+
+- name: Display Output | 5.2.5 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_2_5_status: Unknown
+    - block:
+      - name: Display Output | 5.2.5 | When Not Compliant
+        debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.2.5 |SSH MaxAuthTries is set to 4 or less|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_5_out.changed}}"
+      - set_fact:
+          cis_noncompliant_status: true
+          cis_noncompliant_5_2_5_status: NonCompliant
+          cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.2.5"] }}'
+      when:
+          - rhel7cis_rule_5_2_5_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_5|bool))
+    - block:
+      - name: Display Output | 5.2.5 | When Compliant
+        debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.2.5 |SSH MaxAuthTries is set to 4 or less|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_5_out.changed}}"
+      - set_fact:
+          cis_noncompliant_5_2_5_status: Compliant
+      when:
+          - not rhel7cis_rule_5_2_5_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_5|bool)
+  when:
+      - rhel7cis_rule_5_2_5|bool or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.5
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.2.5 | AFTER | Ensure SSH MaxAuthTries is set to 4 or less"
+  block:
+  - shell: grep "MaxAuthTries" /etc/ssh/sshd_config 2>&1;true
+    register: ea_rhel7cis_rule_5_2_5
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.2.5","description":"Ensure SSH MaxAuthTries is set to 4 or less","before":eb_rhel7cis_rule_5_2_5.stdout,"after":ea_rhel7cis_rule_5_2_5.stdout,"mode":mode_rhel7cis_rule_5_2_5,"status":cis_noncompliant_5_2_5_status}] }}'
+    when: eb_rhel7cis_rule_5_2_5.stdout is defined and ea_rhel7cis_rule_5_2_5 is defined
+  when:
+      - (rhel7cis_rule_5_2_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.5
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.2.6 | BEFORE | Ensure SSH IgnoreRhosts is enabled"
+  block:
+  - shell: grep "IgnoreRhosts" /etc/ssh/sshd_config 2>&1;true
+    register: eb_rhel7cis_rule_5_2_6
+  - set_fact:
+      mode_rhel7cis_rule_5_2_6: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_2_6|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_2_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_6|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.6
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.2.6 | PATCH | Ensure SSH IgnoreRhosts is enabled"
+  lineinfile:
+      state: present
+      dest: /etc/ssh/sshd_config
+      regexp: '^IgnoreRhosts'
+      line: 'IgnoreRhosts yes'
+  register:  rhel7cis_rule_5_2_6_out
+  notify:
+      - restart sshd
+  when:
+      - (rhel7cis_rule_5_2_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_6|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.6
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_6|bool)) }}"
+
+- name: Display Output | 5.2.6 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_2_6_status: Unknown
+    - block:
+      - name: Display Output | 5.2.6 | When Not Compliant
+        debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.2.6 |SSH IgnoreRhosts is enabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_6_out.changed}}"
+      - set_fact:
+          cis_noncompliant_status: true
+          cis_noncompliant_5_2_6_status: NonCompliant
+          cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.2.6"] }}'
+      when:
+          - rhel7cis_rule_5_2_6_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_6|bool))
+    - block:
+      - name: Display Output | 5.2.6 | When Compliant
+        debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.2.6 |SSH IgnoreRhosts is enabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_6_out.changed}}"
+      - set_fact:
+          cis_noncompliant_5_2_6_status: Compliant
+      when:
+          - not rhel7cis_rule_5_2_6_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_6|bool)
+  when:
+      - rhel7cis_rule_5_2_6|bool or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_6|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.6
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.2.6 | AFTER | Ensure SSH IgnoreRhosts is enabled"
+  block:
+  - shell: grep "IgnoreRhosts" /etc/ssh/sshd_config 2>&1;true
+    register: ea_rhel7cis_rule_5_2_6
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.2.6","description":"Ensure SSH IgnoreRhosts is enabled","before":eb_rhel7cis_rule_5_2_6.stdout,"after":ea_rhel7cis_rule_5_2_6.stdout,"mode":mode_rhel7cis_rule_5_2_6,"status":cis_noncompliant_5_2_6_status}] }}'
+    when: eb_rhel7cis_rule_5_2_6.stdout is defined and ea_rhel7cis_rule_5_2_6 is defined
+  when:
+      - (rhel7cis_rule_5_2_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_6|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.6
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.2.7 | BEFORE | Ensure SSH HostbasedAuthentication is disabled"
+  block:
+  - shell: grep "HostbasedAuthentication" /etc/ssh/sshd_config 2>&1;true
+    register: eb_rhel7cis_rule_5_2_7
+  - set_fact:
+      mode_rhel7cis_rule_5_2_7: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_2_7|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_2_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_7|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.7
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.2.7 | PATCH | Ensure SSH HostbasedAuthentication is disabled"
+  lineinfile:
+      state: present
+      dest: /etc/ssh/sshd_config
+      regexp: '^HostbasedAuthentication'
+      line: 'HostbasedAuthentication no'
+  register:  rhel7cis_rule_5_2_7_out
+  notify:
+      - restart sshd
+  when:
+      - (rhel7cis_rule_5_2_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_7|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.7
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_7|bool)) }}"
+
+- name: Display Output | 5.2.7 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_2_7_status: Unknown
+    - block:
+      - name: Display Output | 5.2.7 | When Not Compliant
+        debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.2.7 | SSH HostbasedAuthentication is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_7_out.changed}}"
+      - set_fact:
+          cis_noncompliant_status: true
+          cis_noncompliant_5_2_7_status: NonCompliant
+          cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.2.7"] }}'
+      when:
+          - rhel7cis_rule_5_2_7_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_7|bool))
+    - block:
+      - name: Display Output | 5.2.7 | When Compliant
+        debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.2.7 | SSH HostbasedAuthentication is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_7_out.changed}}"
+      - set_fact:
+          cis_noncompliant_5_2_7_status: Compliant
+      when:
+          - not rhel7cis_rule_5_2_7_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_7|bool)
+  when:
+      - rhel7cis_rule_5_2_7|bool or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_7|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.7
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.2.7 | AFTER | Ensure SSH HostbasedAuthentication is disabled"
+  block:
+  - shell: grep "HostbasedAuthentication" /etc/ssh/sshd_config 2>&1;true
+    register: ea_rhel7cis_rule_5_2_7
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.2.7","description":"Ensure SSH HostbasedAuthentication is disabled","before":eb_rhel7cis_rule_5_2_7.stdout,"after":ea_rhel7cis_rule_5_2_7.stdout,"mode":mode_rhel7cis_rule_5_2_7,"status":cis_noncompliant_5_2_7_status}] }}'
+    when: eb_rhel7cis_rule_5_2_7.stdout is defined and ea_rhel7cis_rule_5_2_7 is defined
+  when:
+      - (rhel7cis_rule_5_2_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_7|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.7
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.2.8 | BEFORE | Ensure SSH root login is disabled"
+  block:
+  - shell: grep "PermitRootLogin" /etc/ssh/sshd_config 2>&1;true
+    ignore_errors: yes
+    register: eb_rhel7cis_rule_5_2_8
+  - set_fact:
+      mode_rhel7cis_rule_5_2_8: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_2_8|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_2_8|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_8|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.8
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.2.8 | PATCH | Ensure SSH root login is disabled"
+  lineinfile:
+      state: present
+      dest: /etc/ssh/sshd_config
+      regexp: '^PermitRootLogin'
+      line: 'PermitRootLogin no'
+  register:  rhel7cis_rule_5_2_8_out
+  notify:
+      - restart sshd
+  when:
+      - (rhel7cis_rule_5_2_8|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_8|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.8
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_8|bool)) }}"
+
+- name: Display Output | 5.2.8 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_2_8_status: Unknown
+    - block:
+      - name: Display Output | 5.2.8 | When Not Compliant
+        debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.2.8 |SSH root login is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_8_out.changed}}"
+      - set_fact:
+          cis_noncompliant_status: true
+          cis_noncompliant_5_2_8_status: NonCompliant
+          cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.2.8"] }}'
+      when:
+          - rhel7cis_rule_5_2_8_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_8|bool))
+    - block:
+      - name: Display Output | 5.2.8 | When Compliant
+        debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.2.8 |SSH root login is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_8_out.changed}}"
+      - set_fact:
+          cis_noncompliant_5_2_8_status: Compliant
+      when:
+          - not rhel7cis_rule_5_2_8_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_8|bool)
+  when:
+      - rhel7cis_rule_5_2_8|bool or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_8|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.8
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.2.8 | AFTER | Ensure SSH root login is disabled"
+  block:
+  - shell: grep "PermitRootLogin" /etc/ssh/sshd_config 2>&1;true
+    ignore_errors: yes
+    register: ea_rhel7cis_rule_5_2_8
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.2.8","description":"Ensure SSH root login is disabled","before":eb_rhel7cis_rule_5_2_8.stdout,"after":ea_rhel7cis_rule_5_2_8.stdout,"mode":mode_rhel7cis_rule_5_2_8,"status":cis_noncompliant_5_2_8_status}] }}'
+    when: eb_rhel7cis_rule_5_2_8.stdout is defined and ea_rhel7cis_rule_5_2_8 is defined
+  when:
+      - (rhel7cis_rule_5_2_8|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_8|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.8
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.2.9 | BEFORE | Ensure SSH PermitEmptyPasswords is disabled"
+  block:
+  - shell: grep "PermitEmptyPasswords" /etc/ssh/sshd_config 2>&1;true
+    register: eb_rhel7cis_rule_5_2_9
+  - set_fact:
+      mode_rhel7cis_rule_5_2_9: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_2_9|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_2_9|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_9|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.9
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.2.9 | PATCH | Ensure SSH PermitEmptyPasswords is disabled"
+  lineinfile:
+      state: present
+      dest: /etc/ssh/sshd_config
+      regexp: '^PermitEmptyPasswords'
+      line: 'PermitEmptyPasswords no'
+  register:  rhel7cis_rule_5_2_9_out
+  notify:
+      - restart sshd
+  when:
+      - (rhel7cis_rule_5_2_9|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_9|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.9
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_9|bool)) }}"
+
+- name: Display Output | 5.2.9 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_2_9_status: Unknown
+    - block:
+      - name: Display Output | 5.2.9 | When Not Compliant
+        debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.2.9 |SSH PermitEmptyPasswords is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_9_out.changed}}"
+      - set_fact:
+          cis_noncompliant_status: true
+          cis_noncompliant_5_2_9_status: NonCompliant
+          cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.2.9"] }}'
+      when:
+          - rhel7cis_rule_5_2_9_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_9|bool))
+    - block:
+      - name: Display Output | 5.2.9 | When Compliant
+        debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.2.9 |SSH PermitEmptyPasswords is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_9_out.changed}}"
+      - set_fact:
+          cis_noncompliant_5_2_9_status: Compliant
+      when:
+          - not rhel7cis_rule_5_2_9_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_9|bool)
+  when:
+      - rhel7cis_rule_5_2_9|bool or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_9|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.9
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.2.9 | AFTER | Ensure SSH PermitEmptyPasswords is disabled"
+  block:
+  - shell: grep "PermitEmptyPasswords" /etc/ssh/sshd_config 2>&1;true
+    register: ea_rhel7cis_rule_5_2_9
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.2.9","description":"Ensure SSH PermitEmptyPasswords is disabled","before":eb_rhel7cis_rule_5_2_9.stdout,"after":ea_rhel7cis_rule_5_2_9.stdout,"mode":mode_rhel7cis_rule_5_2_9,"status":cis_noncompliant_5_2_9_status}] }}'
+    when: eb_rhel7cis_rule_5_2_9.stdout is defined and ea_rhel7cis_rule_5_2_9 is defined
+  when:
+      - (rhel7cis_rule_5_2_9|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_9|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.9
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.2.10 | BEFORE | Ensure SSH PermitUserEnvironment is disabled"
+  block:
+  - shell: grep PermitUserEnvironment /etc/ssh/sshd_config 2>&1;true
+    register: eb_rhel7cis_rule_5_2_10
+  - set_fact:
+      mode_rhel7cis_rule_5_2_10: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_2_10|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_2_10|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_10|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.10
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.2.10 | PATCH | Ensure SSH PermitUserEnvironment is disabled"
+  lineinfile:
+      state: present
+      dest: /etc/ssh/sshd_config
+      regexp: '^PermitUserEnvironment'
+      line: 'PermitUserEnvironment no'
+  register:  rhel7cis_rule_5_2_10_out
+  notify:
+      - restart sshd
+  when:
+      - (rhel7cis_rule_5_2_10|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_10|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.10
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_10|bool)) }}"
+
+- name: Display Output | 5.2.10 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_2_10_status: Unknown
+    - block:
+      - name: Display Output | 5.2.10 | When Not Compliant
+        debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.2.10 |SSH PermitUserEnvironment is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_10_out.changed}}"
+      - set_fact:
+          cis_noncompliant_status: true
+          cis_noncompliant_5_2_10_status: NonCompliant
+          cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.2.10"] }}'
+      when:
+          - rhel7cis_rule_5_2_10_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_10|bool))
+    - block:
+      - name: Display Output | 5.2.10 | When Compliant
+        debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.2.10 |SSH PermitUserEnvironment is disabled|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_10_out.changed}}"
+      - set_fact:
+          cis_noncompliant_5_2_10_status: Compliant
+      when:
+          - not rhel7cis_rule_5_2_10_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_10|bool)
+  when:
+      - rhel7cis_rule_5_2_10|bool or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_10|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.10
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.2.10 | AFTER | Ensure SSH PermitUserEnvironment is disabled"
+  block:
+  - shell: grep PermitUserEnvironment /etc/ssh/sshd_config 2>&1;true
+    register: ea_rhel7cis_rule_5_2_10
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.2.10","description":"Ensure SSH PermitUserEnvironment is disabled","before":eb_rhel7cis_rule_5_2_10.stdout,"after":ea_rhel7cis_rule_5_2_10.stdout,"mode":mode_rhel7cis_rule_5_2_10,"status":cis_noncompliant_5_2_10_status}] }}'
+    when: eb_rhel7cis_rule_5_2_10.stdout is defined and ea_rhel7cis_rule_5_2_10 is defined
+  when:
+      - (rhel7cis_rule_5_2_10|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_10|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.10
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+
+#*********************************************************************************
+#*********************************************************************************
+        ### Not part of cis bench mark
+#*********************************************************************************
+#*********************************************************************************
+
+# - name: "SCORED | 5.2.11 | PATCH | Ensure only approved ciphers are used"
+#   lineinfile:
+#       state: present
+#       dest: /etc/ssh/sshd_config
+#       regexp: '^Ciphers'
+#       line: "Ciphers {{ rhel7cis_sshd['ciphers'] }}"
+#   register:  rhel7cis_rule_5_2_11_out
+#   when:
+#       - rhel7cis_rule_5_2_11|bool
+#   tags:
+#       - level1
+#       - patch
+#       - rule_5.2.11
+
+# - name: Display Output | 5.2.11 | Check Compliant
+#   block:
+#     - name: Display Output | 5.2.11 | When Not Compliant
+#       debug:
+#           msg="NOT_COMPLIANT|CIS_RESULT| 5.2.11 |only approved ciphers are used|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_11_out.changed}}"
+#       when:
+#            - rhel7cis_rule_5_2_11_out.changed
+#     - name: Display Output | 5.2.11 | When Compliant
+#       debug:
+#           msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.2.11 |only approved ciphers are used|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_11_out.changed}}"
+#       when:
+#            - not rhel7cis_rule_5_2_11_out.changed
+#   when:
+#       - rhel7cis_rule_5_2_11|bool
+#   tags:
+#       - level1
+#       - patch
+#       - rule_5.2.11
+#       - customcheck
+#   check_mode: no
+#*********************************************************************************
+#*********************************************************************************
+#*********************************************************************************
+#*********************************************************************************
+
+
+#*********************************************************************************
+- name: "EVIDENCE | 5.2.11 | BEFORE | Ensure only approved MAC algorithms are used"
+  block:
+  - shell: grep "MACs" /etc/ssh/sshd_config 2>&1;true
+    ignore_errors: yes
+    register: eb_rhel7cis_rule_5_2_11
+  - set_fact:
+      mode_rhel7cis_rule_5_2_11: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_2_11|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_2_11|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_11|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.11
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.2.11 | PATCH | Ensure only approved MAC algorithms are used"
+  lineinfile:
+      state: present
+      dest: /etc/ssh/sshd_config
+      regexp: '^MACs'
+      line: "MACs {{ rhel7cis_sshd['macs'] }}"
+  register:  rhel7cis_rule_5_2_11_out
+  notify:
+      - restart sshd
+  when:
+      - (rhel7cis_rule_5_2_11|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_11|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.11
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_11|bool)) }}"
+
+- name: Display Output | 5.2.11 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_2_11_status: Unknown
+    - block:
+      - name: Display Output | 5.2.11 | When Not Compliant
+        debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.2.11 |only approved MAC algorithms are used|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_11_out.changed}}"
+      - set_fact:
+          cis_noncompliant_status: true
+          cis_noncompliant_5_2_11_status: NonCompliant
+          cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.2.11"] }}'
+      when:
+          - rhel7cis_rule_5_2_11_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_11|bool))
+    - block:
+      - name: Display Output | 5.2.11 | When Compliant
+        debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.2.11 |only approved MAC algorithms are used|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_11_out.changed}}"
+      - set_fact:
+          cis_noncompliant_5_2_11_status: Compliant
+      when:
+          - not rhel7cis_rule_5_2_11_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_11|bool)
+  when:
+      - rhel7cis_rule_5_2_11|bool or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_11|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.11
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.2.11 | AFTER | Ensure only approved MAC algorithms are used"
+  block:
+  - shell: grep "MACs" /etc/ssh/sshd_config 2>&1;true
+    ignore_errors: yes
+    register: ea_rhel7cis_rule_5_2_11
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.2.11","description":"Ensure only approved MAC algorithms are used","before":eb_rhel7cis_rule_5_2_11.stdout,"after":ea_rhel7cis_rule_5_2_11.stdout,"mode":mode_rhel7cis_rule_5_2_11,"status":cis_noncompliant_5_2_11_status}] }}'
+    when: eb_rhel7cis_rule_5_2_11.stdout is defined and ea_rhel7cis_rule_5_2_11 is defined
+  when:
+      - (rhel7cis_rule_5_2_11|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_11|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.11
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.2.12 | BEFORE | Ensure SSH Idle Timeout Interval is configured"
+  block:
+  - shell: grep "ClientAliveInterval" /etc/ssh/sshd_config 2>&1; grep "ClientAliveCountMax" /etc/ssh/sshd_config 2>&1;true
+    ignore_errors: yes
+    register: eb_rhel7cis_rule_5_2_12
+  - set_fact:
+      mode_rhel7cis_rule_5_2_12: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_2_12|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_2_12|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_12|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.12
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.2.12 | PATCH | Ensure SSH Idle Timeout Interval is configured"
+  block:
+      - name: "SCORED | 5.2.12 | PATCH | Ensure SSH Idle Timeout Interval is configured"
+        lineinfile:
+            state: present
+            dest: /etc/ssh/sshd_config
+            regexp: '^ClientAliveInterval'
+            line: "ClientAliveInterval {{ rhel7cis_sshd['clientaliveinterval'] }}"
+        register:  rhel7cis_rule_5_2_12a_out
+        notify:
+            - restart sshd
+
+      - name: "SCORED | 5.2.12 | PATCH | Ensure SSH ClientAliveCountMax set to <= 3"
+        lineinfile:
+            state: present
+            dest: /etc/ssh/sshd_config
+            regexp: '^ClientAliveCountMax'
+            line: "ClientAliveCountMax {{ rhel7cis_sshd['clientalivecountmax'] }}"
+        register:  rhel7cis_rule_5_2_12b_out
+        notify:
+            - restart sshd
+  when:
+      - (rhel7cis_rule_5_2_12|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_12|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.12
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_12|bool)) }}"
+
+- name: Display Output | 5.2.12 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_2_12_status: Unknown
+        cis_noncompliant_5_2_12a_status: Unknown
+        cis_noncompliant_5_2_12b_status: Unknown
+    - block:
+      - name: Display Output | 5.2.12 | When Not Compliant
+        debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.2.12 |Ensure SSH Idle Timeout Interval is configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_12a_out.changed}}"
+      - set_fact:
+          cis_noncompliant_5_2_12a_status: NonCompliant
+      when:
+          - rhel7cis_rule_5_2_12a_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_12|bool))
+    - block:
+      - name: Display Output | 5.2.12 | When Compliant
+        debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.2.12 |Ensure SSH Idle Timeout Interval is configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_12a_out.changed}}"
+      - set_fact:
+          cis_noncompliant_5_2_12a_status: Compliant
+      when:
+          - not rhel7cis_rule_5_2_12a_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_12|bool)
+    - block:
+      - name: Display Output | 5.2.12 | When Not Compliant
+        debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.2.12 |Ensure SSH ClientAliveCountMax set to <= 3|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_12b_out.changed}}"
+      - set_fact:
+          cis_noncompliant_5_2_12b_status: NonCompliant
+      when:
+          - rhel7cis_rule_5_2_12b_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_12|bool))
+    - block:
+      - name: Display Output | 5.2.12 | When Compliant
+        debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.2.12 |Ensure SSH ClientAliveCountMax set to <= 3|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_12b_out.changed}}"
+      - set_fact:
+          cis_noncompliant_5_2_12b_status: Compliant
+      when:
+          - not rhel7cis_rule_5_2_12b_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_12|bool)
+  when:
+      - rhel7cis_rule_5_2_12|bool or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_12|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.12
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.2.12 | AFTER | Ensure SSH Idle Timeout Interval is configured"
+  block:
+  - set_fact:
+      cis_noncompliant_status: true
+      cis_noncompliant_5_2_12_status: NonCompliant
+      cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.2.12"] }}'
+    when: cis_noncompliant_5_2_12a_status=='NonCompliant' or cis_noncompliant_5_2_12b_status=='NonCompliant'
+  - set_fact:
+      cis_noncompliant_5_2_12_status: Compliant
+    when: cis_noncompliant_5_2_12a_status=='Compliant' and cis_noncompliant_5_2_12b_status=='Compliant'
+  - shell: grep "ClientAliveInterval" /etc/ssh/sshd_config 2>&1; grep "ClientAliveCountMax" /etc/ssh/sshd_config 2>&1;true
+    ignore_errors: yes
+    register: ea_rhel7cis_rule_5_2_12
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.2.12","description":"Ensure SSH Idle Timeout Interval is configured","before":eb_rhel7cis_rule_5_2_12.stdout,"after":ea_rhel7cis_rule_5_2_12.stdout,"mode":mode_rhel7cis_rule_5_2_12,"status":cis_noncompliant_5_2_12_status}] }}'
+    when: eb_rhel7cis_rule_5_2_12.stdout is defined and ea_rhel7cis_rule_5_2_12 is defined
+  when:
+      - (rhel7cis_rule_5_2_12|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_12|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.12
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.2.13 | BEFORE | Ensure SSH LoginGraceTime is set to one minute or less"
+  block:
+  - shell: grep "LoginGraceTime" /etc/ssh/sshd_config 2>&1;true
+    ignore_errors: yes
+    register: eb_rhel7cis_rule_5_2_13
+  - set_fact:
+      mode_rhel7cis_rule_5_2_13: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_2_13|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_2_13|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_13|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.13
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.2.13 | PATCH | Ensure SSH LoginGraceTime is set to one minute or less"
+  lineinfile:
+      state: present
+      dest: /etc/ssh/sshd_config
+      regexp: '^LoginGraceTime'
+      line: "LoginGraceTime {{ rhel7cis_sshd['logingracetime'] }}"
+  register:  rhel7cis_rule_5_2_13_out
+  notify:
+      - restart sshd
+  when:
+      - (rhel7cis_rule_5_2_13|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_13|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.13
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_13|bool)) }}"
+
+- name: Display Output | 5.2.13 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_2_13_status: Unknown
+    - block:
+      - name: Display Output | 5.2.13 | When Not Compliant
+        debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.2.13 |SSH LoginGraceTime is set to one minute or less|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_13_out.changed}}"
+      - set_fact:
+          cis_noncompliant_status: true
+          cis_noncompliant_5_2_13_status: NonCompliant
+          cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.2.13"] }}'
+      when:
+          - rhel7cis_rule_5_2_13_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_13|bool))
+    - block:
+      - name: Display Output | 5.2.13 | When Compliant
+        debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.2.13 |SSH LoginGraceTime is set to one minute or less|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_13_out.changed}}"
+      - set_fact:
+          cis_noncompliant_5_2_13_status: Compliant
+      when:
+          - not rhel7cis_rule_5_2_13_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_13|bool)
+  when:
+      - rhel7cis_rule_5_2_13|bool or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_13|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.13
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.2.13 | AFTER | Ensure SSH LoginGraceTime is set to one minute or less"
+  block:
+  - shell: grep "LoginGraceTime" /etc/ssh/sshd_config 2>&1;true
+    ignore_errors: yes
+    register: ea_rhel7cis_rule_5_2_13
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.2.13","description":"Ensure SSH LoginGraceTime is set to one minute or less","before":eb_rhel7cis_rule_5_2_13.stdout,"after":ea_rhel7cis_rule_5_2_13.stdout,"mode":mode_rhel7cis_rule_5_2_13,"status":cis_noncompliant_5_2_13_status}] }}'
+    when: eb_rhel7cis_rule_5_2_13.stdout is defined and ea_rhel7cis_rule_5_2_13 is defined
+  when:
+      - (rhel7cis_rule_5_2_13|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_13|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.13
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.2.14 | BEFORE | Ensure SSH access is limited"
+  block:
+  - set_fact:
+      cis_noncompliant_5_2_14_status: Unknown
+  - shell: grep "AllowUsers" /etc/ssh/sshd_config;grep "AllowGroups" /etc/ssh/sshd_config;grep "DenyUsers" /etc/ssh/sshd_config;grep "DenyGroups" /etc/ssh/sshd_config;true
+    register: eb_rhel7cis_rule_5_2_14
+  - set_fact:
+      mode_rhel7cis_rule_5_2_14: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_2_14|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_2_14|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_14|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.14
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.2.14 | PATCH | Ensure SSH access is limited"
+  block:
+      - name: "SCORED | 5.2.14 | PATCH | Ensure SSH access is limited - allowusers"
+        lineinfile:
+            state: present
+            dest: /etc/ssh/sshd_config
+            regexp: "^AllowUsers"
+            line: AllowUsers {{ rhel7cis_sshd['allowusers'] }}
+        register:  rhel7cis_rule_5_2_14a_out
+        notify:
+            - restart sshd
+        when:
+            - "rhel7cis_sshd['allowusers']|default('') != ''"
+
+      - name: "SCORED | 5.2.14 | PATCH | Ensure SSH access is limited - allowgroups"
+        lineinfile:
+            state: present
+            dest: /etc/ssh/sshd_config
+            regexp: "^AllowGroups"
+            line: AllowGroups {{ rhel7cis_sshd['allowgroups'] }}
+        register:  rhel7cis_rule_5_2_14b_out
+        notify:
+            - restart sshd
+        when:
+            - "rhel7cis_sshd['allowgroups']|default('') != ''"
+
+      - name: "SCORED | 5.2.14 | PATCH | Ensure SSH access is limited - denyusers"
+        lineinfile:
+            state: present
+            dest: /etc/ssh/sshd_config
+            regexp: "^DenyUsers"
+            line: DenyUsers {{ rhel7cis_sshd['denyusers'] }}
+        register:  rhel7cis_rule_5_2_14c_out
+        notify:
+            - restart sshd
+        when:
+            - "rhel7cis_sshd['denyusers']|default('') != ''"
+
+      - name: "SCORED | 5.2.14 | PATCH | Ensure SSH access is limited - denygroups"
+        lineinfile:
+            state: present
+            dest: /etc/ssh/sshd_config
+            regexp: "^DenyGroups"
+            line: DenyGroups {{ rhel7cis_sshd['denygroups'] }}
+        register:  rhel7cis_rule_5_2_14d_out
+        notify:
+            - restart sshd
+        when:
+            - "rhel7cis_sshd['denygroups']|default('') != ''"
+  when:
+      - rhel7cis_rule_5_2_14|bool or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_14|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.14
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_14|bool)) }}"
+
+- name: Display Output | 5.2.14 | Check Compliant
+  block:
+    - name: Display Output | 5.2.14 (1) | When Not Compliant
+      debug:
+          msg="NOT_COMPLIANT|CIS_RESULT| 5.2.14 Ensure SSH access is limited - allowusers||{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_14a_out.changed}}"
+      when:
+          - rhel7cis_rule_5_2_14a_out.changed
+    - name: Display Output | 5.2.14 (1) | When Compliant
+      debug:
+          msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.2.14 |Ensure SSH access is limited - allowusers|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_14a_out.changed}}"
+      when:
+          - not rhel7cis_rule_5_2_14a_out.changed
+    - name: Display Output | 5.2.14 (2) | When Not Compliant
+      debug:
+          msg="NOT_COMPLIANT|CIS_RESULT| 5.2.14 Ensure SSH access is limited - allowgroups||{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_14b_out.changed}}"
+      when:
+          - rhel7cis_rule_5_2_14b_out.changed
+    - name: Display Output | 5.2.14 (2) | When Compliant
+      debug:
+          msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.2.14 |Ensure SSH access is limited - allowgroups|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_14b_out.changed}}"
+      when:
+          - not rhel7cis_rule_5_2_14b_out.changed
+    - name: Display Output | 5.2.14 (3) | When Not Compliant
+      debug:
+          msg="NOT_COMPLIANT|CIS_RESULT| 5.2.14 Ensure SSH access is limited - denyusers||{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_14c_out.changed}}"
+      when:
+          - rhel7cis_rule_5_2_14c_out.changed
+    - name: Display Output | 5.2.14 (3) | When Compliant
+      debug:
+          msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.2.14 |Ensure SSH access is limited - denyusers|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_14c_out.changed}}"
+      when:
+          - not rhel7cis_rule_5_2_14c_out.changed
+    - name: Display Output | 5.2.14 (4) | When Not Compliant
+      debug:
+          msg="NOT_COMPLIANT|CIS_RESULT| 5.2.14 Ensure SSH access is limited - denygroups||{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_14d_out.changed}}"
+      when:
+          - rhel7cis_rule_5_2_14d_out.changed
+    - name: Display Output | 5.2.14 (4) | When Compliant
+      debug:
+          msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.2.14 |Ensure SSH access is limited - denygroups|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_14d_out.changed}}"
+      when:
+          - not rhel7cis_rule_5_2_14d_out.changed
+  when:
+      - rhel7cis_rule_5_2_14|bool or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_14|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.14
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.2.14 | AFTER | Ensure SSH access is limited"
+  block:
+  - set_fact:
+        cis_noncompliant_status: true
+        cis_noncompliant_5_2_14_status: NonCompliant
+        cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.2.14"] }}'
+    when:
+      - (rhel7cis_rule_5_2_14a_out.changed or rhel7cis_rule_5_2_14b_out.changed or rhel7cis_rule_5_2_14c_out.changed or rhel7cis_rule_5_2_14d_out.changed) and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_14|bool))
+  - set_fact:
+        cis_noncompliant_5_2_14_status: Compliant
+    when:
+      - (not rhel7cis_rule_5_2_14a_out.changed and not rhel7cis_rule_5_2_14b_out.changed and not rhel7cis_rule_5_2_14c_out.changed and not rhel7cis_rule_5_2_14d_out.changed) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_14|bool)
+  - shell: grep "AllowUsers" /etc/ssh/sshd_config;grep "AllowGroups" /etc/ssh/sshd_config;grep "DenyUsers" /etc/ssh/sshd_config;grep "DenyGroups" /etc/ssh/sshd_config;true
+    ignore_errors: yes
+    register: ea_rhel7cis_rule_5_2_14
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.2.14","description":"Ensure SSH access is limited","before":eb_rhel7cis_rule_5_2_14.stdout,"after":ea_rhel7cis_rule_5_2_14.stdout,"mode":mode_rhel7cis_rule_5_2_14,"status":cis_noncompliant_5_2_14_status}] }}'
+    when: eb_rhel7cis_rule_5_2_14.stdout is defined and ea_rhel7cis_rule_5_2_14 is defined
+  when:
+      - (rhel7cis_rule_5_2_14|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_14|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.14
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.2.15 | BEFORE | Ensure SSH warning banner is configured"
+  block:
+  - shell: grep "^Banner" /etc/ssh/sshd_config 2>&1;true
+    ignore_errors: yes
+    register: eb_rhel7cis_rule_5_2_15
+  - set_fact:
+      mode_rhel7cis_rule_5_2_15: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_2_15|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_2_15|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_15|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.15
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.2.15 | PATCH | Ensure SSH warning banner is configured"
+  lineinfile:
+      state: present
+      dest: /etc/ssh/sshd_config
+      regexp: '^Banner'
+      line: 'Banner /etc/issue.net'
+  register:  rhel7cis_rule_5_2_15_out
+  notify:
+      - restart sshd
+  when:
+      - (rhel7cis_rule_5_2_15|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_15|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.15
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_15|bool)) }}"
+
+- name: Display Output | 5.2.15 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_2_15_status: Unknown
+    - block:
+      - name: Display Output | 5.2.15 | When Not Compliant
+        debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.2.15 |SSH warning banner is configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_15_out.changed}}"
+      - set_fact:
+          cis_noncompliant_status: true
+          cis_noncompliant_5_2_15_status: NonCompliant
+          cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.2.15"] }}'
+      when:
+          - rhel7cis_rule_5_2_15_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_2_15|bool))
+    - block:
+      - name: Display Output | 5.2.15 | When Compliant
+        debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.2.15 |SSH warning banner is configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_2_15_out.changed}}"
+      - set_fact:
+          cis_noncompliant_5_2_15_status: Compliant
+      when:
+          - not rhel7cis_rule_5_2_15_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_15|bool)
+  when:
+      - rhel7cis_rule_5_2_15|bool or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_15|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.15
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.2.15 | AFTER | Ensure SSH warning banner is configured"
+  block:
+  - shell: grep "^Banner" /etc/ssh/sshd_config 2>&1;true
+    ignore_errors: yes
+    register: ea_rhel7cis_rule_5_2_15
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.2.15","description":"Ensure SSH warning banner is configured","before":eb_rhel7cis_rule_5_2_15.stdout,"after":ea_rhel7cis_rule_5_2_15.stdout,"mode":mode_rhel7cis_rule_5_2_15,"status":cis_noncompliant_5_2_15_status}] }}'
+    when: eb_rhel7cis_rule_5_2_15.stdout is defined and ea_rhel7cis_rule_5_2_15 is defined
+  when:
+      - (rhel7cis_rule_5_2_15|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_2_15|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.2.15
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.3.1 | BEFORE | Ensure password creation requirements are configured"
+  block:
+  - shell: cat /etc/security/pwquality.conf | grep "=" | grep -v "^#" 2>&1;true
+    ignore_errors: yes
+    register: eb_rhel7cis_rule_5_3_1
+  - set_fact:
+      mode_rhel7cis_rule_5_3_1: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_3_1|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_3_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_3_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.3.1
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.3.1 | PATCH | Ensure password creation requirements are configured"
+  lineinfile:
+      state: present
+      dest: /etc/security/pwquality.conf
+      regexp: '^{{ item.key }}'
+      line: '{{ item.key }} = {{ item.value }}'
+  register:  rhel7cis_rule_5_3_1_out
+  with_items:
+      - { key: 'minlen',  value: "{{ rhel7cis_pass_minlen }}" }
+      - { key: 'dcredit', value: "{{ rhel7cis_pass_dcredit }}" }
+      - { key: 'ucredit', value: "{{ rhel7cis_pass_ucredit }}" }
+      - { key: 'ocredit', value: "{{ rhel7cis_pass_ocredit }}" }
+      - { key: 'lcredit', value: "{{ rhel7cis_pass_lcredit }}" }
+      - { key: 'difok', value: "{{ rhel7cis_pass_difok }}" }
+  when:
+      - (rhel7cis_rule_5_3_1|bool and fix_mode|bool) or fix_rhel7cis_rule_5_3_1|bool
+  tags:
+      - level1
+      - patch
+      - rule_5.3.1
+
+- name: Display Output | 5.3.1 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_3_1_status: Unknown
+    - name: Reading Configuration Settings | 5.3.1
+      shell: cat /etc/security/pwquality.conf | grep "=" | grep -v "^#";true
+      register: rule_531_results
+
+    - name: Initialize with empty defaults if not set
+      set_fact:
+        rule_531_config: "{{ {'minlen':'', 'dcredit':'', 'ucredit':'', 'ocredit':'', 'lcredit':'', 'difok':''} }}"
+
+    - set_fact:
+        rule_531_config: "{{ rule_531_config | default({}) | combine( dict([ item.partition('=')[::2]|map('trim') ]) ) }}"
+      with_items: "{{ rule_531_results.stdout_lines }}"
+      when: item.split('=')|length > 1
+      no_log: true
+
+    - name: Expecting following Configuration
+      debug:
+        msg:
+          - "rhel7cis_pass_minlen: {{ rhel7cis_pass_minlen }}"
+          - "rhel7cis_pass_dcredit: {{ rhel7cis_pass_dcredit }}"
+          - "rhel7cis_pass_ucredit: {{ rhel7cis_pass_ucredit }}"
+          - "rhel7cis_pass_lcredit: {{ rhel7cis_pass_lcredit }}"
+          - "rhel7cis_pass_ocredit: {{ rhel7cis_pass_ocredit }}"
+          - "rhel7cis_pass_difok: {{ rhel7cis_pass_difok }}"
+          - "in parser map:"
+          - "rhel7cis_pass_minlen: {{ rule_531_config['minlen'] }}"
+          - "rhel7cis_pass_dcredit: {{ rule_531_config['dcredit'] }}"
+          - "rhel7cis_pass_ucredit: {{ rule_531_config['ucredit'] }}"
+          - "rhel7cis_pass_lcredit: {{ rule_531_config['lcredit'] }}"
+          - "rhel7cis_pass_ocredit: {{ rule_531_config['ocredit'] }}"
+          - "rhel7cis_pass_difok: {{ rule_531_config['difok'] }}"
+
+    - block:
+        - name: Display Output | 5.3.1 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.3.1 |password creation requirements are configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_3_1_out.changed}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_5_3_1_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.3.1"] }}'
+      when: rule_531_config['minlen']|int != rhel7cis_pass_minlen|int or rule_531_config['dcredit']|int != rhel7cis_pass_dcredit|int or rule_531_config['ucredit']|int != rhel7cis_pass_ucredit|int or rule_531_config['lcredit']|int != rhel7cis_pass_lcredit|int or rule_531_config['ocredit']|int != rhel7cis_pass_ocredit|int or rule_531_config['difok']|int != rhel7cis_pass_difok|int
+
+    - block:
+        - name: Display Output | 5.3.1 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.3.1 |password creation requirements are configured|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_3_1_out.changed}}"
+        - set_fact:
+            cis_noncompliant_5_3_1_status: Compliant
+      when:
+        - rule_531_config['minlen']|int == rhel7cis_pass_minlen|int
+        - rule_531_config['dcredit']|int == rhel7cis_pass_dcredit|int
+        - rule_531_config['ucredit']|int == rhel7cis_pass_ucredit|int
+        - rule_531_config['lcredit']|int == rhel7cis_pass_lcredit|int
+        - rule_531_config['ocredit']|int == rhel7cis_pass_ocredit|int
+        - rule_531_config['difok']|int == rhel7cis_pass_difok|int
+  when:
+      - (rhel7cis_rule_5_3_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_3_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.3.1
+      - customcheck
+  check_mode: no
+          
+
+- name: "EVIDENCE | 5.3.1 | AFTER | Ensure password creation requirements are configured"
+  block:
+  - shell: cat /etc/security/pwquality.conf | grep "=" | grep -v "^#" 2>&1;true
+    ignore_errors: yes
+    register: ea_rhel7cis_rule_5_3_1
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.3.1","description":"Ensure password creation requirements are configured","before":eb_rhel7cis_rule_5_3_1.stdout,"after":ea_rhel7cis_rule_5_3_1.stdout,"mode":mode_rhel7cis_rule_5_3_1,"status":cis_noncompliant_5_3_1_status,"overrides":{"rhel7cis_pass_minlen":rhel7cis_pass_minlen,"rhel7cis_pass_dcredit":rhel7cis_pass_dcredit,"rhel7cis_pass_ucredit":rhel7cis_pass_ucredit,"rhel7cis_pass_lcredit":rhel7cis_pass_lcredit,"rhel7cis_pass_ocredit":rhel7cis_pass_ocredit,"rhel7cis_pass_difok":rhel7cis_pass_difok} }] }}'
+    when: eb_rhel7cis_rule_5_3_1.stdout is defined and ea_rhel7cis_rule_5_3_1.stdout is defined
+  when:
+      - (rhel7cis_rule_5_3_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_3_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.3.1
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.3.2 | BEFORE | Ensure lockout for failed password attempts is configured"
+  block:
+  - shell: cat /etc/pam.d/password-auth | grep pam_unix.so;cat /etc/pam.d/system-auth | grep pam_unix.so;true
+    register: eb_rhel7cis_rule_5_3_2
+  - set_fact:
+      mode_rhel7cis_rule_5_3_2: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_3_2|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_3_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_3_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.3.2
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.3.2 | PATCH | Ensure lockout for failed password attempts is configured"
+  shell: |
+    cat /etc/pam.d/password-auth | grep pam_unix.so
+    cat /etc/pam.d/system-auth | grep pam_unix.so
+    #echo "auth required pam_faillock.so preauth audit silent deny=5 unlock_time=900" >> /etc/pam.d/system-auth
+    #echo "auth [success=1 default=bad] pam_unix.so" >> /etc/pam.d/system-auth
+    #echo "auth [default=die] pam_faillock.so authfail audit deny=5 unlock_time=900" >> /etc/pam.d/system-auth
+    #echo "auth sufficient pam_faillock.so authsucc audit deny=5 unlock_time=900" >> /etc/pam.d/system-auth
+  changed_when: no
+  when:
+      - (rhel7cis_rule_5_3_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_3_2|bool)
+      #- not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_5.3.2
+      - notimplemented
+
+#Requires a manual review of pam.d /etc/pam.d/password-auth and /etc/pam.d/system-auth files
+- name: Display Output | 5.3.2 | When Compliant
+  debug:
+      msg="MANUAL_CHECK_REQUIRED|CIS_RESULT| 5.3.2 |lockout for failed password attempts is configured|{{ansible_hostname}}|NOT_AUTOMATED|SKIPPED"
+  when:
+      - (rhel7cis_rule_5_3_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_3_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.3.2
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.3.2 | AFTER | Ensure lockout for failed password attempts is configured"
+  block:
+  - shell: cat /etc/pam.d/password-auth | grep pam_unix.so;cat /etc/pam.d/system-auth | grep pam_unix.so;true
+    register: ea_rhel7cis_rule_5_3_2
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.3.2","description":"Ensure lockout for failed password attempts is configured (Manual)","before":eb_rhel7cis_rule_5_3_2.stdout,"after":ea_rhel7cis_rule_5_3_2.stdout,"mode":mode_rhel7cis_rule_5_3_2,"status":"Manual"}] }}'
+    when: eb_rhel7cis_rule_5_3_2.stdout is defined and ea_rhel7cis_rule_5_3_2 is defined
+  when:
+      - (rhel7cis_rule_5_3_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_3_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.3.2
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.3.3 | BEFORE | Ensure password reuse is limited"
+  block:
+  - shell: egrep '^password\s+sufficient\s+pam_unix.so' /etc/pam.d/password-auth;egrep '^password\s+sufficient\s+pam_unix.so' /etc/pam.d/system-auth;egrep '^password\s+required\s+pam_pwhistory.so' /etc/pam.d/password-auth;egrep '^password\s+required\s+pam_pwhistory.so' /etc/pam.d/system-auth;true
+    register: eb_rhel7cis_rule_5_3_3
+  - set_fact:
+      mode_rhel7cis_rule_5_3_3: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_3_3|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_3_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_3_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.3.3
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.3.3 | PATCH | Verify password reuse is limited"
+  shell: |
+      egrep '^password\s+sufficient\s+pam_unix.so' /etc/pam.d/password-auth
+      egrep '^password\s+sufficient\s+pam_unix.so' /etc/pam.d/system-auth
+      egrep '^password\s+required\s+pam_pwhistory.so' /etc/pam.d/password-auth
+      egrep '^password\s+required\s+pam_pwhistory.so' /etc/pam.d/system-auth
+      true
+  register:  rhel7cis_rule_5_3_3_out
+  changed_when: no
+  when:
+      - (rhel7cis_rule_5_3_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_3_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.3.3
+      - customcheck
+      - notimplemented
+  check_mode: no
+
+- name: Display Output | 5.3.3 | When Not Implemented
+  debug:
+      msg="MANUAL_CHECK_REQUIRED|CIS_RESULT| 5.3.3 |password reuse is limited|{{ansible_hostname}}|MANUAL_VERIFICATION_REQUIRED|{{rhel7cis_rule_5_3_3_out.stdout}}"
+  when:
+      - (rhel7cis_rule_5_3_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_3_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.3.3
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.3.3 | AFTER | Verify password reuse is limited"
+  block:
+  - shell: egrep '^password\s+sufficient\s+pam_unix.so' /etc/pam.d/password-auth;egrep '^password\s+sufficient\s+pam_unix.so' /etc/pam.d/system-auth;egrep '^password\s+required\s+pam_pwhistory.so' /etc/pam.d/password-auth;egrep '^password\s+required\s+pam_pwhistory.so' /etc/pam.d/system-auth;true
+    register: ea_rhel7cis_rule_5_3_3
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.3.3","description":"Verify password reuse is limited (Manual)","before":eb_rhel7cis_rule_5_3_3.stdout,"after":ea_rhel7cis_rule_5_3_3.stdout,"mode":mode_rhel7cis_rule_5_3_3,"status":"Manual"}] }}'
+    when: eb_rhel7cis_rule_5_3_3.stdout is defined and ea_rhel7cis_rule_5_3_3 is defined
+  when:
+      - (rhel7cis_rule_5_3_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_3_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.3.3
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.3.4 | BEFORE | Ensure password hashing algorithm is SHA-512"
+  block:
+  - set_fact:
+      cis_noncompliant_5_3_4_status: Unknown
+      cis_noncompliant_5_3_4a_status: Unknown
+      cis_noncompliant_5_3_4b_status: Unknown
+  - shell: egrep '^password\s+sufficient\s+pam_unix.so' /etc/pam.d/password-auth;egrep '^password\s+sufficient\s+pam_unix.so' /etc/pam.d/system-auth;true
+    register: eb_rhel7cis_rule_5_3_4
+  - set_fact:
+      mode_rhel7cis_rule_5_3_4: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_3_4|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_3_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_3_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.3.4
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.3.4 | PATCH | Ensure password hashing algorithm is SHA-512"
+  command: authconfig --passalgo=sha512 --update
+  failed_when: no
+  when:
+      - (rhel7cis_rule_5_3_4|bool and fix_mode|bool) or fix_rhel7cis_rule_5_3_4|bool
+  tags:
+      - level1
+      - patch
+      - rule_5.3.4
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_3_4|bool)) }}"
+
+- name: "SCORED | 5.3.4 | PATCH | Verify password hashing algorithm is SHA-512"
+  shell: |
+      egrep '^password\s+sufficient\s+pam_unix.so' /etc/pam.d/password-auth | awk '{for(i=1;i<=NF;i++) {if ($i ~ /^sha512/) print $i}}'
+  failed_when: no
+  changed_when: no
+  register:  rhel7cis_rule_5_3_4a_out
+  when:
+      - (rhel7cis_rule_5_3_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_3_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.3.4
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.3.4 | PATCH | Verify password hashing algorithm is SHA-512"
+  shell: |
+      egrep '^password\s+sufficient\s+pam_unix.so' /etc/pam.d/system-auth | awk '{for(i=1;i<=NF;i++) {if ($i ~ /^sha512/) print $i}}'
+  failed_when: no
+  changed_when: no
+  register:  rhel7cis_rule_5_3_4b_out
+  when:
+      - (rhel7cis_rule_5_3_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_3_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.3.4
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 5.3.4 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 5.3.4 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.3.4 |password hashing algorithm is SHA-512-password-auth|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_5_3_4a_out.stdout}}"
+        - set_fact:
+            cis_noncompliant_5_3_4a_status: NonCompliant
+      when: (rhel7cis_rule_5_3_4a_out.stdout | length == 0 ) or (rhel7cis_rule_5_3_4a_out.stderr | length > 0 )
+    - block:
+        - name: Display Output | 5.3.4 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.3.4 |password hashing algorithm is SHA-512-password-auth|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_5_3_4a_out.stdout}}"
+        - set_fact:
+            cis_noncompliant_5_3_4a_status: Compliant
+      when: (rhel7cis_rule_5_3_4a_out.stdout | length > 0) and (rhel7cis_rule_5_3_4a_out.stderr | length == 0 )
+    - block:
+        - name: Display Output | 5.3.4 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.3.4 |password hashing algorithm is SHA-512-system-auth|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_5_3_4b_out.stdout}}"
+        - set_fact:
+            cis_noncompliant_5_3_4b_status: NonCompliant
+      when: (rhel7cis_rule_5_3_4b_out.stdout | length == 0 ) or (rhel7cis_rule_5_3_4b_out.stderr | length > 0 )
+    - block:
+        - name: Display Output | 5.3.4 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.3.4 |password hashing algorithm is SHA-512-system-auth|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_5_3_4b_out.stdout}}"
+        - set_fact:
+            cis_noncompliant_5_3_4b_status: Compliant
+      when: (rhel7cis_rule_5_3_4b_out.stdout | length > 0) and (rhel7cis_rule_5_3_4b_out.stderr | length == 0 )
+  when:
+      - (rhel7cis_rule_5_3_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_3_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.3.4
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.3.4 | AFTER | Ensure password hashing algorithm is SHA-512"
+  block:
+  - set_fact:
+      cis_noncompliant_status: true
+      cis_noncompliant_5_3_4_status: NonCompliant
+      cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.3.4"] }}'
+    when: cis_noncompliant_5_3_4a_status=="NonCompliant" or cis_noncompliant_5_3_4b_status=="NonCompliant"
+  - set_fact:
+      cis_noncompliant_5_3_4_status: Compliant
+    when: cis_noncompliant_5_3_4a_status=="Compliant" and cis_noncompliant_5_3_4b_status=="Compliant"
+  - shell: egrep '^password\s+sufficient\s+pam_unix.so' /etc/pam.d/password-auth;egrep '^password\s+sufficient\s+pam_unix.so' /etc/pam.d/system-auth;true
+    register: ea_rhel7cis_rule_5_3_4
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.3.4","description":"Ensure password hashing algorithm is SHA-512","before":eb_rhel7cis_rule_5_3_4.stdout,"after":ea_rhel7cis_rule_5_3_4.stdout,"mode":mode_rhel7cis_rule_5_3_4,"status":cis_noncompliant_5_3_4_status}] }}'
+    when: eb_rhel7cis_rule_5_3_4.stdout is defined and ea_rhel7cis_rule_5_3_4 is defined
+  when:
+      - (rhel7cis_rule_5_3_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_3_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.3.4
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.4.1.1 | BEFORE | Ensure password expiration is 365 days or less"
+  block:
+    - name: "EVIDENCE | 5.4.1.1 | BEFORE | Ensure password expiration is 365 days or less"
+      shell: |
+       grep ^PASS_MAX_DAYS /etc/login.defs | awk '{print $2}'
+      register: eb_rhel7cis_rule_5_4_1_1
+      changed_when: false
+    - set_fact:
+        mode_rhel7cis_rule_5_4_1_1: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_4_1_1|bool) else 'check_only'}}"
+        rhel7cis_pass_max_days: "{{rhel7cis_pass['max_days'] | int}}" 
+        cis_noncompliant_5_4_1_1_status: Unknown
+  when:
+      - (rhel7cis_rule_5_4_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_1_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.1.1
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.4.1.1 | PATCH | Ensure password expiration is 365 days or less"
+  lineinfile:
+      state: present
+      dest: /etc/login.defs
+      regexp: '^PASS_MAX_DAYS'
+      line: "PASS_MAX_DAYS {{ rhel7cis_pass['max_days'] }}"
+  register:  rhel7cis_rule_5_4_1_1_out
+  when:
+      - ((fix_mode|bool) or (fix_rhel7cis_rule_5_4_1_1|bool)) and (eb_rhel7cis_rule_5_4_1_1.stdout|int > rhel7cis_pass_max_days|int)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.1.1
+
+- name: Display Output | 5.4.1.1 | Check Compliant
+  block:
+    - block:
+      - shell: |
+          grep ^PASS_MAX_DAYS /etc/login.defs | awk '{print $2}'
+        register: ea_rhel7cis_rule_5_4_1_1
+        changed_when: false
+    - block:
+      - name: Display Output | 5.4.1.1 | When Not Compliant
+        debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.4.1.1 |Ensure password expiration is 365 days or less|{{ansible_hostname}}|CHANGE_REQUIRED|{{(eb_rhel7cis_rule_5_4_1_1.stdout|int > rhel7cis_pass_max_days|int)|bool}}"
+      - set_fact:
+          cis_noncompliant_status: true
+          cis_noncompliant_5_4_1_1_status: NonCompliant
+          cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.4.1.1"] }}'
+      when:
+          (ea_rhel7cis_rule_5_4_1_1.stdout|int > rhel7cis_pass_max_days|int)
+    - block:
+      - name: Display Output | 5.4.1.1 | When Compliant
+        debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.4.1.1 |Ensure password expiration is 365 days or less|{{ansible_hostname}}|CHANGE_REQUIRED|{{not (eb_rhel7cis_rule_5_4_1_1.stdout|int <= rhel7cis_pass_max_days|int)|bool}}"
+      - set_fact:
+          cis_noncompliant_5_4_1_1_status: Compliant
+      when: (ea_rhel7cis_rule_5_4_1_1.stdout|int <= rhel7cis_pass_max_days|int)
+  when: (rhel7cis_rule_5_4_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_1_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.1.1
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.4.1.1 | AFTER | Ensure password expiration is 365 days or less"
+  block:
+    - name: "EVIDENCE | 5.4.1.1 | AFTER | Ensure password expiration is 365 days or less"
+      set_fact:
+        cis_evidence: '{{ cis_evidence + [{"id":"5.4.1.1","description":"Ensure password expiration is 365 days or less","before":eb_rhel7cis_rule_5_4_1_1.stdout,"after":ea_rhel7cis_rule_5_4_1_1.stdout,"mode":mode_rhel7cis_rule_5_4_1_1,"status":cis_noncompliant_5_4_1_1_status }] }}'
+  when:
+      - (rhel7cis_rule_5_4_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_1_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.1.1
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.4.1.2 | BEFORE | Ensure minimum days between password changes is 7 or more"
+  block:
+    - name: "EVIDENCE | 5.4.1.2 | BEFORE | Ensure minimum days between password changes is 7 or more"
+      shell: |
+        grep ^PASS_MIN_DAYS /etc/login.defs | awk '{print $2}'
+      register: eb_rhel7cis_rule_5_4_1_2
+    - set_fact:
+        mode_rhel7cis_rule_5_4_1_2: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_4_1_2|bool) else 'check_only'}}"
+        cis_noncompliant_5_4_1_2_status: Unknown
+  when:
+      - (rhel7cis_rule_5_4_1_2|bool) or ((fix_mode|bool) or (fix_rhel7cis_rule_5_4_1_2|bool))
+  tags:
+      - level1
+      - patch
+      - rule_5.4.1.2
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.4.1.2 | PATCH | Ensure minimum days between password changes is 7 or more"
+  lineinfile:
+      state: present
+      dest: /etc/login.defs
+      regexp: '^PASS_MIN_DAYS'
+      line: "PASS_MIN_DAYS {{ rhel7cis_pass['min_days'] }}"
+  register:  rhel7cis_rule_5_4_1_2_out
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_5_4_1_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.1.2
+
+- name: Display Output | 5.4.1.2 | Check Compliant
+  block:
+    - shell: |
+        grep ^PASS_MIN_DAYS /etc/login.defs | awk '{print $2}'
+      register: ea_rhel7cis_rule_5_4_1_2
+      changed_when: false
+    - name: Display Output | 5.4.1.2 | When Not Compliant
+      debug:
+          msg="NOT_COMPLIANT|CIS_RESULT| 5.4.1.2 |minimum days between password changes is 7 or more|{{ansible_hostname}}|CHANGE_REQUIRED|(ea_rhel7cis_rule_5_4_1_2.stdout|int < 7)|bool"
+      when:
+          (ea_rhel7cis_rule_5_4_1_2.stdout|int < 7)
+    - set_fact:
+        cis_noncompliant_status: true
+        cis_noncompliant_5_4_1_2_status: NonCompliant
+        cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.4.1.2"] }}'
+      when:
+          (ea_rhel7cis_rule_5_4_1_2.stdout|int < 7)
+    - name: Display Output | 5.4.1.2 | When Compliant
+      debug:
+          msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.4.1.2 |minimum days between password changes is 7 or more|{{ansible_hostname}}|CHANGE_REQUIRED|not (ea_rhel7cis_rule_5_4_1_2.stdout|int >=7)|bool"
+      when:
+          (ea_rhel7cis_rule_5_4_1_2.stdout|int >= 7 )
+    - set_fact:
+        cis_noncompliant_5_4_1_2_status: Compliant
+      when:
+          (ea_rhel7cis_rule_5_4_1_2.stdout|int >= 7 )
+  when:
+      - rhel7cis_rule_5_4_1_2|bool or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_1_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.1.2
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.4.1.2 | AFTER | Ensure password expiration is 365 days or less"
+  block:
+    - name: "EVIDENCE | 5.4.1.2 | AFTER | Ensure password expiration is 365 days or less"
+      set_fact:
+        cis_evidence: '{{ cis_evidence + [{"id":"5.4.1.2","description":"minimum days between password changes is 7 or more","before":eb_rhel7cis_rule_5_4_1_2.stdout,"after":ea_rhel7cis_rule_5_4_1_2.stdout,"mode":mode_rhel7cis_rule_5_4_1_2,"status":cis_noncompliant_5_4_1_2_status }] }}'
+  when:
+      - (rhel7cis_rule_5_4_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_1_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.1.2
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.4.1.3 | BEFORE | Ensure password expiration warning days is 7 or more"
+  block:
+    - shell: |
+        grep ^PASS_WARN_AGE /etc/login.defs | awk '{print $2}'
+      register: eb_rhel7cis_rule_5_4_1_3
+    - set_fact:
+        mode_rhel7cis_rule_5_4_1_3: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_4_1_3|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_4_1_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_1_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.1.3
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.4.1.3 | PATCH | Ensure password expiration warning days is 7 or more"
+  lineinfile:
+      state: present
+      dest: /etc/login.defs
+      regexp: '^PASS_WARN_AGE'
+      line: "PASS_WARN_AGE {{ rhel7cis_pass['warn_age'] }}"
+  register:  rhel7cis_rule_5_4_1_3_out
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_5_4_1_3|bool)
+      - (eb_rhel7cis_rule_5_4_1_3.stdout|int < 7)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.1.3
+
+- name: Display Output | 5.4.1.3 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_4_1_3_status: Unknown
+    - shell: |
+        grep ^PASS_WARN_AGE /etc/login.defs | awk '{print $2}'
+      register: ea_rhel7cis_rule_5_4_1_3
+    - block:
+      - name: Display Output | 5.4.1.3 | When Not Compliant
+        debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.4.1.3 |password expiration warning days is 7 or more|{{ansible_hostname}}|CHANGE_REQUIRED|{{ea_rhel7cis_rule_5_4_1_3.stdout|int < 7}}"
+      - set_fact:
+          cis_noncompliant_status: true
+          cis_noncompliant_5_4_1_3_status: NonCompliant
+          cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.4.1.3"] }}'
+      when: ea_rhel7cis_rule_5_4_1_3.stdout|int < 7
+    - block:
+      - name: Display Output | 5.4.1.3 | When Compliant
+        debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.4.1.3 |password expiration warning days is 7 or more|{{ansible_hostname}}|CHANGE_REQUIRED|{{ea_rhel7cis_rule_5_4_1_3.stdout|int >= 7}}"
+      - set_fact:
+          cis_noncompliant_5_4_1_3_status: Compliant
+      when: ea_rhel7cis_rule_5_4_1_3.stdout|int >= 7
+  when:
+      - (rhel7cis_rule_5_4_1_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_1_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.1.3
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.4.1.3 | AFTER | Ensure password expiration warning days is 7 or more"
+  block:
+  - set_fact:
+        cis_evidence: '{{ cis_evidence + [{"id":"5.4.1.3","description":"Ensure password expiration warning days is 7 or more","before":eb_rhel7cis_rule_5_4_1_3.stdout,"after":ea_rhel7cis_rule_5_4_1_3.stdout,"mode":mode_rhel7cis_rule_5_4_1_3,"status":cis_noncompliant_5_4_1_3_status }] }}'
+  when:
+      - (rhel7cis_rule_5_4_1_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_1_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.1.3
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.4.1.4 | BEFORE | Ensure inactive password lock is 30 days or less"
+  block:
+    - shell: |
+        useradd -D | grep INACTIVE | cut -f2 -d=
+      register: eb_rhel7cis_rule_5_4_1_4
+    - set_fact:
+        inactive_age: "{{ rhel7cis_pass['inactive_age']|int }}"
+        mode_rhel7cis_rule_5_4_1_4: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_4_1_4|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_4_1_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_1_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.1.4
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.4.1.4 | BEFORE | Ensure inactive password lock is 30 days or less  -- user accounts"
+  shell: |
+      egrep "^[^:]+:[^\\!*]" /etc/shadow | cut -d: -f1,7
+  register: eb_user_output
+  failed_when: no
+  changed_when: no
+  when:
+      - rhel7cis_rule_5_4_1_4|bool or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_1_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.1.4
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.4.1.4 | PATCH | Ensure inactive password lock is 30 days or less"
+  block:
+    - name: "SCORED | 5.4.1.4 | PATCH | Ensure inactive password lock is 30 days or less - Set default INACTIVE setting"
+      shell: |
+        useradd --defaults --inactive {{ rhel7cis_pass['inactive_age'] }}
+      register: output
+      changed_when: output.stdout == "Changed"
+      when: (eb_rhel7cis_rule_5_4_1_4.stdout|int > inactive_age|int) or (eb_rhel7cis_rule_5_4_1_4.stdout|int == -1)
+
+    - name: "SCORED | 5.4.1.4 | PATCH | Ensure inactive password lock is 30 days or less - Change each user that doesn't conform"
+      shell: |
+          INPUT="{{ item }}"
+          PARAMETERS=(${INPUT//:/ })
+          USER=${PARAMETERS[0]}
+          EXPIRY=${PARAMETERS[1]}
+          if [[ (-z "$EXPIRY" ) || ($EXPIRY -gt {{ rhel7cis_pass['inactive_age'] }}) ]]; then
+              echo "Changing ${USER}'s inactive password lock setting"
+              chage --inactive {{ rhel7cis_pass['inactive_age'] }} ${USER}
+          fi
+      register: output
+      with_items:
+          - "{{ eb_user_output.stdout_lines }} "
+      changed_when: output.stdout != ""
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_5_4_1_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.1.4
+      - skip_ansible_lint
+  check_mode: no
+
+- name: "SCORED | 5.4.1.4 | PATCH | Verify inactive password lock is 30 days or less"
+  shell: |
+      #useradd -D | grep INACTIVE | awk -F'=' ' $2 <= 30 {print $2}'
+      useradd -D | grep INACTIVE | awk -F'=' ' $2 <= 30 && $2 != -1 {print $2}'
+  register:  ea_rhel7cis_rule_5_4_1_4
+  failed_when: no
+  changed_when: no
+  when:
+      - (rhel7cis_rule_5_4_1_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_1_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.1.4
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.4.1.4 | PATCH | Verify user accounts password lock is 30 days or less -- user accounts"
+  shell: |
+      egrep "^[^:]+:[^\\!*]" /etc/shadow | cut -d: -f1,7 | awk -F':' ' $2 > 30 {print $2}'
+  register: ea_user_output
+  failed_when: no
+  changed_when: no
+  when:
+      - (rhel7cis_rule_5_4_1_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_1_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.1.4
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 5.4.1.4 | Check Compliant
+  block:
+    - block:
+      - name: Display Output | 5.4.1.4 | Not Compliant Ensure inactive password lock is 30 days or less
+        debug:
+          msg="NOT_COMPLIANT|CIS_RESULT| 5.4.1.4 |Ensure inactive password lock is 30 days or less|{{ansible_hostname}}|CHANGE_REQUIRED|True"
+      when: (ea_rhel7cis_rule_5_4_1_4.stdout | length == 0 ) or (ea_rhel7cis_rule_5_4_1_4.stderr | length > 0 )
+    - block:
+      - name: Display Output | 5.4.1.4 | Compliant Ensure inactive password lock is 30 days or less
+        debug:
+          msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.4.1.4 |Ensure inactive password lock is 30 days or less|{{ansible_hostname}}|CHANGE_REQUIRED|False"
+      when: (ea_rhel7cis_rule_5_4_1_4.stdout | length > 0) and (ea_rhel7cis_rule_5_4_1_4.stderr | length == 0 )
+    - block:
+      - name: Display Output | 5.4.1.4 | Not Compliant Ensure user password lock is 30 days or less -- user accounts
+        debug:
+          msg="NOT_COMPLIANT|CIS_RESULT| 5.4.1.4 |Ensure user password lock is 30 days or less -- user accounts|{{ansible_hostname}}|CHANGE_REQUIRED|True"
+      when: (ea_user_output.stdout | length > 0 )
+    - block:
+      - name: Display Output | 5.4.1.4 | Compliant Ensure user password lock is 30 days or less -- user accounts
+        debug:
+          msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.4.1.4 |Ensure user password lock is 30 days or less -- user accounts|{{ansible_hostname}}|CHANGE_REQUIRED|False"
+      when: (ea_user_output.stdout | length == 0)
+    - set_fact:
+        cis_noncompliant_status: true
+        cis_noncompliant_5_4_1_4_status: NonCompliant
+        cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.4.1.4"] }}'
+      when: (ea_rhel7cis_rule_5_4_1_4.stdout | length == 0 ) or (ea_rhel7cis_rule_5_4_1_4.stderr | length > 0 ) or (ea_user_output.stdout | length > 0 )
+    - set_fact:
+        cis_noncompliant_5_4_1_4_status: Compliant
+      when: ((ea_rhel7cis_rule_5_4_1_4.stdout | length > 0) and (ea_rhel7cis_rule_5_4_1_4.stderr | length == 0 )) and (ea_user_output.stdout | length == 0 )
+  when:
+      - rhel7cis_rule_5_4_1_4|bool or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_1_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.1.4
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.4.1.4 | AFTER | Ensure inactive password lock is 30 days or less"
+  block:
+    - shell: |
+        useradd -D | grep INACTIVE | cut -f2 -d=
+      register: ea_rhel7cis_rule_5_4_1_4
+    - shell: |
+        egrep "^[^:]+:[^\\!*]" /etc/shadow | cut -d: -f1,7
+      register: ea_user_output
+    - set_fact:
+        cis_evidence: '{{ cis_evidence + [{"id":"5.4.1.4","description":"Ensure user password lock is 30 days or less and user accounts","before":eb_rhel7cis_rule_5_4_1_4.stdout+eb_user_output.stdout,"after":ea_rhel7cis_rule_5_4_1_4.stdout+ea_user_output.stdout,"mode":mode_rhel7cis_rule_5_4_1_4,"status":cis_noncompliant_5_4_1_4_status }] }}'
+  when:
+      - (rhel7cis_rule_5_4_1_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_1_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.1.4
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.4.1.5 | BEFORE | Ensure all users last password change date is in the past"
+  block:
+    - set_fact:
+        mode_rhel7cis_rule_5_4_1_5: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_4_1_5|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_4_1_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_1_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.1.5
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.4.1.5 | PATCH | Verify no duplicate group names exist"
+  shell: |
+        NOW=$(date +%s)
+        for i in $(egrep ^[^:]+:[^\!*] /etc/shadow | cut -d: -f1); do
+            UPA=$(chage --list $i | grep "Last password change" | cut -d: -f2 | sed -e 's/^[[:space:]]*//')
+            if [ "$UPA" != "never" ]; then
+                EPOCH=$(date -d "$UPA" +%s)
+                if [[ $EPOCH -gt $NOW ]]; then
+                    echo Password change in future - $i - $UPA
+                fi
+            fi
+        done
+        true
+
+  register: rhel7cis_rule_5_4_1_5_out
+  ignore_errors: yes
+  changed_when: no
+  when:
+      - (rhel7cis_rule_5_4_1_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_1_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.1.5
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 5.4.1.5 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 5.4.1.5 | When Not Compliant
+          debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.4.1.5 |No Duplicate Group Names Exist|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_5_4_1_5_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_5_4_1_5_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.4.1.5"] }}'
+      when: (rhel7cis_rule_5_4_1_5_out.stdout | length > 0) or (rhel7cis_rule_5_4_1_5_out.stderr | length > 0)
+    - block:
+        - name: Display Output | 5.4.1.5 | When Compliant
+          debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.4.1.5 |No Duplicate Group Names Exist|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_5_4_1_5_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_5_4_1_5_status: Compliant
+      when: (rhel7cis_rule_5_4_1_5_out.stdout | length == 0) and (rhel7cis_rule_5_4_1_5_out.stderr | length == 0)
+  when:
+      - (rhel7cis_rule_5_4_1_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_1_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.1.5
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.4.1.5 | AFTER | Ensure all users last password change date is in the past"
+  block:
+  - set_fact:
+      eb_rhel7cis_rule_5_4_1_5: "{{ rhel7cis_rule_5_4_1_5_out }}"
+      ea_rhel7cis_rule_5_4_1_5: "{{ rhel7cis_rule_5_4_1_5_out }}"
+  - set_fact:
+        cis_evidence: '{{ cis_evidence + [{"id":"5.4.1.5","description":"Ensure all users last password change date is in the past","before":eb_rhel7cis_rule_5_4_1_5.stdout,"after":ea_rhel7cis_rule_5_4_1_5.stdout,"mode":mode_rhel7cis_rule_5_4_1_5,"status":("Manual" if (ea_rhel7cis_rule_5_4_1_5.stdout|length>0) else "Compliant") }] }}'
+  when:
+      - (rhel7cis_rule_5_4_1_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_1_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.1.5
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.4.2 | BEFORE | Ensure system accounts are non-login"
+  block:
+    - name: "EVIDENCE | 5.4.2 | BEFORE | Ensure system accounts are non-login"
+      shell: |
+        egrep -v "^\+" /etc/passwd | awk -F: '($1!="root" && $1!="sync" && $1!="shutdown" && $1!="halt" && $3<{{ rhel7cis_rule_5_4_2_min_uid }} && $7!="/sbin/nologin" && $7!="/bin/false") {print $1}'
+      register: eb_rhel7cis_rule_5_4_2
+      changed_when: false
+    - set_fact:
+        mode_rhel7cis_rule_5_4_2: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_4_2|bool) else 'check_only'}}"
+      changed_when: false
+  when: (rhel7cis_rule_5_4_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.2
+      - customcheck
+
+- name: "SCORED | 5.4.2 | PATCH | Ensure system accounts are non-login"
+  shell: |
+    for user in `echo "{{ item }}"`; do if [ $user != "root" ]; then usermod -L $user; if [ $user != "sync" ] && [ $user != "shutdown" ] && [ $user != "halt" ]; then usermod -s /sbin/nologin $user; fi;fi; done
+  with_items: "{{ eb_rhel7cis_rule_5_4_2.stdout_lines }}"
+  register:  rhel7cis_rule_5_4_2_out
+  when:
+      - ((fix_mode|bool) or (fix_rhel7cis_rule_5_4_2|bool)) and (eb_rhel7cis_rule_5_4_2.stdout_lines != "")
+  tags:
+      - level1
+      - patch
+      - rule_5.4.2
+
+- name: Display Output | 5.4.2 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_4_3_status: Unknown
+      changed_when: false
+    - block:
+      - name: Display Output | 5.4.2 | When Not Compliant
+        debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.4.2 |Ensure system accounts are non-login|{{ansible_hostname}}|CHANGE_REQUIRED|{{eb_rhel7cis_rule_5_4_2.stdout != ""}}"
+      - set_fact:
+          cis_noncompliant_status: true
+          cis_noncompliant_5_4_2_status: NonCompliant
+          cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.4.2"] }}'
+      when: (eb_rhel7cis_rule_5_4_2.stdout != "")
+    - block:
+      - name: Display Output | 5.4.2 | When Compliant
+        debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.4.2 |Ensure system accounts are non-login|{{ansible_hostname}}|CHANGE_REQUIRED|{{eb_rhel7cis_rule_5_4_2.stdout == ""}}"
+      - set_fact:
+          cis_noncompliant_5_4_2_status: Compliant
+      when:
+          (eb_rhel7cis_rule_5_4_2.stdout == "")
+  when:
+      - rhel7cis_rule_5_4_2|bool or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.2
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.4.2 | AFTER | Ensure system accounts are non-login"
+  block:
+    - name: "EVIDENCE | 5.4.2 | AFTER | Ensure system accounts are non-login"
+      shell: |
+        egrep -v "^\+" /etc/passwd | awk -F: '($1!="root" && $1!="sync" && $1!="shutdown" && $1!="halt" && $3<{{ rhel7cis_rule_5_4_2_min_uid }} && $7!="/sbin/nologin" && $7!="/bin/false") {print $1}'
+      register: ea_rhel7cis_rule_5_4_2
+      changed_when: false
+    - set_fact:
+        mode_rhel7cis_rule_5_4_2: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_4_2|bool) else 'check_only' }}"
+      changed_when: false
+    - set_fact:
+        cis_evidence: '{{ cis_evidence + [{"id":"5.4.2","description":"Ensure system accounts are non-login","before":eb_rhel7cis_rule_5_4_2.stdout,"after":ea_rhel7cis_rule_5_4_2.stdout,"mode":mode_rhel7cis_rule_5_4_2,"status":cis_noncompliant_5_4_2_status }] }}'
+  when:
+      - (rhel7cis_rule_5_4_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.2
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.4.3 | BEFORE | Ensure default group for the root account is GID 0"
+  block:
+    - name: "EVIDENCE | 5.4.3 | BEFORE | Ensure default group for the root account is GID 0"
+      shell: |
+        grep "^root:" /etc/passwd | cut -f4 -d:
+      register: eb_rhel7cis_rule_5_4_3
+      changed_when: false
+    - set_fact:
+        mode_rhel7cis_rule_5_4_3: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_4_3|bool) else 'check_only'}}"
+      changed_when: false
+  when:
+      - (rhel7cis_rule_5_4_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.3
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.4.3 | PATCH | Ensure default group for the root account is GID 0"
+  command: usermod -g 0 root
+  changed_when: no
+  failed_when: no
+  when:
+      - ((fix_mode|bool) or (fix_rhel7cis_rule_5_4_3|bool)) and (eb_rhel7cis_rule_5_4_3.stdout|int != 0)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.3
+
+- name: Display Output | 5.4.3 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_4_3_status: Unknown
+      changed_when: false
+    - name: "EVIDENCE | 5.4.3 | AFTER | Ensure default group for the root account is GID 0"
+      shell: |
+        grep "^root:" /etc/passwd | cut -f4 -d:
+      register: ea_rhel7cis_rule_5_4_3
+      changed_when: false
+    - block:
+      - name: Display Output | 5.4.3 | When Not Compliant
+        debug:
+          msg="NOT_COMPLIANT|CIS_RESULT| 5.4.3 |default group for the root account is GID 0|{{ansible_hostname}}|CHANGE_REQUIRED|{{(eb_rhel7cis_rule_5_4_3.stdout|int == 0)}}"
+      - set_fact:
+          cis_noncompliant_status: true
+          cis_noncompliant_5_4_3_status: NonCompliant
+          cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.4.3"] }}'
+      when: (ea_rhel7cis_rule_5_4_3.stdout|int != 0)
+    - block:
+      - name: Display Output | 5.4.3 | When Compliant
+        debug:
+          msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.4.3 |default group for the root account is GID 0|{{ansible_hostname}}|CHANGE_REQUIRED|{{not (eb_rhel7cis_rule_5_4_3.stdout|int == 0)}}"
+      - set_fact:
+          cis_noncompliant_5_4_3_status: Compliant
+      when: (ea_rhel7cis_rule_5_4_3.stdout|int == 0)
+  when:
+    - (rhel7cis_rule_5_4_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.3
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.4.3 | AFTER | Ensure default group for the root account is GID 0"
+  block:
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.4.3","description":"Ensure default group for the root account is GID 0","before":eb_rhel7cis_rule_5_4_3.stdout,"after":ea_rhel7cis_rule_5_4_3.stdout,"mode":mode_rhel7cis_rule_5_4_3,"status":cis_noncompliant_5_4_3_status}] }}'
+    changed_when: false
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_5_4_3|bool) or (rhel7cis_rule_5_4_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.3
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+# umask 077 - Only you have read/write access for files, and read/write/search for directories you own. All others have no access permissions to your files or directories.
+# umask 027 - You have read/write access for files, and read/write/search for directories you own. The owning group would be allowed to read the newly-created files as well. All others have no access permissions to your files or directories.
+# umask 022 - Only you have read/write access for files, and read/write/search for directories you own. All others have read access only to your files, and read/search access to your directories.
+# umask 002 - Assigns permissions so that only you and members of your group have read/write access to files, and read/write/search access to directories you own. All others have read access only to your files, and read/search to your directories.
+# (Owner,Group,Others) 777 - 027 = 057 (Read Write Execute for Owner, Read Execute from Group, No permission for other)
+#*********************************************************************************
+- name: "EVIDENCE | 5.4.4 | BEFORE | Ensure default user umask is 027 or more restrictive"
+  block:
+    - shell: grep "umask" /etc/bashrc /etc/profile /etc/profile.d/*.sh
+      register: eb_rhel7cis_rule_5_4_4
+    - set_fact:
+        mode_rhel7cis_rule_5_4_4: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_4_4|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_4_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.4
+  check_mode: no
+
+- name: "SCORED | 5.4.4 | PATCH | Ensure default user umask is 027 or more restrictive"
+  block:
+      - name: "SCORED | 5.4.4 | PATCH | Ensure default user umask is 027 or more restrictive - /etc/bashrc"
+        replace:
+            path: /etc/bashrc
+            regexp: '(^\s+umask) 022'
+            replace: '\1 027'
+        register:  rhel7cis_rule_5_4_4a_out
+
+      - name: "SCORED | 5.4.4 | PATCH | Ensure default user umask is 027 or more restrictive - /etc/profile"
+        replace:
+            path: /etc/profile
+            regexp: '(^\s+umask) 022'
+            replace: '\1 027'
+        register:  rhel7cis_rule_5_4_4b_out
+  when:
+      - (rhel7cis_rule_5_4_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.4
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_4_4|bool)) }}"
+
+- name: Display Output | 5.4.4 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_4_4_status: Unknown
+        cis_noncompliant_5_4_4a_status: Unknown
+        cis_noncompliant_5_4_4b_status: Unknown
+    - block:    
+      - name: Display Output | 5.4.4 | When Not Compliant
+        debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.4.4 |default user umask is 027 or more restrictive -/etc/bashrc|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_4_4a_out.changed}}"
+      - set_fact:
+          cis_noncompliant_5_4_4a_status: NonCompliant
+      when:
+          - rhel7cis_rule_5_4_4a_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_4_4|bool))
+    - block:    
+      - name: Display Output | 5.4.4 | When Compliant
+        debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.4.4 |default user umask is 027 or more restrictive -/etc/bashrc|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_4_4a_out.changed}}"
+      - set_fact:
+          cis_noncompliant_5_4_4a_status: Compliant
+      when:
+          - not rhel7cis_rule_5_4_4a_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_4|bool)
+    - block:    
+      - name: Display Output | 5.4.4 | When Not Compliant
+        debug:
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.4.4 |default user umask is 027 or more restrictive -/etc/profile|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_4_4b_out.changed}}"
+      - set_fact:
+          cis_noncompliant_5_4_4b_status: NonCompliant
+      when:
+          - rhel7cis_rule_5_4_4b_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_4_4|bool))
+    - block:    
+      - name: Display Output | 5.4.4 | When Compliant
+        debug:
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.4.4 |default user umask is 027 or more restrictive -/etc/profile|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_4_4b_out.changed}}"
+      - set_fact:
+          cis_noncompliant_5_4_4b_status: Compliant
+      when:
+          - not rhel7cis_rule_5_4_4b_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_4|bool)
+  when:
+      - rhel7cis_rule_5_4_4|bool or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.4
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.4.4 | AFTER | Ensure default user umask is 027 or more restrictive"
+  block:
+  - set_fact:
+      cis_noncompliant_status: true
+      cis_noncompliant_5_4_4_status: NonCompliant
+      cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.4.4"] }}'
+    when: cis_noncompliant_5_4_4a_status=='NonCompliant' or cis_noncompliant_5_4_4b_status=='NonCompliant'
+  - set_fact:
+      cis_noncompliant_5_4_4_status: Compliant
+    when: cis_noncompliant_5_4_4a_status=='Compliant' and cis_noncompliant_5_4_4b_status=='Compliant'
+  - shell: grep "umask" /etc/bashrc /etc/profile /etc/profile.d/*.sh
+    register: ea_rhel7cis_rule_5_4_4
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.4.4","description":"Ensure default user umask is 027 or more restrictive","before":eb_rhel7cis_rule_5_4_4.stdout,"after":ea_rhel7cis_rule_5_4_4.stdout,"mode":mode_rhel7cis_rule_5_4_4,"status":cis_noncompliant_5_4_4_status }] }}'
+  when:
+      - (rhel7cis_rule_5_4_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.4.4
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.4.5 | BEFORE | Ensure default user shell timeout is 900 seconds or less"
+  block:
+    - name: "EVIDENCE | 5.4.5 | BEFORE | Ensure default user shell timeout is 900 seconds or less - /etc/bashrc and /etc/profile"
+      shell: |
+        grep "TMOUT" /etc/bashrc
+        grep "TMOUT" /etc/profile
+        true
+      register: eb_rhel7cis_rule_5_4_5
+      changed_when: False
+    - set_fact:
+        mode_rhel7cis_rule_5_4_5: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_4_5|bool) else 'check_only'}}"
+      changed_when: False
+  when:
+      - (rhel7cis_rule_5_4_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_5|bool)
+  tags:
+      - level2
+      - patch
+      - rule_5.4.5
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.4.5 | PATCH | Ensure default user shell timeout is 900 seconds or less"
+  block:
+      - name: "SCORED | 5.4.5 | PATCH | Ensure default user shell timeout is 900 seconds or less - /etc/bashrc"
+        lineinfile:
+            state: present
+            dest: /etc/bashrc
+            regexp: "^TMOUT"
+            line: TMOUT=600
+        register:  rhel7cis_rule_5_4_5a_out
+        when:
+            - (fix_mode|bool) or (fix_rhel7cis_rule_5_4_5|bool)
+      - name: "SCORED | 5.4.5 | PATCH | Ensure default user shell timeout is 900 seconds or less - /etc/profile"
+        lineinfile:
+            state: present
+            dest: /etc/profile
+            regexp: "^TMOUT"
+            line: TMOUT=600
+        register:  rhel7cis_rule_5_4_5b_out
+        when:
+            - (fix_mode|bool) or (fix_rhel7cis_rule_5_4_5|bool)
+  tags:
+      - level2
+      - patch
+      - rule_5.4.5
+
+- name: Display Output | 5.4.5 | Check Compliant
+  block:
+    - set_fact:
+        cis_noncompliant_5_4_5_status: Unknown
+    - shell: |
+        grep "^\s*TMOUT" /etc/bashrc| cut -f2 -d= | awk -v max= '{if(max==""){max=$1};if($1>max){max=$1}}END{print max}'
+      register: ea_rhel7cis_rule_5_4_5a
+      changed_when: False
+    - shell: |
+        grep "^\s*TMOUT" /etc/profile| cut -f2 -d= | awk -v max= '{if(max==""){max=$1};if($1>max){max=$1}}END{print max}'
+      register: ea_rhel7cis_rule_5_4_5b
+      changed_when: False
+    - name: Display Output | 5.4.5 (1) | When Not Compliant
+      debug:
+          msg="NOT_COMPLIANT|CIS_RESULT| 5.4.5 | Ensure default user shell timeout is 900 seconds or less - /etc/bashrc|{{ansible_hostname}}|CHANGE_REQUIRED|{{(ea_rhel7cis_rule_5_4_5a.stdout|int > 900)|bool}}"
+      when: 
+        - (ea_rhel7cis_rule_5_4_5a.stdout|length == 0) or (ea_rhel7cis_rule_5_4_5a.stdout|int > 900)
+    - name: Display Output | 5.4.5 (1) | When Compliant
+      debug:
+          msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.4.5 |Ensure default user shell timeout is 900 seconds or less - /etc/bashrc|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_4_5a_out.changed}}"
+      when: 
+        - (ea_rhel7cis_rule_5_4_5a.stdout|length != 0) and (ea_rhel7cis_rule_5_4_5a.stdout|int <= 900)
+    - name: Display Output | 5.4.5 (2) | When Not Compliant
+      debug:
+          msg="NOT_COMPLIANT|CIS_RESULT| 5.4.5 | Ensure default user shell timeout is 900 seconds or less - /etc/profile|{{ansible_hostname}}|CHANGE_REQUIRED|{{not rhel7cis_rule_5_4_5b_out.changed}}"
+      when: 
+        - (ea_rhel7cis_rule_5_4_5b.stdout|length == 0) or (ea_rhel7cis_rule_5_4_5b.stdout|int > 900)
+    - name: Display Output | 5.4.5 (2) | When Compliant
+      debug:
+          msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.4.5 |Ensure default user shell timeout is 900 seconds or less - /etc/profile|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_4_5b_out.changed}}"
+      when: 
+        - (ea_rhel7cis_rule_5_4_5b.stdout|length != 0) and (ea_rhel7cis_rule_5_4_5b.stdout|int <= 900)
+    - set_fact:
+        cis_noncompliant_status: true
+        cis_noncompliant_5_4_5_status: NonCompliant
+        cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.4.5"] }}'
+      when: 
+        - (ea_rhel7cis_rule_5_4_5a.stdout|length == 0) or (ea_rhel7cis_rule_5_4_5b.stdout|length == 0) or (ea_rhel7cis_rule_5_4_5a.stdout|int > 900) or (ea_rhel7cis_rule_5_4_5b.stdout|int > 900)
+    - set_fact:
+        cis_noncompliant_5_4_5_status: Compliant
+      when: 
+        - (ea_rhel7cis_rule_5_4_5a.stdout|length != 0) and (ea_rhel7cis_rule_5_4_5b.stdout|length != 0) and (ea_rhel7cis_rule_5_4_5b.stdout|int <= 900) and (ea_rhel7cis_rule_5_4_5b.stdout|int <=900)
+  when:
+      - (rhel7cis_rule_5_4_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_5|bool)
+  tags:
+      - level2
+      - patch
+      - rule_5.4.5
+      - customcheck
+
+- name: "EVIDENCE | 5.4.5 | AFTER | Ensure default user shell timeout is 900 seconds or less"
+  block:
+    - name: "EVIDENCE | 5.4.5 | AFTER | Ensure default user shell timeout is 900 seconds or less - /etc/bashrc and /etc/profile"
+      shell: |
+        grep "TMOUT" /etc/bashrc
+        grep "TMOUT" /etc/profile
+        true
+      register: ea_rhel7cis_rule_5_4_5
+      changed_when: False
+    - name: "EVIDENCE | 5.4.5 | AFTER | Ensure default user shell timeout is 900 seconds or less - /etc/bashrc and /etc/profile"
+      set_fact:
+        cis_evidence: '{{ cis_evidence + [{"id":"5.4.5","description":"Ensure default user shell timeout is 900 seconds or less - /etc/bashrc and /etc/profile","before":eb_rhel7cis_rule_5_4_5.stdout,"after":ea_rhel7cis_rule_5_4_5.stdout,"mode":mode_rhel7cis_rule_5_4_5,"status":cis_noncompliant_5_4_5_status}] }}'
+  when: (rhel7cis_rule_5_4_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_5|bool)
+  tags: 
+      - level2
+      - patch
+      - rule_5.4.5
+      - customcheck
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.5 | BEFORE | Ensure root login is restricted to system console"
+  block:
+  - shell: cat /etc/securetty
+    register: eb_rhel7cis_rule_5_5
+  - set_fact:
+      mode_rhel7cis_rule_5_5: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_5|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.5
+  check_mode: no
+  #check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_5|bool)) }}"
+
+- name: "NOTSCORED | 5.5 | PATCH | Ensure root login is restricted to system console"
+  command: /bin/true
+  changed_when: no
+  when:
+      - rhel7cis_rule_5_5|bool
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_5.5
+      - notimplemented
+
+#*********************************************************************************
+#Manual but could add output of cat /etc/securetty
+#No rule
+#*********************************************************************************
+- name: Display Output | 5.5 | When Compliant
+  debug:
+      msg="MANUAL_CHECK_REQUIRED|CIS_RESULT| 5.5 |root login is restricted to system console|{{ansible_hostname}}|NOT_AUTOMATED|SKIPPED"
+  when:
+      - rhel7cis_rule_5_5|bool
+  tags:
+      - level1
+      - patch
+      - rule_5.5
+
+- name: "EVIDENCE | 5.5 | AFTER | Ensure root login is restricted to system console"
+  block:
+  - shell: cat /etc/securetty
+    register: ea_rhel7cis_rule_5_5
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.5","description":"Ensure root login is restricted to system console","before":eb_rhel7cis_rule_5_5.stdout,"after":ea_rhel7cis_rule_5_5.stdout,"mode":mode_rhel7cis_rule_5_5,"status":"Manual"}] }}'
+    when: eb_rhel7cis_rule_5_5.stdout is defined and ea_rhel7cis_rule_5_5.stdout is defined
+  when:
+      - (rhel7cis_rule_5_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.5
+  check_mode: no
+#*********************************************************************************
+- name: "EVIDENCE | 5.6 | BEFORE | Ensure access to the su command is restricted"
+  block:
+    - set_fact:
+        cis_noncompliant_5_6_status: Unknown
+        cis_noncompliant_5_6a_status: Unknown
+        cis_noncompliant_5_6b_status: Unknown
+    #- shell: echo -n `grep 'required        pam_wheel.so' /etc/pam.d/su` ; echo -n " || " ; grep  'wheel' /etc/group
+    - shell: grep 'pam_wheel.so' /etc/pam.d/su; grep 'wheel' /etc/group;true
+      register: eb_rhel7cis_rule_5_6
+    - set_fact:
+        mode_rhel7cis_rule_5_6: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_6|bool) else 'check_only'}}"
+  when:
+      - (rhel7cis_rule_5_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_6|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.6
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 5.6 | PATCH | Ensure access to the su command is restricted"
+  lineinfile:
+      state: present
+      dest: /etc/pam.d/su
+      regexp: '^(#)?auth\s+required\s+pam_wheel\.so'
+      line: 'auth           required        pam_wheel.so use_uid'
+  register:  rhel7cis_rule_5_6a_out
+  when:
+      - (rhel7cis_rule_5_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_6|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.6
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_6|bool)) }}"
+
+- name: "SCORED | 5.6 | PATCH | Ensure access to the su command is restricted - wheel group contains root"
+  user:
+      name: root
+      groups: wheel
+  register:  rhel7cis_rule_5_6b_out
+  when:
+      - (rhel7cis_rule_5_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_6|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.6
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_5_6|bool)) }}"
+
+- name: Display Output | 5.6 | Check Compliant
+  block:  
+    - block:
+        - name: Display Output | 5.6 | When Not Compliant
+          debug:
+              msg="NOT_COMPLIANT|CIS_RESULT| 5.6 |access to the su command is restricted|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_6a_out.changed}}"
+        - set_fact:
+            cis_noncompliant_5_6a_status: NonCompliant
+      when:
+          - rhel7cis_rule_5_6a_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_6|bool))
+    - block:
+        - name: Display Output | 5.6 | When Compliant
+          debug:
+              msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.6 |access to the su command is restricted|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_6a_out.changed}}"
+        - set_fact:
+            cis_noncompliant_5_6a_status: Compliant
+      when:
+          - not rhel7cis_rule_5_6a_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_6|bool)
+    - block:
+        - name: Display Output | 5.6 | When Not Compliant
+          debug:
+              msg="NOT_COMPLIANT|CIS_RESULT| 5.6 | access to the su command is restricted - wheel group contains root|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_6b_out.changed}}"
+        - set_fact:
+            cis_noncompliant_5_6b_status: NonCompliant
+      when:
+          - rhel7cis_rule_5_6b_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_5_6|bool))
+    - block:
+        - name: Display Output | 5.6 | When Compliant
+          debug:
+              msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.6 | access to the su command is restricted - wheel group contains root|{{ansible_hostname}}|CHANGE_REQUIRED|{{rhel7cis_rule_5_6b_out.changed}}"
+        - set_fact:
+            cis_noncompliant_5_6b_status: Compliant
+      when:
+          - not rhel7cis_rule_5_6b_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_5_6|bool)
+  when:
+      - (rhel7cis_rule_5_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_6|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.6
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 5.6 | AFTER | Ensure access to the su command is restricted"
+  block:
+  - set_fact:
+      cis_noncompliant_status: true
+      cis_noncompliant_5_6_status: NonCompliant
+      cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.6"] }}'
+    when: cis_noncompliant_5_6a_status=='NonCompliant' or cis_noncompliant_5_6b_status=='NonCompliant'
+  - set_fact:
+      cis_noncompliant_5_6_status: Compliant
+    when: cis_noncompliant_5_6a_status=='Compliant' and cis_noncompliant_5_6b_status=='Compliant'
+  #- shell: echo -n `grep 'required        pam_wheel.so' /etc/pam.d/su` ; echo -n " || " ; grep  'wheel' /etc/group
+  - shell: grep 'pam_wheel.so' /etc/pam.d/su; grep 'wheel' /etc/group;true
+    register: ea_rhel7cis_rule_5_6
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"5.6","description":"Ensure access to the su command is restricted","before":eb_rhel7cis_rule_5_6.stdout,"after":ea_rhel7cis_rule_5_6.stdout,"mode":mode_rhel7cis_rule_5_6,"status":cis_noncompliant_5_6_status}] }}'
+    when: eb_rhel7cis_rule_5_6.stdout is defined and ea_rhel7cis_rule_5_6.stdout is defined
+  when:
+      - (rhel7cis_rule_5_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_5_6|bool)
+  tags:
+      - level1
+      - patch
+      - rule_5.6
+      - customcheck
+  check_mode: no
+#*********************************************************************************

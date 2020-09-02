@@ -1,0 +1,57 @@
+---
+# tasks file for RHEL7-CIS
+- name: Check OS version and family
+  fail:
+      msg: "This role can only be run against RHEL 7. {{ ansible_distribution }} {{ ansible_distribution_major_version }} is not supported."
+  when:
+      - ansible_os_family == 'RedHat'
+      - ansible_distribution_major_version is version('7', '!=')
+  tags:
+      - always
+
+- name: Check ansible version
+  fail:
+      msg: You must use ansible 2.1 or greater
+  when: not ansible_version.full is version('2.1', '>=')
+  tags:
+      - always
+
+- import_tasks: prelim.yml
+  tags:
+      - prelim_tasks
+      - always
+
+- include_tasks: section1.yml
+  when: rhel7cis_section1|bool
+  tags:
+      - always
+
+- include_tasks: section2.yml
+  when: rhel7cis_section2|bool
+  tags:
+      - always
+
+- include_tasks: section3.yml
+  when: rhel7cis_section3|bool
+  tags:
+      - always
+
+- include_tasks: section4.yml
+  when: rhel7cis_section4|bool
+  tags:
+      - always
+
+- include_tasks: section5.yml
+  when: rhel7cis_section5|bool
+  tags:
+      - always
+
+- include_tasks: section6.yml
+  when: rhel7cis_section6|bool
+  tags:
+      - always
+
+- import_tasks: post.yml
+  tags:
+      - post_tasks
+      - always

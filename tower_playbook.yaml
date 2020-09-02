@@ -1,0 +1,81 @@
+---
+- name: Running RHEL CIS
+  hosts: all
+  become: yes
+#  become_user: root
+#  become_method: sudo
+  vars:
+    lock_file: "/tmp/ansible-playbook-{{ ansible_host }}.lock"
+  pre_tasks:
+    - name: get info on lock file
+      stat:
+        path: "{{ lock_file  }}"
+      register: lock_file_cfg
+      tags:
+        - always
+    - block:
+        - name: Shell to Get Epoch for comparison with lock file
+          shell: date +%s
+          register: ansible_date_time_epoch_shell_for_lock_file
+        - name: Debug date comparison
+          debug:
+            msg: "wait_for timeout={{ (600 - (ansible_date_time_epoch_shell_for_lock_file.stdout|float - lock_file_cfg.stat.mtime))|int }}"
+        - name: wait for lock file to be absent
+          wait_for:
+            path: "{{ lock_file }}"
+            state: absent
+            timeout: "{{ (600 - (ansible_date_time_epoch_shell_for_lock_file.stdout|float - lock_file_cfg.stat.mtime))|int }}" # Change this to larger value the time required for the role to execute
+          ignore_errors: true
+          when: (ansible_date_time_epoch_shell_for_lock_file.stdout|float - lock_file_cfg.stat.mtime) < 600
+      when: lock_file_cfg.stat.exists
+      tags:
+        - always
+    - name: create lock file
+      file:
+        path: "{{ lock_file }}"
+        state: touch
+      tags:
+        - always
+  post_tasks:
+    - name: remove lock file
+      file:
+        path: "{{ lock_file }}"
+        state: absent
+      tags:
+        - always
+  tasks:
+    - name: Set facts for retrieval of evidence
+      set_fact:
+        fix_mode: "{{ fix_mode | default(false) }}"
+        cis_noncompliant_aggregate: []
+        cis_noncompliant_status: false
+        cis_evidence: []
+      tags:
+        - always
+
+    - import_role:
+        name: "ansible-role-compliance-rhel7-cis"
+
+    - name: Set final boolean fact for compliant status
+      block:
+        - name: Displaying value of cis_noncompliant_status
+          debug:
+            var: cis_noncompliant_status
+        - name: Displaying value of cis_noncompliant_aggregate
+          debug:
+            var: cis_noncompliant_aggregate
+
+        - name: Set fact for the dictionary that contains all the variables to be parsed by operator
+          set_fact:
+            operator_response: '{{ operator_response | default({}) | combine( {"cis_noncompliant_status":cis_noncompliant_status,"cis_noncompliant_aggregate":cis_noncompliant_aggregate,"inventory_hostname":inventory_hostname,"ansible_hostname":ansible_hostname,"ansible_host":ansible_host,"cis_evidence":cis_evidence} ) }}'
+          no_log: true
+
+        # Print as loop item
+        - name: Operator Response
+          set_fact:
+            dummy: value # Just to make some task without output
+          with_items:
+            - "operator_response=>{{ operator_response | to_json }}<="
+
+      tags:
+        - always

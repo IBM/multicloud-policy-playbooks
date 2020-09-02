@@ -1,0 +1,4 @@
+---
+# meta: flush_handlers doesn't honor when clause
+# https://github.com/ansible/ansible/issues/41313
+- meta: flush_handlers

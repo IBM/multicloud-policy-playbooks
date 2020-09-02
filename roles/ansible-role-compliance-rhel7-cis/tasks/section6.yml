@@ -1,0 +1,2903 @@
+# The rpm -qf command can be used to determine which package a particular file belongs to. You can feed the output of the rpm -qf command to the rpm -V command.
+#   rpm -V `rpm -qf /etc/passwd`
+#   rpm -V `rpm -qf /bin/bash`
+#
+# Code Meaning
+# S File size differs.
+# M File mode differs (includes permissions and file type).
+# 5 The MD5 checksum differs.
+# D The major and minor version numbers differ on a device file. L A mismatch occurs in a link.
+# U The file ownership differs.
+# G The file group owner differs.
+# T The file time (mtime) differs.
+- name: "EVIDENCE | 6.1.1 | BEFORE | Audit system file permissions"
+  block:
+  - set_fact:
+      mode_rhel7cis_rule_6_1_1: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_1_1|bool) else 'check_only'}}"
+      cis_noncompliant_6_1_1_status: Unknown
+  when:
+      - (rhel7cis_rule_6_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_1|bool)
+  tags:
+      - level2
+      - patch
+      - rule_6.1.1
+      - customcheck
+  check_mode: no
+
+- name: "NOTSCORED | 6.1.1 | PATCH | Audit system file permissions"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (rhel7cis_rule_6_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_1|bool)
+      - not ansible_check_mode
+  tags:
+      - level2
+      - patch
+      - rule_6.1.1
+      - notimplemented
+
+- name: "NOTSCORED | 6.1.1 | PATCH | Audit system file permissions"
+  shell: rpm -a --verify;true # rpm -Va --nomtime --nosize --nomd5 --nolinkto
+  register: rhel7cis_rule_6_1_1_out
+  when:
+      - (rhel7cis_rule_6_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_1|bool)
+  tags:
+      - level2
+      - patch
+      - rule_6.1.1
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.1.1 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.1.1 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.1.1 |Verify system file permissions|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_1_1_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_1_1_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.1.1"] }}'
+      when: (rhel7cis_rule_6_1_1_out.stdout | length > 0 ) or (rhel7cis_rule_6_1_1_out.stderr | length > 0 )
+    - block:
+        - name: Display Output | 6.1.1 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.1.1 |Verify system file permissions|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_1_1_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_1_1_status: Compliant
+      when: (rhel7cis_rule_6_1_1_out.stdout | length == 0) and (rhel7cis_rule_6_1_1_out.stderr | length == 0 )
+  when:
+      - (rhel7cis_rule_6_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_1|bool)
+  tags:
+      - level2
+      - patch
+      - rule_6.1.1
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.1.1 | AFTER | Audit system file permissions"
+  block:
+  - set_fact:
+      eb_rhel7cis_rule_6_1_1: "{{ rhel7cis_rule_6_1_1_out }}"
+      ea_rhel7cis_rule_6_1_1: "{{ rhel7cis_rule_6_1_1_out }}"
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.1.1","description":"Audit system file permissions (Check only)","before":eb_rhel7cis_rule_6_1_1.stdout,"after":ea_rhel7cis_rule_6_1_1.stdout,"mode":mode_rhel7cis_rule_6_1_1,"status":cis_noncompliant_6_1_1_status }] }}'
+    when: eb_rhel7cis_rule_6_1_1.stdout is defined and ea_rhel7cis_rule_6_1_1.stdout is defined
+  when:
+      - (rhel7cis_rule_6_1_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_1|bool)
+  tags:
+      - level2
+      - patch
+      - rule_6.1.1
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.1.2 | BEFORE | Ensure permissions on /etc/passwd are configured"
+  block:
+  - shell: stat /etc/passwd | grep "Uid.*Gid";true
+    register: eb_rhel7cis_rule_6_1_2
+  - set_fact:
+      mode_rhel7cis_rule_6_1_2: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_1_2|bool) else 'check_only'}}"
+      cis_noncompliant_6_1_2_status: Unknown
+  when:
+      - (rhel7cis_rule_6_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.2
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.1.2 | PATCH | Ensure permissions on /etc/passwd are configured"
+  file:
+      dest: /etc/passwd
+      owner: root
+      group: root
+      mode: "u-x,go-wx" # 0644
+  register: rhel7cis_rule_6_1_2_out
+  when:
+      - (rhel7cis_rule_6_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.2
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_6_1_2|bool)) }}"
+
+- name: Display Output | 6.1.2 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.1.2 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.1.2 |Permissions On /etc/passwd Configured|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_1_2_out.mode}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_1_2_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.1.2"] }}'
+      when:
+          - rhel7cis_rule_6_1_2_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_6_1_2|bool))
+    - block:
+        - name: Display Output | 6.1.2 | When Compliant
+          debug:  
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.1.2 |Permissions On /etc/passwd Cofigured|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_1_2_out.mode}}"
+        - set_fact:
+            cis_noncompliant_6_1_2_status: Compliant
+      when:
+          - not rhel7cis_rule_6_1_2_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_2|bool)
+  when:
+      - (rhel7cis_rule_6_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.2
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.1.2 | AFTER | Ensure permissions on /etc/passwd are configured"
+  block:
+  - shell: stat /etc/passwd | grep "Uid.*Gid";true
+    register: ea_rhel7cis_rule_6_1_2
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.1.2","description":"Ensure permissions on /etc/passwd are configured","before":eb_rhel7cis_rule_6_1_2.stdout,"after":ea_rhel7cis_rule_6_1_2.stdout,"mode":mode_rhel7cis_rule_6_1_2,"status":cis_noncompliant_6_1_2_status }] }}'
+    when: eb_rhel7cis_rule_6_1_2.stdout is defined and ea_rhel7cis_rule_6_1_2.stdout is defined
+  when:
+      - (rhel7cis_rule_6_1_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.2
+      - customcheck
+  check_mode: no
+#**********************************************************************************************
+- name: "EVIDENCE | 6.1.3 | BEFORE | Ensure permissions on /etc/shadow are configured"
+  block:
+  - shell: stat /etc/shadow | grep "Uid.*Gid";true
+    register: eb_rhel7cis_rule_6_1_3
+  - set_fact:
+      mode_rhel7cis_rule_6_1_3: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_1_3|bool) else 'check_only'}}"
+      cis_noncompliant_6_1_3_status: Unknown
+  when:
+      - (rhel7cis_rule_6_1_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.3
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.1.3 | PATCH | Ensure permissions on /etc/shadow are configured"
+  file:
+      dest: /etc/shadow
+      owner: root
+      group: root
+      mode: 0000
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_1_3|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.1.3
+
+- name: "SCORED | 6.1.3 | PATCH | Verify permissions on /etc/shadow are configured"
+  stat:
+      path: /etc/shadow
+  register: rhel7cis_rule_6_1_3_out
+  when:
+      - (rhel7cis_rule_6_1_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.3
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.1.3 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.1.3 | When Not Compliant
+          debug:  
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.1.3 |Permissions On /etc/shadow Configured|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_1_3_out.stat.mode}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_1_3_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.1.3"] }}'
+      when: 
+          - rhel7cis_rule_6_1_3_out.stat.mode != '0000'
+    - block:
+        - name: Display Output | 6.1.3 | When Compliant
+          debug:  
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.1.3 |Permissions On /etc/shadow Cofigured|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_1_3_out.stat.mode}}"
+        - set_fact:
+            cis_noncompliant_6_1_3_status: Compliant
+      when: 
+          - rhel7cis_rule_6_1_3_out.stat.mode == '0000'
+  when:
+      - (rhel7cis_rule_6_1_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.3
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.1.3 | AFTER | Ensure permissions on /etc/shadow are configured"
+  block:
+  - shell: stat /etc/shadow | grep "Uid.*Gid";true
+    register: ea_rhel7cis_rule_6_1_3
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.1.3","description":"Ensure permissions on /etc/shadow are configured","before":eb_rhel7cis_rule_6_1_3.stdout,"after":ea_rhel7cis_rule_6_1_3.stdout,"mode":mode_rhel7cis_rule_6_1_3,"status":cis_noncompliant_6_1_3_status }] }}'
+    when: eb_rhel7cis_rule_6_1_3.stdout is defined and ea_rhel7cis_rule_6_1_3.stdout is defined
+  when:
+      - (rhel7cis_rule_6_1_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.3
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.1.4 | BEFORE | Ensure permissions on /etc/group are configured"
+  block:
+  - shell: stat /etc/group | grep "Uid.*Gid";true
+    register: eb_rhel7cis_rule_6_1_4
+  - set_fact:
+      mode_rhel7cis_rule_6_1_4: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_1_4|bool) else 'check_only'}}"
+      cis_noncompliant_6_1_4_status: Unknown
+  when:
+      - (rhel7cis_rule_6_1_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.4
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.1.4 | PATCH | Ensure permissions on /etc/group are configured"
+  file:
+      dest: /etc/group
+      owner: root
+      group: root
+      mode: "u-x,go-wx" # 0644
+  register: rhel7cis_rule_6_1_4_out
+  when:
+      - (rhel7cis_rule_6_1_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.4
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_6_1_4|bool)) }}"
+
+- name: Display Output | 6.1.4 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.1.4 | When Not Compliant
+          debug:  
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.1.4 |Permissions On /etc/group Configured|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_1_4_out.mode}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_1_4_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.1.4"] }}'
+      when:
+          - rhel7cis_rule_6_1_4_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_6_1_4|bool))
+    - block:
+        - name: Display Output | 6.1.4 | When Compliant
+          debug:  
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.1.4 |Permissions On /etc/group Cofigured|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_1_4_out.mode}}"
+        - set_fact:
+            cis_noncompliant_6_1_4_status: Compliant
+      when:
+          - not rhel7cis_rule_6_1_4_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_4|bool)
+  when:
+      - (rhel7cis_rule_6_1_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.4
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.1.4 | AFTER | Ensure permissions on /etc/group are configured"
+  block:
+  - shell: stat /etc/group | grep "Uid.*Gid";true
+    register: ea_rhel7cis_rule_6_1_4
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.1.4","description":"Ensure permissions on /etc/group are configured","before":eb_rhel7cis_rule_6_1_4.stdout,"after":ea_rhel7cis_rule_6_1_4.stdout,"mode":mode_rhel7cis_rule_6_1_4,"status":cis_noncompliant_6_1_4_status }] }}'
+    when: eb_rhel7cis_rule_6_1_4.stdout is defined and ea_rhel7cis_rule_6_1_4.stdout is defined
+  when:
+      - (rhel7cis_rule_6_1_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.4
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.1.5 | BEFORE | Ensure permissions on /etc/gshadow are configured"
+  block:
+  - shell: stat /etc/gshadow | grep "Uid.*Gid";true
+    register: eb_rhel7cis_rule_6_1_5
+  - set_fact:
+      mode_rhel7cis_rule_6_1_5: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_1_5|bool) else 'check_only'}}"
+      cis_noncompliant_6_1_5_status: Unknown
+  when:
+      - (rhel7cis_rule_6_1_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.3
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.1.5 | PATCH | Ensure permissions on /etc/gshadow are configured"
+  file:
+      dest: /etc/gshadow
+      owner: root
+      group: root
+      mode: 0000
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_1_5|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.1.5
+
+- name: "SCORED | 6.1.5 | PATCH | Verify permissions on /etc/gshadow are configured"
+  stat:
+      path: /etc/gshadow
+  register: rhel7cis_rule_6_1_5_out
+  when:
+      - (rhel7cis_rule_6_1_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.5
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.1.5 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.1.5 | When Not Compliant
+          debug:  
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.1.5 |Permissions On /etc/gshadow Configured|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_1_5_out.stat.mode}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_1_5_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.1.5"] }}'
+      when: 
+          - rhel7cis_rule_6_1_5_out.stat.mode != '0000'
+    
+    - block:
+        - name: Display Output | 6.1.5 | When Compliant
+          debug:  
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.1.5 |Permissions On /etc/gshadow Cofigured|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_1_5_out.stat.mode}}"
+        - set_fact:
+            cis_noncompliant_6_1_5_status: Compliant
+      when: 
+          - rhel7cis_rule_6_1_5_out.stat.mode == '0000'
+  when:
+      - (rhel7cis_rule_6_1_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.5
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.1.5 | AFTER | Ensure permissions on /etc/gshadow are configured"
+  block:
+  - shell: stat /etc/gshadow | grep "Uid.*Gid";true
+    register: ea_rhel7cis_rule_6_1_5
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.1.5","description":"Ensure permissions on /etc/gshadow are configured","before":eb_rhel7cis_rule_6_1_5.stdout,"after":ea_rhel7cis_rule_6_1_5.stdout,"mode":mode_rhel7cis_rule_6_1_5,"status":cis_noncompliant_6_1_5_status }] }}'
+    when: eb_rhel7cis_rule_6_1_5.stdout is defined and ea_rhel7cis_rule_6_1_5.stdout is defined
+  when:
+      - (rhel7cis_rule_6_1_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.5
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.1.6 | BEFORE | Ensure permissions on /etc/passwd- are configured"
+  block:
+  - shell: stat /etc/passwd- | grep "Uid.*Gid";true
+    register: eb_rhel7cis_rule_6_1_6
+  - set_fact:
+      mode_rhel7cis_rule_6_1_6: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_1_6|bool) else 'check_only'}}"
+      cis_noncompliant_6_1_6_status: Unknown
+  when:
+      - (rhel7cis_rule_6_1_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_6|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.6
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.1.6 | PATCH | Ensure permissions on /etc/passwd- are configured"
+  file:
+      dest: /etc/passwd-
+      owner: root
+      group: root
+      mode: "u-x,go-wx" # 0644
+  register: rhel7cis_rule_6_1_6_out
+  when:
+      - (rhel7cis_rule_6_1_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_6|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.6
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_6_1_6|bool)) }}"
+
+- name: Display Output | 6.1.6 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.1.6 | When Not Compliant
+          debug:  
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.1.6 |Permissions On /etc/passwd- Configured|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_1_6_out.mode}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_1_6_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.1.6"] }}'
+      when:
+          - rhel7cis_rule_6_1_6_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_6_1_6|bool))
+    - block:
+        - name: Display Output | 6.1.6 | When Compliant
+          debug:  
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.1.6 |Permissions On /etc/passwd- Cofigured|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_1_6_out.mode}}"
+        - set_fact:
+            cis_noncompliant_6_1_6_status: Compliant
+      when:
+          - not rhel7cis_rule_6_1_6_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_6|bool)
+  when:
+      - (rhel7cis_rule_6_1_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_6|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.6
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.1.6 | AFTER | Ensure permissions on /etc/passwd- are configured"
+  block:
+  - shell: stat /etc/passwd- | grep "Uid.*Gid";true
+    register: ea_rhel7cis_rule_6_1_6
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.1.6","description":"Ensure permissions on /etc/passwd- are configured","before":eb_rhel7cis_rule_6_1_6.stdout,"after":ea_rhel7cis_rule_6_1_6.stdout,"mode":mode_rhel7cis_rule_6_1_6,"status":cis_noncompliant_6_1_6_status }] }}'
+    when: eb_rhel7cis_rule_6_1_6.stdout is defined and ea_rhel7cis_rule_6_1_6.stdout is defined
+  when:
+      - (rhel7cis_rule_6_1_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_6|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.6
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.1.7 | BEFORE | Ensure permissions on /etc/shadow- are configured"
+  block:
+  - shell: stat /etc/shadow- | grep "Uid.*Gid";true
+    register: eb_rhel7cis_rule_6_1_7
+  - set_fact:
+      mode_rhel7cis_rule_6_1_7: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_1_7|bool) else 'check_only'}}"
+      cis_noncompliant_6_1_7_status: Unknown
+  when:
+      - (rhel7cis_rule_6_1_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_7|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.7
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.1.7 | PATCH | Ensure permissions on /etc/shadow- are configured"
+  file:
+      dest: /etc/shadow-
+      owner: root
+      group: root
+      mode: 0000
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_1_7|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.1.7
+
+- name: "SCORED | 6.1.7 | PATCH | Verify permissions on /etc/shadow- are configured"
+  stat:
+      path: /etc/shadow-
+  register: rhel7cis_rule_6_1_7_out
+  when:
+      - (rhel7cis_rule_6_1_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_7|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.7
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.1.7 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.1.7 | When Not Compliant
+          debug:  
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.1.7 |Permissions On /etc/shadow- Configured|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_1_7_out.stat.mode}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_1_7_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.1.7"] }}'
+      when: 
+          - rhel7cis_rule_6_1_7_out.stat.mode != '0000'
+      
+    - block:
+        - name: Display Output | 6.1.7 | When Compliant
+          debug:  
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.1.7 |Permissions On /etc/shadow- Cofigured|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_1_7_out.stat.mode}}"
+        - set_fact:
+            cis_noncompliant_6_1_7_status: Compliant
+      when: 
+          - rhel7cis_rule_6_1_7_out.stat.mode == '0000'
+  when:
+      - (rhel7cis_rule_6_1_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_7|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.7
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.1.7 | AFTER | Ensure permissions on /etc/shadow- are configured"
+  block:
+  - shell: stat /etc/shadow- | grep "Uid.*Gid";true
+    register: ea_rhel7cis_rule_6_1_7
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.1.7","description":"Ensure permissions on /etc/shadow- are configured","before":eb_rhel7cis_rule_6_1_7.stdout,"after":ea_rhel7cis_rule_6_1_7.stdout,"mode":mode_rhel7cis_rule_6_1_7,"status":cis_noncompliant_6_1_7_status }] }}'
+    when: eb_rhel7cis_rule_6_1_7.stdout is defined and ea_rhel7cis_rule_6_1_7.stdout is defined
+  when:
+      - (rhel7cis_rule_6_1_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_7|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.7
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.1.8 | BEFORE | Ensure permissions on /etc/group- are configured"
+  block:
+  - shell: stat /etc/group- | grep "Uid.*Gid";true
+    register: eb_rhel7cis_rule_6_1_8
+  - set_fact:
+      mode_rhel7cis_rule_6_1_8: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_1_8|bool) else 'check_only'}}"
+      cis_noncompliant_6_1_8_status: Unknown
+  when:
+      - (rhel7cis_rule_6_1_8|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_8|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.8
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.1.8 | PATCH | Ensure permissions on /etc/group- are configured"
+  file:
+      dest: /etc/group-
+      owner: root
+      group: root
+      mode: "u-x,go-wx" # 0644
+  register: rhel7cis_rule_6_1_8_out
+  when:
+      - (rhel7cis_rule_6_1_8|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_8|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.8
+      - customcheck
+  check_mode: "{{ not ((fix_mode|bool) or (fix_rhel7cis_rule_6_1_8|bool)) }}"
+
+- name: Display Output | 6.1.8 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.1.8 | When Not Compliant
+          debug:  
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.1.8 |Permissions On /etc/group- Configured|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_1_8_out.mode}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_1_8_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.1.8"] }}'
+      when:
+          - rhel7cis_rule_6_1_8_out.changed and not ((fix_mode|bool) or (fix_rhel7cis_rule_6_1_8|bool))
+    - block:
+        - name: Display Output | 6.1.8 | When Compliant
+          debug:  
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.1.8 |Permissions On /etc/group- Cofigured|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_1_8_out.mode}}"
+        - set_fact:
+            cis_noncompliant_6_1_8_status: Compliant
+      when:
+          - not rhel7cis_rule_6_1_8_out.changed or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_8|bool)
+  when:
+      - (rhel7cis_rule_6_1_8|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_8|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.8
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.1.8 | AFTER | Ensure permissions on /etc/group- are configured"
+  block:
+  - shell: stat /etc/group- | grep "Uid.*Gid";true
+    register: ea_rhel7cis_rule_6_1_8
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.1.8","description":"Ensure permissions on /etc/group- are configured","before":eb_rhel7cis_rule_6_1_8.stdout,"after":ea_rhel7cis_rule_6_1_8.stdout,"mode":mode_rhel7cis_rule_6_1_8,"status":cis_noncompliant_6_1_8_status }] }}'
+    when: eb_rhel7cis_rule_6_1_8.stdout is defined and ea_rhel7cis_rule_6_1_8.stdout is defined
+  when:
+      - (rhel7cis_rule_6_1_8|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_8|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.8
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.1.9 | BEFORE | Ensure permissions on /etc/gshadow- are configured"
+  block:
+  - shell: stat /etc/gshadow- | grep "Uid.*Gid";true
+    register: eb_rhel7cis_rule_6_1_9
+  - set_fact:
+      mode_rhel7cis_rule_6_1_9: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_1_9|bool) else 'check_only'}}"
+      cis_noncompliant_6_1_9_status: Unknown
+  when:
+      - (rhel7cis_rule_6_1_9|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_9|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.9
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.1.9 | PATCH | Ensure permissions on /etc/gshadow- are configured"
+  file:
+      dest: /etc/gshadow-
+      owner: root
+      group: root
+      mode: 0000
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_1_9|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.1.9
+
+- name: "SCORED | 6.1.9 | PATCH | Ensure permissions on /etc/gshadow- are configured"
+  stat:
+    path: /etc/gshadow-
+  register: rhel7cis_rule_6_1_9_out
+  when:
+      - (rhel7cis_rule_6_1_9|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_9|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.9
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.1.9 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.1.9 | When Not Compliant
+          debug:  
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.1.9 |Permissions On /etc/gshadow- Configured|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_1_9_out.stat.mode}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_1_9_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.1.9"] }}'
+      when: 
+          - rhel7cis_rule_6_1_9_out.stat.mode != '0000'
+    - block:
+        - name: Display Output | 6.1.9 | When Compliant
+          debug:  
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.1.9 |Permissions On /etc/gshadow- Cofigured|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_1_9_out.stat.mode}}"
+        - set_fact:
+            cis_noncompliant_6_1_9_status: Compliant
+      when: 
+          - rhel7cis_rule_6_1_9_out.stat.mode == '0000'
+  when:
+      - (rhel7cis_rule_6_1_9|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_9|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.9
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.1.9 | AFTER | Ensure permissions on /etc/gshadow- are configured"
+  block:
+  - shell: stat /etc/gshadow- | grep "Uid.*Gid";true
+    register: ea_rhel7cis_rule_6_1_9
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.1.9","description":"Ensure permissions on /etc/gshadow- are configured","before":eb_rhel7cis_rule_6_1_9.stdout,"after":ea_rhel7cis_rule_6_1_9.stdout,"mode":mode_rhel7cis_rule_6_1_9,"status":cis_noncompliant_6_1_9_status }] }}'
+    when: eb_rhel7cis_rule_6_1_9.stdout is defined and ea_rhel7cis_rule_6_1_9.stdout is defined
+  when:
+      - (rhel7cis_rule_6_1_9|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_9|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.9
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.1.10 | BEFORE | Ensure no world writable files exist"
+  block:
+  - set_fact:
+      mode_rhel7cis_rule_6_1_10: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_1_10|bool) else 'check_only'}}"
+      cis_noncompliant_6_1_10_status: Unknown
+  when:
+      - (rhel7cis_rule_6_1_10|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_10|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.10
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.1.10 | PATCH | Ensure no world writable files exist"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_1_10|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.1.10
+      - notimplemented
+
+- name: Display Output | 6.1.10 | | PATCH | Verify no world writable files exist"
+  shell: df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type f -perm -0002;true
+  register: rhel7cis_rule_6_1_10_out
+  when:
+      - (rhel7cis_rule_6_1_10|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_10|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.10
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.1.10 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.1.10 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.1.10 |Verify no world writable files exist|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_1_10_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_1_10_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.1.10"] }}'
+      when: (rhel7cis_rule_6_1_10_out.stdout | length > 0 ) or (rhel7cis_rule_6_1_10_out.stderr | length > 0 )
+    - block:
+        - name: Display Output | 6.1.10 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.1.10 |Verify no world writable files exist|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_1_10_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_1_10_status: Compliant
+      when: (rhel7cis_rule_6_1_10_out.stdout | length == 0) and (rhel7cis_rule_6_1_10_out.stderr | length == 0 )
+  when:
+      - (rhel7cis_rule_6_1_10|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_10|bool)
+  tags:
+      - level2
+      - patch
+      - rule_6.1.10
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.1.10 | AFTER | Ensure no world writable files exist"
+  block:
+  - set_fact:
+      eb_rhel7cis_rule_6_1_10: "{{ rhel7cis_rule_6_1_10_out }}"
+      ea_rhel7cis_rule_6_1_10: "{{ rhel7cis_rule_6_1_10_out }}"
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.1.10","description":"Ensure no world writable files exist (Check only)","before":eb_rhel7cis_rule_6_1_10.stdout,"after":ea_rhel7cis_rule_6_1_10.stdout,"mode":mode_rhel7cis_rule_6_1_10,"status":cis_noncompliant_6_1_10_status }] }}'
+    when: eb_rhel7cis_rule_6_1_10.stdout is defined and ea_rhel7cis_rule_6_1_10.stdout is defined
+  when:
+      - (rhel7cis_rule_6_1_10|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_10|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.10
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.1.11 | BEFORE | Ensure no unowned files or directories exist"
+  block:
+  - set_fact:
+      mode_rhel7cis_rule_6_1_11: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_1_11|bool) else 'check_only'}}"
+      cis_noncompliant_6_1_11_status: Unknown
+  when:
+      - (rhel7cis_rule_6_1_11|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_11|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.11
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.1.11 | PATCH | Ensure no unowned files or directories exist"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_1_11|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.1.11
+      - notimplemented
+
+- name: "SCORED | 6.1.11 | PATCH | Verify no unowned files or directories exist"
+  shell: df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -nouser -ls
+  register: rhel7cis_rule_6_1_11_out
+  changed_when: no
+  when:
+      - (rhel7cis_rule_6_1_11|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_11|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.11
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.1.11 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.1.11 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.1.11 |Verify no unowned files or directories exist|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_1_11_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_1_11_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.1.11"] }}'
+      when: (rhel7cis_rule_6_1_11_out.stdout | length > 0 ) or (rhel7cis_rule_6_1_11_out.stderr | length > 0 )
+    - block:
+        - name: Display Output | 6.1.11 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.1.11 |Verify no unowned files or directories exist|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_1_11_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_1_11_status: Compliant
+      when: (rhel7cis_rule_6_1_11_out.stdout | length == 0) and (rhel7cis_rule_6_1_11_out.stderr | length == 0 )
+  when:
+      - (rhel7cis_rule_6_1_11|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_11|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.11
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.1.11 | AFTER | Ensure no unowned files or directories exist"
+  block:
+  - set_fact:
+      eb_rhel7cis_rule_6_1_11: "{{ rhel7cis_rule_6_1_11_out }}"
+      ea_rhel7cis_rule_6_1_11: "{{ rhel7cis_rule_6_1_11_out }}"
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.1.11","description":"Ensure no unowned files or directories exist (Check only)","before":eb_rhel7cis_rule_6_1_11.stdout,"after":ea_rhel7cis_rule_6_1_11.stdout,"mode":mode_rhel7cis_rule_6_1_11,"status":cis_noncompliant_6_1_11_status }] }}'
+    when: eb_rhel7cis_rule_6_1_11.stdout is defined and ea_rhel7cis_rule_6_1_11.stdout is defined
+  when:
+      - (rhel7cis_rule_6_1_11|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_11|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.11
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.1.12 | BEFORE | Ensure no ungrouped files or directories exist"
+  block:
+  - set_fact:
+      mode_rhel7cis_rule_6_1_12: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_1_12|bool) else 'check_only'}}"
+      cis_noncompliant_6_1_12_status: Unknown
+  when:
+      - (rhel7cis_rule_6_1_12|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_12|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.12
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.1.12 | PATCH | Ensure no ungrouped files or directories exist"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_1_12|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.1.12
+      - notimplemented
+
+- name: "SCORED | 6.1.12 | Verify no ungrouped files or directories exist"
+  shell: df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -nogroup -ls;true
+  register: rhel7cis_rule_6_1_12_out
+  changed_when: no
+  when:
+      - (rhel7cis_rule_6_1_12|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_12|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.12
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.1.12 | When Not Compliant
+  block:
+    - block:
+        - name: Display Output | 6.1.12 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.1.12 |Root Is The Only UID 0 Account|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_1_12_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_1_12_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.1.12"] }}'
+      when: (rhel7cis_rule_6_1_12_out.stdout | length > 0 ) or (rhel7cis_rule_6_1_12_out.stderr | length > 0 )
+    - block:
+        - name: Display Output | 6.1.12 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.1.12 |Root Is The Only UID 0 Account|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_1_12_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_1_12_status: Compliant
+      when: (rhel7cis_rule_6_1_12_out.stdout | length == 0) and (rhel7cis_rule_6_1_12_out.stderr | length == 0 )
+  when:
+      - (rhel7cis_rule_6_1_12|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_12|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.12
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.1.12 | AFTER | Ensure no ungrouped files or directories exist"
+  block:
+  - set_fact:
+      eb_rhel7cis_rule_6_1_12: "{{ rhel7cis_rule_6_1_12_out }}"
+      ea_rhel7cis_rule_6_1_12: "{{ rhel7cis_rule_6_1_12_out }}"
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.1.12","description":"Ensure no ungrouped files or directories exist (Check only)","before":eb_rhel7cis_rule_6_1_12.stdout,"after":ea_rhel7cis_rule_6_1_12.stdout,"mode":mode_rhel7cis_rule_6_1_12,"status":cis_noncompliant_6_1_12_status }] }}'
+    when: eb_rhel7cis_rule_6_1_12.stdout is defined and ea_rhel7cis_rule_6_1_12.stdout is defined
+  when:
+      - (rhel7cis_rule_6_1_12|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_12|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.12
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.1.13 | BEFORE | Audit SUID executables"
+  block:
+  - set_fact:
+      mode_rhel7cis_rule_6_1_13: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_1_13|bool) else 'check_only'}}"
+      cis_noncompliant_6_1_13_status: Unknown
+  when:
+      - (rhel7cis_rule_6_1_13|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_13|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.13
+      - customcheck
+  check_mode: no
+
+- name: "NOTSCORED | 6.1.13 | PATCH | Audit SUID executables"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_1_13|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.1.13
+      - notimplemented
+
+- name: "NOTSCORED | 6.1.13 | PATCH | Verify Audit SUID executables"
+  shell: df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type f -perm -4000;true
+  #shell: find / -xdev \( -perm -4000 \) -type f ! -path '/proc/*' -print 2>/dev/null
+  register: rhel7cis_rule_6_1_13_out
+  changed_when: no
+  when:
+      - (rhel7cis_rule_6_1_13|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_13|bool)
+  tags:
+    - level1
+    - patch
+    - rule_6.1.13
+    - customcheck
+  check_mode: no
+
+- name: Display Output | 6.1.13 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.1.13 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.1.13 |Verify Audit SUID executables|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_1_13_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_1_13_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.1.13"] }}'
+      when: (rhel7cis_rule_6_1_13_out.stdout | length > 0 ) or (rhel7cis_rule_6_1_13_out.stderr | length > 0 )
+    - block:
+        - name: Display Output | 6.1.13 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.1.13 |Verify Audit SUID executables|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_1_13_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_1_13_status: Compliant
+      when: (rhel7cis_rule_6_1_13_out.stdout | length == 0) and (rhel7cis_rule_6_1_13_out.stderr | length == 0 )
+  when:
+      - (rhel7cis_rule_6_1_13|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_13|bool)
+  tags:
+    - level1
+    - patch
+    - rule_6.1.13
+    - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.1.13 | AFTER | Audit SUID executables"
+  block:
+  - set_fact:
+      eb_rhel7cis_rule_6_1_13: "{{ rhel7cis_rule_6_1_13_out }}"
+      ea_rhel7cis_rule_6_1_13: "{{ rhel7cis_rule_6_1_13_out }}"
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.1.13","description":"Audit SUID executables (Check only)","before":eb_rhel7cis_rule_6_1_13.stdout,"after":ea_rhel7cis_rule_6_1_13.stdout,"mode":mode_rhel7cis_rule_6_1_13,"status":cis_noncompliant_6_1_13_status }] }}'
+    when: eb_rhel7cis_rule_6_1_13.stdout is defined and ea_rhel7cis_rule_6_1_13.stdout is defined
+  when:
+      - (rhel7cis_rule_6_1_13|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_13|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.13
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.1.14 | BEFORE | Audit SGID executables"
+  block:
+  - set_fact:
+      mode_rhel7cis_rule_6_1_14: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_1_14|bool) else 'check_only'}}"
+      cis_noncompliant_6_1_14_status: Unknown
+  when:
+      - (rhel7cis_rule_6_1_14|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_14|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.14
+      - customcheck
+  check_mode: no
+
+- name: "NOTSCORED | 6.1.14 | PATCH | Audit SGID executables"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_1_14|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.1.14
+      - notimplemented
+
+- name: "NOTSCORED | 6.1.14 | PATCH | Verify Audit SGID executables"
+  shell: df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type f -perm -2000;true
+  #shell: find / -xdev \( -perm -2000 \) -type f ! -path '/proc/*' -print 2>/dev/null
+  register: rhel7cis_rule_6_1_14_out
+  changed_when: no
+  when:
+      - (rhel7cis_rule_6_1_14|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_14|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.14
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.1.14 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.1.14 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.1.14 |Verify Audit SGID executables|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_1_14_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_1_14_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.1.14"] }}'
+      when: (rhel7cis_rule_6_1_14_out.stdout | length > 0 ) or (rhel7cis_rule_6_1_14_out.stderr | length > 0 )
+    - block:
+        - name: Display Output | 6.1.14 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.1.14 |Verify Audit SGID executables|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_1_1_14_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_1_14_status: Compliant
+      when: (rhel7cis_rule_6_1_14_out.stdout | length == 0) and (rhel7cis_rule_6_1_14_out.stderr | length == 0 )
+  when:
+      - (rhel7cis_rule_6_1_14|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_14|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.14
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.1.14 | AFTER | Audit SGID executables"
+  block:
+  - set_fact:
+      eb_rhel7cis_rule_6_1_14: "{{ rhel7cis_rule_6_1_14_out }}"
+      ea_rhel7cis_rule_6_1_14: "{{ rhel7cis_rule_6_1_14_out }}"
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.1.14","description":"Audit SGID executables (Check only)","before":eb_rhel7cis_rule_6_1_14.stdout,"after":ea_rhel7cis_rule_6_1_14.stdout,"mode":mode_rhel7cis_rule_6_1_14,"status":cis_noncompliant_6_1_14_status }] }}'
+    when: eb_rhel7cis_rule_6_1_14.stdout is defined and ea_rhel7cis_rule_6_1_14.stdout is defined
+  when:
+      - (rhel7cis_rule_6_1_14|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_1_14|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.1.14
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.2.1 | BEFORE | Ensure password fields are not empty"
+  block:
+  - set_fact:
+      mode_rhel7cis_rule_6_2_1: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_2_1|bool) else 'check_only'}}"
+      cis_noncompliant_6_2_1_status: Unknown
+  when:
+      - (rhel7cis_rule_6_2_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.1
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.2.1 | PATCH | Ensure password fields are not empty"
+  command: passwd -l {{ item }}
+  changed_when: no
+  failed_when: no
+  with_items: "{{ empty_password_accounts.stdout_lines }}"
+  when:
+      - empty_password_accounts.rc
+      - (rhel7cis_rule_6_2_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_1|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.2.1
+
+#- name: "SCORED | 6.2.1 | PATCH | Verify password fields are not empty"
+
+- name: Display Output | 6.2.1 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.2.1 | When Not Compliant
+          debug:  
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.2.1 |Password Fields Are Not Empty|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{empty_password_accounts.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_2_1_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.2.1"] }}'
+      when: 
+          - empty_password_accounts.rc != 0 
+    - block:
+        - name: Display Output | 6.2.1 | When Compliant
+          debug:  
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.2.1 |Password Fields Are Not Empty|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{empty_password_accounts.stderr_lines}}"
+        - set_fact:
+            cis_noncompliant_6_2_1_status: Compliant
+      when: 
+          - empty_password_accounts.rc == 0
+  when:
+      - (rhel7cis_rule_6_2_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.1
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.2.1 | AFTER | Ensure password fields are not empty"
+  block:
+  - set_fact:
+      eb_rhel7cis_rule_6_2_1: "{{ empty_password_accounts }}"
+      ea_rhel7cis_rule_6_2_1: "{{ empty_password_accounts }}"
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.2.1","description":"Ensure password fields are not empty","before":eb_rhel7cis_rule_6_2_1.stdout,"after":ea_rhel7cis_rule_6_2_1.stdout,"mode":mode_rhel7cis_rule_6_2_1,"status":cis_noncompliant_6_2_1_status }] }}'
+    when: eb_rhel7cis_rule_6_2_1.stdout is defined and ea_rhel7cis_rule_6_2_1.stdout is defined
+  when:
+      - (rhel7cis_rule_6_2_1|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_1|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.1
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.2.2 | BEFORE | Ensure no legacy '+' entries exist in /etc/passwd"
+  block:
+  - shell: /bin/grep '^+:' /etc/passwd;true
+    register: eb_rhel7cis_rule_6_2_2
+  - set_fact:
+      mode_rhel7cis_rule_6_2_2: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_2_2|bool) else 'check_only'}}"
+      cis_noncompliant_6_2_2_status: Unknown
+  when:
+      - (rhel7cis_rule_6_2_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.2
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.2.2 | PATCH | Ensure no legacy '+' entries exist in /etc/passwd"
+  command: sed -i '/^+/ d' /etc/passwd
+  args:
+    warn: no
+  changed_when: no
+  failed_when: no
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_2_2|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.2.2
+      - skip_ansible_lint #  ANSIBLE0006
+
+- name: "SCORED | 6.2.2 | PATCH | Verify no legacy '+' entries exist in /etc/passwd"
+  shell: /bin/grep '^+:' /etc/passwd
+  register: rhel7cis_rule_6_2_2_out
+  ignore_errors: yes
+  changed_when: no
+  failed_when: "'FAILED' in rhel7cis_rule_6_2_2_out.stderr"
+  when:
+      - (rhel7cis_rule_6_2_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.2
+      - skip_ansible_lint #  ANSIBLE0006
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.2.2 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.2.2 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.2.2 |No Leacy + Entries Exist In /etc/passwd|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_2_2_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_2_2_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.2.2"] }}'
+      when: rhel7cis_rule_6_2_2_out.rc == 0
+    - block:
+        - name: Display Output | 6.2.2 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.2.2 |No Leacy + Entries Exist In /etc/passwd|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_2_2_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_2_2_status: Compliant
+      when: rhel7cis_rule_6_2_2_out.rc != 0
+  when:
+      - (rhel7cis_rule_6_2_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.2
+      - skip_ansible_lint #  ANSIBLE0006
+      - customcheck
+
+- name: "EVIDENCE | 6.2.2 | AFTER | Ensure no legacy '+' entries exist in /etc/passwd"
+  block:
+  - shell: /bin/grep '^+:' /etc/passwd;true
+    register: ea_rhel7cis_rule_6_2_2
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.2.2","description":"Ensure no legacy + entries exist in /etc/passwd","before":eb_rhel7cis_rule_6_2_2.stdout,"after":ea_rhel7cis_rule_6_2_2.stdout,"mode":mode_rhel7cis_rule_6_2_2,"status":cis_noncompliant_6_2_2_status }] }}'
+    when: eb_rhel7cis_rule_6_2_2.stdout is defined and ea_rhel7cis_rule_6_2_2.stdout is defined
+  when:
+      - (rhel7cis_rule_6_2_2|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_2|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.2
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.2.3 | BEFORE | Ensure no legacy '+' entries exist in /etc/shadow"
+  block:
+  - shell: /bin/grep '^+:' /etc/shadow;true
+    register: eb_rhel7cis_rule_6_2_3
+  - set_fact:
+      mode_rhel7cis_rule_6_2_3: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_2_3|bool) else 'check_only'}}"
+      cis_noncompliant_6_2_3_status: Unknown
+  when:
+      - (rhel7cis_rule_6_2_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.3
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.2.3 | PATCH | Ensure no legacy '+' entries exist in /etc/shadow"
+  command: sed -i '/^+/ d' /etc/shadow
+  changed_when: no
+  failed_when: no
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_2_3|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.2.3
+      - skip_ansible_lint #  ANSIBLE0006
+
+- name: "SCORED | 6.2.3 | PATCH | Verify no legacy '+' entries exist in /etc/shadow"
+  shell: /bin/grep '^+:' /etc/shadow
+  register: rhel7cis_rule_6_2_3_out
+  ignore_errors: yes
+  changed_when: no
+  failed_when: "'FAILED' in rhel7cis_rule_6_2_3_out.stderr"
+  when:
+      - (rhel7cis_rule_6_2_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.3
+      - skip_ansible_lint #  ANSIBLE0006
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.2.3 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.2.3 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.2.3 |No Leacy + Entries Exist In /etc/shadow|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_2_3_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_2_3_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.2.3"] }}'
+      when: rhel7cis_rule_6_2_3_out.rc == 0
+    - block:
+        - name: Display Output | 6.2.3 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.2.3 |No Leacy + Entries Exist In /etc/shadow|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_2_3_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_2_3_status: Compliant
+      when: rhel7cis_rule_6_2_3_out.rc != 0
+  when:
+      - (rhel7cis_rule_6_2_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.3
+      - skip_ansible_lint #  ANSIBLE0006
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.2.3 | AFTER | Ensure no legacy '+' entries exist in /etc/shadow"
+  block:
+  - shell: /bin/grep '^+:' /etc/shadow;true
+    register: ea_rhel7cis_rule_6_2_3
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.2.3","description":"Ensure no legacy + entries exist in /etc/shadow","before":eb_rhel7cis_rule_6_2_3.stdout,"after":ea_rhel7cis_rule_6_2_3.stdout,"mode":mode_rhel7cis_rule_6_2_3,"status":cis_noncompliant_6_2_3_status }] }}'
+    when: eb_rhel7cis_rule_6_2_3.stdout is defined and ea_rhel7cis_rule_6_2_3.stdout is defined
+  when:
+      - (rhel7cis_rule_6_2_3|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_3|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.3
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.2.4 | BEFORE | Ensure no legacy '+' entries exist in /etc/group"
+  block:
+  - shell: /bin/grep '^+:' /etc/group;true
+    register: eb_rhel7cis_rule_6_2_4
+  - set_fact:
+      mode_rhel7cis_rule_6_2_4: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_2_4|bool) else 'check_only'}}"
+      cis_noncompliant_6_2_4_status: Unknown
+  when:
+      - (rhel7cis_rule_6_2_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.4
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.2.4 | PATCH | Ensure no legacy '+' entries exist in /etc/group"
+  command: sed -i '/^+/ d' /etc/group
+  changed_when: no
+  failed_when: no
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_2_4|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.2.4
+      - skip_ansible_lint #  ANSIBLE0006
+
+- name: "SCORED | 6.2.4 | PATCH | Ensure no legacy '+' entries exist in /etc/group"
+  shell: /bin/grep '^+:' /etc/group
+  register: rhel7cis_rule_6_2_4_out
+  ignore_errors: yes
+  changed_when: no
+  failed_when: "'FAILED' in rhel7cis_rule_6_2_4_out.stderr"
+  when:
+      - (rhel7cis_rule_6_2_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.4
+      - skip_ansible_lint #  ANSIBLE0006
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.2.4 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.2.4 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.2.4 |No Leacy + Entries Exist In /etc/group|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_2_4_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_2_4_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.2.4"] }}'
+      when: rhel7cis_rule_6_2_4_out.rc == 0
+    - block:
+        - name: Display Output | 6.2.4 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.2.4 |No Leacy + Entries Exist In /etc/group|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_2_4_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_2_4_status: Compliant
+      when: rhel7cis_rule_6_2_4_out.rc != 0
+  when:
+      - (rhel7cis_rule_6_2_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.4
+      - skip_ansible_lint #  ANSIBLE0006
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.2.4 | AFTER | Ensure no legacy '+' entries exist in /etc/group"
+  block:
+  - shell: /bin/grep '^+:' /etc/group;true
+    register: ea_rhel7cis_rule_6_2_4
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.2.4","description":"Ensure no legacy + entries exist in /etc/group","before":eb_rhel7cis_rule_6_2_4.stdout,"after":ea_rhel7cis_rule_6_2_4.stdout,"mode":mode_rhel7cis_rule_6_2_4,"status":cis_noncompliant_6_2_4_status }] }}'
+    when: eb_rhel7cis_rule_6_2_4.stdout is defined and ea_rhel7cis_rule_6_2_4.stdout is defined
+  when:
+      - (rhel7cis_rule_6_2_4|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_4|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.4
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.2.5 | BEFORE | Ensure root is the only UID 0 account"
+  block:
+  - shell: /bin/awk -F':' '($3 == 0) { print $1 }' /etc/passwd | grep -qx 'root';true
+    register: eb_rhel7cis_rule_6_2_5
+  - set_fact:
+      mode_rhel7cis_rule_6_2_5: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_2_5|bool) else 'check_only'}}"
+      cis_noncompliant_6_2_5_status: Unknown
+  when:
+      - (rhel7cis_rule_6_2_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.5
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.2.5 | PATCH | Ensure root is the only UID 0 account"
+  command: passwd -l {{ item }}
+  changed_when: no
+  failed_when: no
+  with_items: "{{ uid_zero_accounts_except_root.stdout_lines }}"
+  when:
+      - uid_zero_accounts_except_root.rc
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_2_5|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.2.5
+
+- name: "SCORED | 6.2.5 | PATCH | Verify root is the only UID 0 account"
+  shell: /bin/awk -F':' '($3 == 0) { print $1 }' /etc/passwd | grep -qx 'root' 
+  register: rhel7cis_rule_6_2_5_out
+  ignore_errors: yes
+  changed_when: no
+  failed_when: "'FAILED' in rhel7cis_rule_6_2_5_out.stderr"
+  when:
+      - (rhel7cis_rule_6_2_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.5
+      - skip_ansible_lint #  ANSIBLE0006
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.2.5 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.2.5 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.2.5 |Root Is The Only UID 0 Account|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_2_5_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_2_5_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.2.5"] }}'
+      when: (rhel7cis_rule_6_2_5_out.stdout | length > 0 ) or (rhel7cis_rule_6_2_5_out.stderr | length > 0 )
+    - block:
+        - name: Display Output | 6.2.5 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.2.5 |Root Is The Only UID 0 Account|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_2_5_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_2_5_status: Compliant
+      when: (rhel7cis_rule_6_2_5_out.stdout | length == 0) and (rhel7cis_rule_6_2_5_out.stderr | length == 0 )
+  when:
+      - (rhel7cis_rule_6_2_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.5
+      - skip_ansible_lint #  ANSIBLE0006
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.2.5 | AFTER | Ensure root is the only UID 0 account"
+  block:
+  - shell: /bin/awk -F':' '($3 == 0) { print $1 }' /etc/passwd | grep -qx 'root';true
+    register: ea_rhel7cis_rule_6_2_5
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.2.5","description":"Ensure root is the only UID 0 account (Check only)","before":eb_rhel7cis_rule_6_2_5.stdout,"after":ea_rhel7cis_rule_6_2_5.stdout,"mode":mode_rhel7cis_rule_6_2_5,"status":cis_noncompliant_6_2_5_status }] }}'
+    when: eb_rhel7cis_rule_6_2_5.stdout is defined and ea_rhel7cis_rule_6_2_5.stdout is defined
+  when:
+      - (rhel7cis_rule_6_2_5|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_5|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.5
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.2.6 | BEFORE | Verify root PATH Integrity"
+  block:
+  - set_fact:
+      mode_rhel7cis_rule_6_2_6: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_2_6|bool) else 'check_only'}}"
+      cis_noncompliant_6_2_6_status: Unknown
+  when:
+      - (rhel7cis_rule_6_2_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_6|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.6
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.2.6 | PATCH | Verify root PATH Integrity"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_2_6|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.6
+  check_mode: no
+
+- name: "SCORED | 6.2.6 | PATCH | Verify root PATH Integrity"
+  shell: |
+      if [ "`echo $PATH | grep ::`" != "" ]; then
+        echo "Empty Directory in PATH (::)"
+      fi
+      if [ "`echo $PATH | grep :$`" != "" ]; then
+        echo "Trailing : in PATH"
+      fi
+      p=`echo $PATH | sed -e 's/::/:/' -e 's/:$//' -e 's/:/ /g'`
+      set -- $p
+      while [ "$1" != "" ]; do
+        if [ "$1" = "." ]; then
+          echo "PATH contains ."
+          shift
+          continue
+      fi
+      if [ -d $1 ]; then
+        dirperm=`ls -ldH $1 | cut -f1 -d" "`
+        if [ `echo $dirperm | cut -c6` != "-" ]; then
+          echo "Group Write permission set on directory $1"
+        fi
+        if [ `echo $dirperm | cut -c9` != "-" ]; then
+          echo "Other Write permission set on directory $1"
+        fi
+        dirown=`ls -ldH $1 | awk '{print $3}'`
+        if [ "$dirown" != "root" ] ; then
+          echo $1 is not owned by root
+        fi
+      else
+        echo $1 is not a directory
+      fi
+      shift
+      done
+
+  register: rhel7cis_rule_6_2_6_out
+  failed_when: no
+  changed_when: no
+  when:
+      - (rhel7cis_rule_6_2_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_6|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.6
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.2.6 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.2.6 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.2.6 |root PATH Integrity|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_2_6_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_2_6_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.2.6"] }}'
+      when: (rhel7cis_rule_6_2_6_out.stdout | length > 0 ) or (rhel7cis_rule_6_2_6_out.stderr | length > 0 )
+    - block:
+        - name: Display Output | 6.2.6 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.2.6 |root PATH Integrity|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_2_6_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_2_6_status: Compliant
+      when: (rhel7cis_rule_6_2_6_out.stdout | length == 0) and (rhel7cis_rule_6_2_6_out.stderr | length == 0 )
+  when:
+      - (rhel7cis_rule_6_2_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_6|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.6
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.2.6 | AFTER | Verify root PATH Integrity"
+  block:
+  - set_fact:
+      eb_rhel7cis_rule_6_2_6: "{{ rhel7cis_rule_6_2_6_out }}"
+      ea_rhel7cis_rule_6_2_6: "{{ rhel7cis_rule_6_2_6_out }}"
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.2.6","description":"Verify root PATH Integrity (Check only)","before":eb_rhel7cis_rule_6_2_6.stdout,"after":ea_rhel7cis_rule_6_2_6.stdout,"mode":mode_rhel7cis_rule_6_2_6,"status":cis_noncompliant_6_2_6_status }] }}'
+    when: eb_rhel7cis_rule_6_2_6.stdout is defined and ea_rhel7cis_rule_6_2_6.stdout is defined
+  when:
+      - (rhel7cis_rule_6_2_6|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_6|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.6
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.2.7 | BEFORE | Ensure all users' home directories exist"
+  block:
+  - set_fact:
+      mode_rhel7cis_rule_6_2_7: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_2_7|bool) else 'check_only'}}"
+      cis_noncompliant_6_2_7_status: Unknown
+  when:
+      - (rhel7cis_rule_6_2_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_7|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.7
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.2.7 | PATCH | Ensure all users' home directories exist"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_2_7|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.2.7
+      - notimplemented
+
+- name: "SCORED | 6.2.7 | PATCH | Verify all users' home directories exist"
+  shell: |
+      cat /etc/passwd | awk -F: '{ print $1 " " $3 " " $6 }' | while read user uid dir; do
+        if [ $uid -ge 1000 -a ! -d "$dir" -a $user != "nfsnobody" ]; then
+          echo "The home directory ($dir) of user $user does not exist."
+        fi
+      done
+  register: rhel7cis_rule_6_2_7_out
+  changed_when: no
+  when:
+      - (rhel7cis_rule_6_2_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_7|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.7
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.2.7 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.2.7 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.2.7 |all users' home directories exist|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_2_7_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_2_7_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.2.7"] }}'
+      when: (rhel7cis_rule_6_2_7_out.stdout | length > 0 ) or (rhel7cis_rule_6_2_7_out.stderr | length > 0 )
+    - block:
+        - name: Display Output | 6.2.7 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.2.7 |all users' home directories exist|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_2_7_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_2_7_status: Compliant
+      when: (rhel7cis_rule_6_2_7_out.stdout | length == 0) and (rhel7cis_rule_6_2_7_out.stderr | length == 0 )
+  when:
+      - (rhel7cis_rule_6_2_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_7|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.7
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.2.7 | AFTER | Ensure all users' home directories exist"
+  block:
+  - set_fact:
+      eb_rhel7cis_rule_6_2_7: "{{ rhel7cis_rule_6_2_7_out }}"
+      ea_rhel7cis_rule_6_2_7: "{{ rhel7cis_rule_6_2_7_out }}"
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.2.7","description":"Ensure all users home directories exist (Check only)","before":eb_rhel7cis_rule_6_2_7.stdout,"after":ea_rhel7cis_rule_6_2_7.stdout,"mode":mode_rhel7cis_rule_6_2_7,"status":cis_noncompliant_6_2_7_status }] }}'
+    when: eb_rhel7cis_rule_6_2_7.stdout is defined and ea_rhel7cis_rule_6_2_7.stdout is defined
+  when:
+      - (rhel7cis_rule_6_2_7|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_7|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.7
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.2.8 | BEFORE | Ensure users' home directories permissions are 750 or more restrictive"
+  block:
+  - set_fact:
+      mode_rhel7cis_rule_6_2_8: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_2_8|bool) else 'check_only'}}"
+      cis_noncompliant_6_2_8_status: Unknown
+  when:
+      - (rhel7cis_rule_6_2_8|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_8|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.8
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.2.8 | PATCH | Ensure users' home directories permissions are 750 or more restrictive"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_2_8|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.2.8
+      - notimplemented
+
+- name: "SCORED | 6.2.8 | PATCH | Verify users' home directories permissions are 750 or more restrictive"
+  shell: |
+      for dir in `cat /etc/passwd | egrep -v '(root|halt|sync|shutdown)' | awk -F: '($7 != "/sbin/nologin") { print $6 }'`; do
+       dirperm=`ls -ld $dir | cut -f1 -d" "`
+       if [ `echo $dirperm | cut -c6` != "-" ]; then
+         echo "Group Write permission set on directory $dir"
+       fi
+       if [ `echo $dirperm | cut -c8` != "-" ]; then
+         echo "Other Read permission set on directory $dir"
+       fi
+       if [ `echo $dirperm | cut -c9` != "-" ]; then
+         echo "Other Write permission set on directory $dir"
+       fi
+       if [ `echo $dirperm | cut -c10` != "-" ]; then
+         echo "Other Execute permission set on directory $dir"
+       fi
+      done
+
+  register: rhel7cis_rule_6_2_8_out
+  changed_when: no
+  when:
+      - (rhel7cis_rule_6_2_8|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_8|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.8
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.2.8 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.2.8 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.2.8 |users' home directories permissions are 750 or more restrictive|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_2_8_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_2_8_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.2.8"] }}'
+      when: (rhel7cis_rule_6_2_8_out.stdout | length > 0 ) or (rhel7cis_rule_6_2_8_out.stderr | length > 0 )
+    - block:
+        - name: Display Output | 6.2.8 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.2.8 |users' home directories permissions are 750 or more restrictive|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_2_8_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_2_8_status: Compliant
+      when: (rhel7cis_rule_6_2_8_out.stdout | length == 0) and (rhel7cis_rule_6_2_8_out.stderr | length == 0 )
+  when:
+      - (rhel7cis_rule_6_2_8|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_8|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.8
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.2.8 | AFTER | Ensure users' home directories permissions are 750 or more restrictive"
+  block:
+  - set_fact:
+      eb_rhel7cis_rule_6_2_8: "{{ rhel7cis_rule_6_2_8_out }}"
+      ea_rhel7cis_rule_6_2_8: "{{ rhel7cis_rule_6_2_8_out }}"
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.2.8","description":"Ensure users home directories permissions are 750 or more restrictive (Check only)","before":eb_rhel7cis_rule_6_2_8.stdout,"after":ea_rhel7cis_rule_6_2_8.stdout,"mode":mode_rhel7cis_rule_6_2_8,"status":cis_noncompliant_6_2_8_status }] }}'
+    when: eb_rhel7cis_rule_6_2_8.stdout is defined and ea_rhel7cis_rule_6_2_8.stdout is defined
+  when:
+      - (rhel7cis_rule_6_2_8|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_8|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.8
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.2.9 | BEFORE | Ensure users own their home directories"
+  block:
+  - set_fact:
+      mode_rhel7cis_rule_6_2_9: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_2_9|bool) else 'check_only'}}"
+      cis_noncompliant_6_2_9_status: Unknown
+  when:
+      - (rhel7cis_rule_6_2_9|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_9|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.9
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.2.9 | PATCH | Ensure users own their home directories"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_2_9|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.2.9
+      - notimplemented
+
+- name: Display Output | 6.2.9 | Check Compliant
+  shell: |
+      cat /etc/passwd | egrep -v '^(root|halt|sync|shutdown)' | awk -F: '($7 != "/sbin/nologin" && $7 != "/bin/false") { print $1 " " $6 }' | while read user dir; do
+       if [ ! -d "$dir" ]; then
+        echo "The home directory ($dir) of user $user does not exist."
+       else
+        owner=$(stat -L -c "%U" "$dir")
+        if [ "$owner" != "$user" ]; then
+         echo "The home directory ($dir) of user $user is owned by $owner."
+        fi
+       fi
+      done
+
+  register: rhel7cis_rule_6_2_9_out
+  when:
+      - (rhel7cis_rule_6_2_9|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_9|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.9
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.2.9 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.2.9 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.2.9 |users own their home directories|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_2_9_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_2_9_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.2.9"] }}'
+      when: (rhel7cis_rule_6_2_9_out.stdout | length > 0 ) or (rhel7cis_rule_6_2_9_out.stderr | length > 0 )
+    - block:
+        - name: Display Output | 6.2.9 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.2.9 |users own their home directories|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_2_9_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_2_9_status: Compliant
+      when: (rhel7cis_rule_6_2_9_out.stdout | length == 0) and (rhel7cis_rule_6_2_9_out.stderr | length == 0 )
+  when:
+      - (rhel7cis_rule_6_2_9|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_9|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.9
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.2.9 | AFTER | Ensure users own their home directories"
+  block:
+  - set_fact:
+      eb_rhel7cis_rule_6_2_9: "{{ rhel7cis_rule_6_2_9_out }}"
+      ea_rhel7cis_rule_6_2_9: "{{ rhel7cis_rule_6_2_9_out }}"
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.2.9","description":"Ensure users own their home directories (Check only)","before":eb_rhel7cis_rule_6_2_9.stdout,"after":ea_rhel7cis_rule_6_2_9.stdout,"mode":mode_rhel7cis_rule_6_2_9,"status":cis_noncompliant_6_2_9_status }] }}'
+    when: eb_rhel7cis_rule_6_2_9.stdout is defined and ea_rhel7cis_rule_6_2_9.stdout is defined
+  when:
+      - (rhel7cis_rule_6_2_9|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_9|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.9
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.2.10 | BEFORE | Ensure users' dot files are not group or world writable"
+  block:
+  - set_fact:
+      mode_rhel7cis_rule_6_2_10: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_2_10|bool) else 'check_only'}}"
+      cis_noncompliant_6_2_10_status: Unknown
+  when:
+      - (rhel7cis_rule_6_2_10|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_10|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.10
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.2.10 | PATCH | Ensure users' dot files are not group or world writable"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_2_10|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.2.10
+      - notimplemented
+
+- name: "SCORED | 6.2.10 | PATCH | Ensure users' dot files are not group or world writable"
+  shell: |
+      for dir in `cat /etc/passwd | egrep -v '(root|sync|halt|shutdown)' | awk -F: '($7 != "/sbin/nologin") { print $6 }'`; do
+        for file in $dir/.[A-Za-z0-9]*; do
+          if [ ! -h "$file" -a -f "$file" ]; then
+            fileperm=`ls -ld $file | cut -f1 -d" "`
+            if [ `echo $fileperm | cut -c6` != "-" ]; then
+              echo "Group Write permission set on file $file"
+            fi
+            if [ `echo $fileperm | cut -c9` != "-" ]; then
+              echo "Other Write permission set on file $file"
+            fi
+          fi
+        done
+      done
+
+  register: rhel7cis_rule_6_2_10_out
+  changed_when: no
+  when:
+      - (rhel7cis_rule_6_2_10|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_10|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.10
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.2.10 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.2.10 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.2.10 |users' dot files are not group or world writable|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_2_10_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_2_10_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.2.10"] }}'
+      when: (rhel7cis_rule_6_2_10_out.stdout | length > 0) or (rhel7cis_rule_6_2_10_out.stderr | length > 0)
+    - block:
+        - name: Display Output | 6.2.10 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.2.10 |users' dot files are not group or world writable|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_2_10_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_2_10_status: Compliant
+      when: (rhel7cis_rule_6_2_10_out.stdout | length == 0) and (rhel7cis_rule_6_2_10_out.stderr | length == 0)
+  when:
+      - (rhel7cis_rule_6_2_10|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_10|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.10
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.2.10 | AFTER | Ensure users' dot files are not group or world writable"
+  block:
+  - set_fact:
+      eb_rhel7cis_rule_6_2_10: "{{ rhel7cis_rule_6_2_10_out }}"
+      ea_rhel7cis_rule_6_2_10: "{{ rhel7cis_rule_6_2_10_out }}"
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.2.10","description":"Ensure users dot files are not group or world writable (Check only)","before":eb_rhel7cis_rule_6_2_10.stdout,"after":ea_rhel7cis_rule_6_2_10.stdout,"mode":mode_rhel7cis_rule_6_2_10,"status":cis_noncompliant_6_2_10_status }] }}'
+    when: eb_rhel7cis_rule_6_2_10.stdout is defined and ea_rhel7cis_rule_6_2_10.stdout is defined
+  when:
+      - (rhel7cis_rule_6_2_10|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_10|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.10
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.2.11 | BEFORE | Ensure no users have .forward files"
+  block:
+  - set_fact:
+      mode_rhel7cis_rule_6_2_11: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_2_11|bool) else 'check_only'}}"
+      cis_noncompliant_6_2_11_status: Unknown
+  when:
+      - (rhel7cis_rule_6_2_11|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_11|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.11
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.2.11 | PATCH | Ensure no users have .forward files"
+  file:
+      state: absent
+      dest: "~{{ item }}/.forward"
+  with_items: "{{ users.stdout_lines }}"
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_2_11|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.2.11
+
+- name: "SCORED | 6.2.11 | PATCH | Verify no users have .forward files"
+  shell: for h in $(/bin/awk -F':' '$7 !~ /\/sbin\/nologin/ && $7 !~ /\/bin\/false/ { print $6 }' /etc/passwd); do if [[ -f $h/.forward && -s $h/.forward ]]; then echo $h; fi ; done
+  register: rhel7cis_rule_6_2_11_out
+  ignore_errors: yes
+  changed_when: no
+  failed_when: "'FAILED' in rhel7cis_rule_6_2_11_out.stderr"
+  when:
+      - (rhel7cis_rule_6_2_11|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_11|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.11
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.2.11 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.2.11 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.2.11 |no users have .forward Files|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_2_11_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_2_11_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.2.11"] }}'
+      when: (rhel7cis_rule_6_2_11_out.stdout | length > 0) or (rhel7cis_rule_6_2_11_out.stderr | length > 0)
+    - block:
+        - name: Display Output | 6.2.11 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.2.11 |no users have .forward Files|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_2_11_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_2_11_status: Compliant
+      when: (rhel7cis_rule_6_2_11_out.stdout | length == 0) and (rhel7cis_rule_6_2_11_out.stderr | length == 0)
+  when:
+      - (rhel7cis_rule_6_2_11|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_11|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.11
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.2.11 | AFTER | Ensure no users have .forward files"
+  block:
+  - set_fact:
+      eb_rhel7cis_rule_6_2_11: "{{ rhel7cis_rule_6_2_11_out }}"
+      ea_rhel7cis_rule_6_2_11: "{{ rhel7cis_rule_6_2_11_out }}"
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.2.11","description":"Ensure no users have .forward files","before":eb_rhel7cis_rule_6_2_11.stdout,"after":ea_rhel7cis_rule_6_2_11.stdout,"mode":mode_rhel7cis_rule_6_2_11,"status":cis_noncompliant_6_2_11_status }] }}'
+    when: eb_rhel7cis_rule_6_2_11.stdout is defined and ea_rhel7cis_rule_6_2_11.stdout is defined
+  when:
+      - (rhel7cis_rule_6_2_11|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_11|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.11
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.2.12 | BEFORE | Ensure no users have .netrc files"
+  block:
+  - set_fact:
+      mode_rhel7cis_rule_6_2_12: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_2_12|bool) else 'check_only'}}"
+      cis_noncompliant_6_2_12_status: Unknown
+  when:
+      - (rhel7cis_rule_6_2_12|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_12|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.12
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.2.12 | PATCH | Ensure no users have .netrc files"
+  file:
+      state: absent
+      dest: "~{{ item }}/.netrc"
+  with_items: "{{ users.stdout_lines }}"
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_2_12|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.2.12
+
+- name: "SCORED | 6.2.12 | PATCH | Verify no users have .netrc files"
+  shell: for h in $(/bin/awk -F':' '$7 !~ /\/sbin\/nologin/ && $7 !~ /\/bin\/false/ { print $6 }' /etc/passwd); do if [[ -f $h/.netrc && -s $h/.netrc ]]; then echo $h; fi ; done
+  register: rhel7cis_rule_6_2_12_out
+  changed_when: no
+  ignore_errors: yes
+  failed_when: "'FAILED' in rhel7cis_rule_6_2_12_out.stderr"
+  when:
+      - (rhel7cis_rule_6_2_12|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_12|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.12
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.2.12 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.2.12 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.2.12 |no users have .netrc Files|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_2_12_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_2_12_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.2.12"] }}'
+      when: (rhel7cis_rule_6_2_12_out.stdout | length > 0) or (rhel7cis_rule_6_2_12_out.stderr | length > 0)
+    - block:
+        - name: Display Output | 6.2.12 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.2.12 |no users have .netrc Files|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_2_12_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_2_12_status: Compliant
+      when: (rhel7cis_rule_6_2_12_out.stdout | length == 0) and (rhel7cis_rule_6_2_12_out.stderr | length == 0)
+  when:
+      - (rhel7cis_rule_6_2_12|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_12|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.12
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.2.12 | AFTER | Ensure no users have .netrc files"
+  block:
+  - set_fact:
+      eb_rhel7cis_rule_6_2_12: "{{ rhel7cis_rule_6_2_12_out }}"
+      ea_rhel7cis_rule_6_2_12: "{{ rhel7cis_rule_6_2_12_out }}"
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.2.12","description":"Ensure no users have .netrc files","before":eb_rhel7cis_rule_6_2_12.stdout,"after":ea_rhel7cis_rule_6_2_12.stdout,"mode":mode_rhel7cis_rule_6_2_12,"status":cis_noncompliant_6_2_12_status }] }}'
+    when: eb_rhel7cis_rule_6_2_12.stdout is defined and ea_rhel7cis_rule_6_2_12.stdout is defined
+  when:
+      - (rhel7cis_rule_6_2_12|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_12|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.12
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.2.13 | BEFORE | Ensure users' .netrc Files are not group or world accessible"
+  block:
+  - set_fact:
+      mode_rhel7cis_rule_6_2_13: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_2_13|bool) else 'check_only'}}"
+      cis_noncompliant_6_2_13_status: Unknown
+  when:
+      - (rhel7cis_rule_6_2_13|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_13|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.13
+      - customcheck
+  check_mode: no
+
+#- name: "SCORED | 6.2.13 | PATCH | Ensure users' .netrc Files are not group or world accessible"
+#  file:
+#      mode: 0600
+#      dest: "~{{ item }}/.netrc"
+#  with_items: "{{ users.stdout_lines }}"
+#  tags:
+#      - level1
+#      - patch
+#      - rule_6.2.13
+
+- name: "SCORED | 6.2.13 | PATCH | Verify users .netrc Files are not group or world accessible-Deleted"
+  #shell: for h in $(/bin/awk -F':' '$7 !~ /\/sbin\/nologin/ && $7 !~ /\/bin\/false/ { print $6 }' /etc/passwd); do if [[ -f $h/.netrc && -s $h/.netrc ]]; then echo $h; fi ; done
+  shell: |
+    cat /etc/passwd | egrep -v '^(root|halt|sync|shutdown)' | awk -F: '($7 != "/sbin/nologin" && $7 != "/bin/false") { print $1 " " $6 }' | while read user dir; do
+     if [ ! -d "$dir" ]; then
+      echo "The home directory ($dir) of user $user does not exist."
+     else
+      for file in $dir/.netrc; do
+       if [ ! -h "$file" -a -f "$file" ]; then
+        fileperm=`ls -ld $file | cut -f1 -d" "`
+        if [ `echo $fileperm | cut -c5` != "-" ]; then
+         echo "Group Read set on $file"
+        fi
+        if [ `echo $fileperm | cut -c6` != "-" ]; then
+         echo "Group Write set on $file"
+        fi
+        if [ `echo $fileperm | cut -c7` != "-" ]; then
+         echo "Group Execute set on $file"
+        fi
+        if [ `echo $fileperm | cut -c8` != "-" ]; then
+         echo "Other Read set on $file"
+        fi
+        if [ `echo $fileperm | cut -c9` != "-" ]; then
+         echo "Other Write set on $file"
+        fi
+        if [ `echo $fileperm | cut -c10` != "-" ]; then
+         echo "Other Execute set on $file"
+        fi
+       fi
+      done
+     fi
+    done
+    true
+
+  register: rhel7cis_rule_6_2_13_out
+  ignore_errors: yes
+  failed_when: "'FAILED' in rhel7cis_rule_6_2_13_out.stderr"
+  when:
+      - (rhel7cis_rule_6_2_13|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_13|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.13
+      - customcheck
+
+- name: Display Output | 6.2.13 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.2.13 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.2.13 |Users .netrc Files Are Not Group Or World Accessible|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_2_13_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_2_13_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.2.13"] }}'
+      when: (rhel7cis_rule_6_2_13_out.stdout | length > 0) or (rhel7cis_rule_6_2_13_out.stderr | length > 0)
+    - block:
+        - name: Display Output | 6.2.13 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.2.13 |Users .netrc Files Are Not Group Or World Accessible|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_2_13_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_2_13_status: Compliant
+      when: (rhel7cis_rule_6_2_13_out.stdout | length == 0) and (rhel7cis_rule_6_2_13_out.stderr | length == 0)
+  when:
+      - (rhel7cis_rule_6_2_13|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_13|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.13
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.2.13 | AFTER | Ensure users' .netrc Files are not group or world accessible"
+  block:
+  - set_fact:
+      eb_rhel7cis_rule_6_2_13: "{{ rhel7cis_rule_6_2_13_out }}"
+      ea_rhel7cis_rule_6_2_13: "{{ rhel7cis_rule_6_2_13_out }}"
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.2.13","description":"Ensure users .netrc Files are not group or world accessible (Check only)","before":eb_rhel7cis_rule_6_2_13.stdout,"after":ea_rhel7cis_rule_6_2_13.stdout,"mode":mode_rhel7cis_rule_6_2_13,"status":cis_noncompliant_6_2_13_status }] }}'
+    when: eb_rhel7cis_rule_6_2_13.stdout is defined and ea_rhel7cis_rule_6_2_13.stdout is defined
+  when:
+      - (rhel7cis_rule_6_2_13|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_13|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.13
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.2.14 | BEFORE | Ensure no users have .rhosts files"
+  block:
+  - set_fact:
+      mode_rhel7cis_rule_6_2_14: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_2_14|bool) else 'check_only'}}"
+      cis_noncompliant_6_2_14_status: Unknown
+  when:
+      - (rhel7cis_rule_6_2_14|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_14|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.14
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.2.14 | PATCH | Ensure no users have .rhosts files"
+  file:
+      state: absent
+      dest: "~{{ item }}/.rhosts"
+  with_items: "{{ users.stdout_lines }}"
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_2_14|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.2.14
+
+- name: "SCORED | 6.2.14 | PATCH | Ensure no users have .rhosts files"
+  shell: |
+      for dir in `cat /etc/passwd | egrep -v '(root|halt|sync|shutdown)' | awk -F: '($7 != "/sbin/nologin") { print $6 }'`; do
+        for file in $dir/.rhosts; do
+          if [ ! -h "$file" -a -f "$file" ]; then
+            echo ".rhosts file in $dir"
+          fi
+        done
+      done
+  register: rhel7cis_rule_6_2_14_out
+  ignore_errors: yes
+  failed_when: "'FAILED' in rhel7cis_rule_6_2_14_out.stderr"
+  when:
+      - (rhel7cis_rule_6_2_14|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_14|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.14
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.2.14 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.2.14 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.2.14 |no users have .rhosts files|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_2_14_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_2_14_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.2.14"] }}'
+      when: (rhel7cis_rule_6_2_14_out.stdout | length > 0) or (rhel7cis_rule_6_2_14_out.stderr | length > 0)
+    - block:
+        - name: Display Output | 6.2.14 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.2.14 |no users have .rhosts files|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_2_14_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_2_14_status: Compliant
+      when: (rhel7cis_rule_6_2_14_out.stdout | length == 0) and (rhel7cis_rule_6_2_14_out.stderr | length == 0)
+  when:
+      - (rhel7cis_rule_6_2_14|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_14|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.14
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.2.14 | AFTER | Ensure no users have .rhosts files"
+  block:
+  - set_fact:
+      eb_rhel7cis_rule_6_2_14: "{{ rhel7cis_rule_6_2_14_out }}"
+      ea_rhel7cis_rule_6_2_14: "{{ rhel7cis_rule_6_2_14_out }}"
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.2.14","description":"Ensure no users have .rhosts files","before":eb_rhel7cis_rule_6_2_14.stdout,"after":ea_rhel7cis_rule_6_2_14.stdout,"mode":mode_rhel7cis_rule_6_2_14,"status":cis_noncompliant_6_2_14_status }] }}'
+    when: eb_rhel7cis_rule_6_2_14.stdout is defined and ea_rhel7cis_rule_6_2_14.stdout is defined
+  when:
+      - (rhel7cis_rule_6_2_14|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_14|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.14
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.2.15 | BEFORE | Ensure all groups in /etc/passwd exist in /etc/group"
+  block:
+  - set_fact:
+      mode_rhel7cis_rule_6_2_15: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_2_15|bool) else 'check_only'}}"
+      cis_noncompliant_6_2_15_status: Unknown
+  when:
+      - (rhel7cis_rule_6_2_15|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_15|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.15
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.2.15 | PATCH | Ensure all groups in /etc/passwd exist in /etc/group"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_2_15|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.2.15
+      - notimplemented
+
+- name: "SCORED | 6.2.15 | PATCH | Verify all groups in /etc/passwd exist in /etc/group"
+  shell: |
+     for i in $(cut -s -d: -f4 /etc/passwd | sort -u ); do
+       grep -q -P "^.*?:[^:]*:$i:" /etc/group
+       if [ $? -ne 0 ]; then
+         echo "Group $i is referenced by /etc/passwd but does not exist in /etc/group"
+       fi
+     done
+  changed_when: no
+  register: rhel7cis_rule_6_2_15_out
+  when:
+      - (rhel7cis_rule_6_2_15|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_15|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.15
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.2.15 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.2.15 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.2.15 |all groups in /etc/passwd exist in /etc/group|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_2_15_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_2_15_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.2.15"] }}'
+      when: (rhel7cis_rule_6_2_15_out.stdout | length > 0) or (rhel7cis_rule_6_2_15_out.stderr | length > 0)
+    - block:
+        - name: Display Output | 6.2.15 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.2.15 |all groups in /etc/passwd exist in /etc/group|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_2_15_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_2_15_status: Compliant
+      when: (rhel7cis_rule_6_2_15_out.stdout | length == 0) and (rhel7cis_rule_6_2_15_out.stderr | length == 0)
+  when:
+      - (rhel7cis_rule_6_2_15|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_15|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.15
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.2.15 | AFTER | Ensure all groups in /etc/passwd exist in /etc/group"
+  block:
+  - set_fact:
+      eb_rhel7cis_rule_6_2_15: "{{ rhel7cis_rule_6_2_15_out }}"
+      ea_rhel7cis_rule_6_2_15: "{{ rhel7cis_rule_6_2_15_out }}"
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.2.15","description":"Ensure all groups in /etc/passwd exist in /etc/group (Check only)","before":eb_rhel7cis_rule_6_2_15.stdout,"after":ea_rhel7cis_rule_6_2_15.stdout,"mode":mode_rhel7cis_rule_6_2_15,"status":cis_noncompliant_6_2_15_status }] }}'
+    when: eb_rhel7cis_rule_6_2_15.stdout is defined and ea_rhel7cis_rule_6_2_15.stdout is defined
+  when:
+      - (rhel7cis_rule_6_2_15|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_15|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.15
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.2.16 | BEFORE | Ensure no duplicate UIDs exist"
+  block:
+  - set_fact:
+      mode_rhel7cis_rule_6_2_16: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_2_16|bool) else 'check_only'}}"
+      cis_noncompliant_6_2_16_status: Unknown
+  when:
+      - (rhel7cis_rule_6_2_16|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_16|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.16
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.2.16 | PATCH | Ensure no duplicate UIDs exist"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_2_16|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.2.16
+      - notimplemented
+
+- name: "SCORED | 6.2.16 | PATCH | Verify no duplicate UIDs exist"
+  shell: for dupeID in  $(cut -f3 -d":" /etc/passwd | sort | uniq -c | sort -n | awk ' $1 > 1 {print $2}'); do awk -F':' -v dupeid=$dupeID '$3 == dupeid {print $1}' /etc/passwd   ; done
+  register: rhel7cis_rule_6_2_16_out
+  ignore_errors: yes
+  failed_when: "'FAILED' in rhel7cis_rule_6_2_16_out.stderr"
+  changed_when: no
+  when:
+      - (rhel7cis_rule_6_2_16|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_16|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.16
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.2.16 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.2.16 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.2.16 |No Duplicate UIDs Exist|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_2_16_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_2_16_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.2.16"] }}'
+      when: (rhel7cis_rule_6_2_16_out.stdout | length > 0) or (rhel7cis_rule_6_2_16_out.stderr | length > 0)
+    - block:
+        - name: Display Output | 6.2.16 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.2.16 |No Duplicate UIDs Exist|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_2_16_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_2_16_status: Compliant
+      when: (rhel7cis_rule_6_2_16_out.stdout | length == 0) and (rhel7cis_rule_6_2_16_out.stderr | length == 0)
+  when:
+      - (rhel7cis_rule_6_2_16|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_16|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.16
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.2.16 | AFTER | Ensure no duplicate UIDs exist"
+  block:
+  - set_fact:
+      eb_rhel7cis_rule_6_2_16: "{{ rhel7cis_rule_6_2_16_out }}"
+      ea_rhel7cis_rule_6_2_16: "{{ rhel7cis_rule_6_2_16_out }}"
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.2.16","description":"Ensure no duplicate UIDs exist (Check only)","before":eb_rhel7cis_rule_6_2_16.stdout,"after":ea_rhel7cis_rule_6_2_16.stdout,"mode":mode_rhel7cis_rule_6_2_16,"status":cis_noncompliant_6_2_16_status }] }}'
+    when: eb_rhel7cis_rule_6_2_16.stdout is defined and ea_rhel7cis_rule_6_2_16.stdout is defined
+  when:
+      - (rhel7cis_rule_6_2_16|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_16|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.16
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.2.17 | BEFORE | Ensure no duplicate GIDs exist"
+  block:
+  - set_fact:
+      mode_rhel7cis_rule_6_2_17: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_2_17|bool) else 'check_only'}}"
+      cis_noncompliant_6_2_17_status: Unknown
+  when:
+      - (rhel7cis_rule_6_2_17|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_17|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.17
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.2.17 | PATCH | Ensure no duplicate GIDs exist"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_2_17|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.2.17
+      - notimplemented
+
+- name: "SCORED | 6.2.17 | PATCH | Verify no duplicate GIDs exist"
+  shell: for dupeID in  $(cut -f3 -d":" /etc/group | sort | uniq -c | sort -n | awk ' $1 > 1 {print $2}'); do awk -F':' -v dupeid=$dupeID '$3 == dupeid {print $1}' /etc/group   ; done
+  register: rhel7cis_rule_6_2_17_out
+  ignore_errors: yes
+  changed_when: no
+  failed_when: "'FAILED' in rhel7cis_rule_6_2_17_out.stderr"
+  when:
+      - (rhel7cis_rule_6_2_17|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_17|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.17
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.2.17 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.2.17 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.2.17 |No Duplicate GIDs Exist|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_2_17_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_2_17_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.2.17"] }}'
+      when: (rhel7cis_rule_6_2_17_out.stdout | length > 0) or (rhel7cis_rule_6_2_17_out.stderr | length > 0)
+    - block:
+        - name: Display Output | 6.2.17 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.2.17 |No Duplicate GIDs Exist|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_2_17_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_2_17_status: Compliant
+      when: (rhel7cis_rule_6_2_17_out.stdout | length == 0) and (rhel7cis_rule_6_2_17_out.stderr | length == 0)
+  when:
+      - (rhel7cis_rule_6_2_17|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_17|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.17
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.2.17 | AFTER | Ensure no duplicate GIDs exist"
+  block:
+  - set_fact:
+      eb_rhel7cis_rule_6_2_17: "{{ rhel7cis_rule_6_2_17_out }}"
+      ea_rhel7cis_rule_6_2_17: "{{ rhel7cis_rule_6_2_17_out }}"
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.2.17","description":"Ensure no duplicate GIDs exist (Check only)","before":eb_rhel7cis_rule_6_2_17.stdout,"after":ea_rhel7cis_rule_6_2_17.stdout,"mode":mode_rhel7cis_rule_6_2_17,"status":cis_noncompliant_6_2_17_status }] }}'
+    when: eb_rhel7cis_rule_6_2_17.stdout is defined and ea_rhel7cis_rule_6_2_17.stdout is defined
+  when:
+      - (rhel7cis_rule_6_2_17|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_17|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.17
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.2.18 | BEFORE | Ensure no duplicate user names exist"
+  block:
+  - set_fact:
+      mode_rhel7cis_rule_6_2_18: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_2_18|bool) else 'check_only'}}"
+      cis_noncompliant_6_2_18_status: Unknown
+  when:
+      - (rhel7cis_rule_6_2_18|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_18|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.18
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.2.18 | PATCH | Ensure no duplicate user names exist"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_2_18|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.2.18
+      - notimplemented
+
+- name: "SCORED | 6.2.18 | PATCH | Verify no duplicate user names exist"
+  shell: cut -f1 -d':' /etc/passwd | sort | uniq -c | sort -n | awk ' $1 > 1 {print $2}'
+  register: rhel7cis_rule_6_2_18_out
+  ignore_errors: yes
+  changed_when: no
+  failed_when: "'FAILED' in rhel7cis_rule_6_2_18_out.stderr"
+  when:
+      - (rhel7cis_rule_6_2_18|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_18|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.18
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.2.18 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.2.18 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.2.18 |No Duplicate User Names Exist|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_2_18_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_2_18_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.2.18"] }}'
+      when: (rhel7cis_rule_6_2_18_out.stdout | length > 0) or (rhel7cis_rule_6_2_18_out.stderr | length > 0)
+    - block:
+        - name: Display Output | 6.2.18 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.2.18 |No Duplicate User Names Exist|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_2_18_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_2_18_status: Compliant
+      when: (rhel7cis_rule_6_2_18_out.stdout | length == 0) and (rhel7cis_rule_6_2_18_out.stderr | length == 0)
+  when:
+      - (rhel7cis_rule_6_2_18|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_18|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.18
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.2.18 | AFTER | Ensure no duplicate user names exist"
+  block:
+  - set_fact:
+      eb_rhel7cis_rule_6_2_18: "{{ rhel7cis_rule_6_2_18_out }}"
+      ea_rhel7cis_rule_6_2_18: "{{ rhel7cis_rule_6_2_18_out }}"
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.2.18","description":"Ensure no duplicate user names exist (Check only)","before":eb_rhel7cis_rule_6_2_18.stdout,"after":ea_rhel7cis_rule_6_2_18.stdout,"mode":mode_rhel7cis_rule_6_2_18,"status":cis_noncompliant_6_2_18_status }] }}'
+    when: eb_rhel7cis_rule_6_2_18.stdout is defined and ea_rhel7cis_rule_6_2_18.stdout is defined
+  when:
+      - (rhel7cis_rule_6_2_18|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_18|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.18
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
+- name: "EVIDENCE | 6.2.19 | BEFORE | Ensure no duplicate group names exist"
+  block:
+  - set_fact:
+      mode_rhel7cis_rule_6_2_19: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_6_2_19|bool) else 'check_only'}}"
+      cis_noncompliant_6_2_19_status: Unknown
+  when:
+      - (rhel7cis_rule_6_2_19|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_19|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.19
+      - customcheck
+  check_mode: no
+
+- name: "SCORED | 6.2.19 | PATCH | Ensure no duplicate group names exist"
+  command: /bin/true
+  changed_when: no
+  when:
+      - (fix_mode|bool) or (fix_rhel7cis_rule_6_2_19|bool)
+      - not ansible_check_mode
+  tags:
+      - level1
+      - patch
+      - rule_6.2.19
+
+- name: "SCORED | 6.2.19 | PATCH | Verify no duplicate group names exist"
+  shell: cut -f1 -d':' /etc/group | sort | uniq -c | sort -n | awk ' $1 > 1 {print $2}'
+  register: rhel7cis_rule_6_2_19_out
+  ignore_errors: yes
+  changed_when: no
+  failed_when: "'FAILED' in rhel7cis_rule_6_2_19_out.stderr"
+  when:
+      - (rhel7cis_rule_6_2_19|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_19|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.19
+      - customcheck
+  check_mode: no
+
+- name: Display Output | 6.2.19 | Check Compliant
+  block:
+    - block:
+        - name: Display Output | 6.2.19 | When Not Compliant
+          debug: 
+            msg="NOT_COMPLIANT|CIS_RESULT| 6.2.19 |No Duplicate Group Names Exist|{{ansible_hostname}}|CHANGE_REQUIRED|True|{{rhel7cis_rule_6_2_19_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_status: true
+            cis_noncompliant_6_2_19_status: NonCompliant
+            cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["6.2.19"] }}'
+      when: (rhel7cis_rule_6_2_19_out.stdout | length > 0) or (rhel7cis_rule_6_2_19_out.stderr | length > 0)
+    - block:
+        - name: Display Output | 6.2.19 | When Compliant
+          debug: 
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 6.2.19 |No Duplicate Group Names Exist|{{ansible_hostname}}|CHANGE_REQUIRED|False|{{rhel7cis_rule_6_2_19_out.stdout_lines}}"
+        - set_fact:
+            cis_noncompliant_6_2_19_status: Compliant
+      when: (rhel7cis_rule_6_2_19_out.stdout | length == 0) and (rhel7cis_rule_6_2_19_out.stderr | length == 0)
+  when:
+      - (rhel7cis_rule_6_2_19|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_19|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.19
+      - customcheck
+  check_mode: no
+
+- name: "EVIDENCE | 6.2.19 | AFTER | Ensure no duplicate group names exist"
+  block:
+  - set_fact:
+      eb_rhel7cis_rule_6_2_19: "{{ rhel7cis_rule_6_2_19_out }}"
+      ea_rhel7cis_rule_6_2_19: "{{ rhel7cis_rule_6_2_19_out }}"
+  - set_fact:
+      cis_evidence: '{{ cis_evidence + [{"id":"6.2.19","description":"Ensure no duplicate group names exist (Check only)","before":eb_rhel7cis_rule_6_2_19.stdout,"after":ea_rhel7cis_rule_6_2_19.stdout,"mode":mode_rhel7cis_rule_6_2_19,"status":cis_noncompliant_6_2_19_status }] }}'
+    when: eb_rhel7cis_rule_6_2_19.stdout is defined and ea_rhel7cis_rule_6_2_19.stdout is defined
+  when:
+      - (rhel7cis_rule_6_2_19|bool) or (fix_mode|bool) or (fix_rhel7cis_rule_6_2_19|bool)
+  tags:
+      - level1
+      - patch
+      - rule_6.2.19
+      - customcheck
+  check_mode: no
+#***********************************************************************************************
