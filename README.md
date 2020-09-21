@@ -13,7 +13,7 @@ Ansible Tower can have multiple inventories. Each inventory can have multiple Gr
             env: prod
             OS: rhel7
 ```
-Ansible Tower does not directly support tags. Instead we use group names such as "OS:rhel7", "env:prod", "env:dev", "env:test" and search for group names that the VMs belong to. We add the extra environment variable in Settings->Jobs ```"ANSIBLE_TRANSFORM_INVALID_GROUP_CHARS": "ignore"``` because Tower does not like the colon character in the group names. This variable is to prevent the deprecation Warning message in the job logs.
+Ansible Tower does not directly support tags. Instead we use group names such as "OS:rhel7", "env:prod", "env:dev", "env:test" and search for group names that the VMs belong to. Note that there are no spaces after the colon in Tower group names even though the yaml has a space. We add the extra environment variable in Settings->Jobs ```"ANSIBLE_TRANSFORM_INVALID_GROUP_CHARS": "ignore"``` because Tower does not like the colon character in the group names. This variable is to prevent the deprecation Warning message in the job logs.
 ```
 [DEPRECATION WARNING]: The TRANSFORM_INVALID_GROUP_CHARS settings is set to allow bad characters in group names by default, this will change, but still be user configurable on
 deprecation. This feature will be removed in version 2.10. Deprecation warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
