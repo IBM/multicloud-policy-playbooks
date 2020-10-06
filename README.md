@@ -4,7 +4,7 @@ Publish policy playbooks for policy operators to consume.
 ## Introduction
 **Ansible Operator to invoke Compliance job for VMs in Ansible Tower Inventory**
 
-Note: The SRE Search API currently does not retrieve the Ansible Tower inventory. This is in plan for 3Q 2020. Temporarily, we search the Inventory directly in Ansible Tower. The Evidence API also requires the full inventory, however it does not directly connect to Ansible Tower. The VM Operator retrieves the full inventory from Tower for VMs in groups named OS:rhel7 and pushes the inventory to evidence API at the start of every run. This step will not be required when we move over to using the SRE search API. It will instead be replaced with a request to find the applicable VMs from the SRE search.
+Note: The SRE Search API currently does not retrieve the Ansible Tower inventory. Temporarily, we search the Inventory directly in Ansible Tower. The Evidence API also requires the full inventory, however it does not directly connect to Ansible Tower. The VM Operator retrieves the full inventory from Tower for VMs in groups named OS:rhel7 and pushes the inventory to evidence API at the start of every run.
 
 Ansible Tower can have multiple inventories. Each inventory can have multiple Groups. Virtual Machines in Ansible Tower belong to one or more of these groups. When the Policy applies to multiple VMs using the vmSelector, the VM must have all specified tags (treated as "and" of the multiple tags) as below:
 ```
