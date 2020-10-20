@@ -2456,7 +2456,7 @@
       mode_rhel7cis_rule_1_2_2: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_1_2_2|bool) else 'check_only'}}"
       cis_noncompliant_1_2_2_status: Unknown
   - name: "EVIDENCE | 1.2.2 | BEFORE | Ensure gpgcheck is globally activated"
-    shell: grep '^gpgcheck' /etc/yum.conf; grep '^gpgcheck' /etc/yum.repos.d/* | grep -v 'gpgcheck=1'
+    shell: grep '^gpgcheck' /etc/yum.conf|grep -v 'gpgcheck *= *1';grep '^gpgcheck' /etc/yum.repos.d/*.repo|grep -v 'gpgcheck *= *1';true
     failed_when: no
     changed_when: no
     check_mode: no
@@ -2472,9 +2472,9 @@
 - name: "SCORED | 1.2.2 | PATCH | Ensure gpgcheck is globally activated"
   replace:
       name: /etc/yum.conf
-      regexp: "^gpgcheck=0"
+      regexp: "^gpgcheck *= *0 *$"
       replace: "gpgcheck=1"
-  register:  rhel7cis_rule_1_2_2_out
+  register: rhel7cis_rule_1_2_2_out
   when:
       - (fix_mode|bool) or (fix_rhel7cis_rule_1_2_2|bool)
   tags:
@@ -2504,7 +2504,7 @@
       - rule_1.2.2
       - customcheck
 
-- name: "SCORED | 1.2.2 | PATCH | Ensure gpgcheck is globally activated"
+- name: "SCORED | 1.2.2 | PATCH | Ensure gpgcheck is globally activated Get yum.repos.d files"
   find:
       paths: /etc/yum.repos.d
       patterns: "*.repo"
@@ -2518,33 +2518,33 @@
       - patch
       - rule_1.2.2
 
-- name: Display Output | 1.2.2 | Check Compliant
-  block:
-    - name: Display Output | 1.2.2 | When Not Compliant
-      debug:
-          msg="NOT_COMPLIANT|CIS_RESULT| 1.2.2 |gpgcheck is globally activated - yum.repos.d|{{ansible_hostname}}|CHANGE_REQUIRED|{{yum_repos.changed}}"
-      when:
-          yum_repos.changed
-    - name: Display Output | 1.2.2 | When Compliant
-      debug:
-          msg="SUCCESS_COMPLIANT|CIS_RESULT| 1.2.2 |gpgcheck is globally activated - yum.repos.d|{{ansible_hostname}}|CHANGE_REQUIRED|{{yum_repos.changed}}"
-      when:
-          not yum_repos.changed
-  when:
-      - (fix_mode|bool) or (fix_rhel7cis_rule_1_2_2|bool)
-  tags:
-      - level1
-      - scored
-      - patch
-      - rule_1.2.2
-      - customcheck
+#- name: Display Output | 1.2.2 | Check Compliant
+#  block:
+#    - name: Display Output | 1.2.2 | When Not Compliant
+#      debug:
+#          msg="NOT_COMPLIANT|CIS_RESULT| 1.2.2 |gpgcheck is globally activated - yum.repos.d|{{ansible_hostname}}|CHANGE_REQUIRED|{{yum_repos.changed}}"
+#      when:
+#          yum_repos.changed
+#    - name: Display Output | 1.2.2 | When Compliant
+#      debug:
+#          msg="SUCCESS_COMPLIANT|CIS_RESULT| 1.2.2 |gpgcheck is globally activated - yum.repos.d|{{ansible_hostname}}|CHANGE_REQUIRED|{{yum_repos.changed}}"
+#      when:
+#          not yum_repos.changed
+#  when:
+#      - (fix_mode|bool) or (fix_rhel7cis_rule_1_2_2|bool)
+#  tags:
+#      - level1
+#      - scored
+#      - patch
+#      - rule_1.2.2
+#      - customcheck
 
 - name: "SCORED | 1.2.2 | PATCH | Ensure gpgcheck is globally activated"
   replace:
       name: "{{ item.path }}"
-      regexp: "^gpgcheck=0"
+      regexp: "^gpgcheck *= *0 *$"
       replace: "gpgcheck=1"
-  register:  rhel7cis_rule_1_2_2_out
+  register: rhel7cis_rule_1_2_2_out
   loop_control:
     label: "{{ item.path }}"
   with_items:
@@ -2581,7 +2581,7 @@
 - name: "EVIDENCE | 1.2.2 | AFTER | Ensure gpgcheck is globally activated"
   block:
   - name: "EVIDENCE | 1.2.2 | AFTER | Ensure gpgcheck is globally activated"
-    shell: grep '^gpgcheck' /etc/yum.conf; grep '^gpgcheck' /etc/yum.repos.d/* | grep -v 'gpgcheck=1'
+    shell: grep '^gpgcheck' /etc/yum.conf|grep -v 'gpgcheck *= *1';grep '^gpgcheck' /etc/yum.repos.d/*.repo|grep -v 'gpgcheck *= *1';true
     failed_when: no
     changed_when: no
     check_mode: no
@@ -2589,13 +2589,13 @@
   - name: Set status when compliant
     set_fact:
       cis_noncompliant_1_2_2_status: Compliant
-    when: ea_rhel7cis_rule_1_2_2.stdout is defined and ea_rhel7cis_rule_1_2_2.stdout == "gpgcheck=1"
+    when: ea_rhel7cis_rule_1_2_2.stdout is defined and ea_rhel7cis_rule_1_2_2.stdout==""
   - name: Set status when not compliant
     set_fact:
       cis_noncompliant_1_2_2_status: NonCompliant
       cis_noncompliant_status: true
       cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["1.2.2"] }}'
-    when: ea_rhel7cis_rule_1_2_2.stdout is defined and ea_rhel7cis_rule_1_2_2.stdout != "gpgcheck=1"
+    when: ea_rhel7cis_rule_1_2_2.stdout is defined and ea_rhel7cis_rule_1_2_2.stdout!=""
   - name: Update cis_evidence
     set_fact:
       cis_evidence: '{{ cis_evidence + [{"id":"1.2.2","description":"Ensure gpgcheck is globally activated","before":eb_rhel7cis_rule_1_2_2.stdout,"after":ea_rhel7cis_rule_1_2_2.stdout,"mode":mode_rhel7cis_rule_1_2_2,"status":cis_noncompliant_1_2_2_status}] }}'
