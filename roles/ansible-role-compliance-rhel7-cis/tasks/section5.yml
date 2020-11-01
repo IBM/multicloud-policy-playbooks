@@ -2963,25 +2963,30 @@
 - name: Display Output | 5.4.2 | Check Compliant
   block:
     - set_fact:
-        cis_noncompliant_5_4_3_status: Unknown
+        cis_noncompliant_5_4_2_status: Unknown
+      changed_when: false
+    - name: "EVIDENCE | 5.4.2 | AFTER | Ensure system accounts are non-login"
+      shell: |
+        egrep -v "^\+" /etc/passwd | awk -F: '($1!="root" && $1!="sync" && $1!="shutdown" && $1!="halt" && $3<{{ rhel7cis_rule_5_4_2_min_uid }} && $7!="/sbin/nologin" && $7!="/bin/false") {print $1}'
+      register: ea_rhel7cis_rule_5_4_2
       changed_when: false
     - block:
       - name: Display Output | 5.4.2 | When Not Compliant
         debug:
-            msg="NOT_COMPLIANT|CIS_RESULT| 5.4.2 |Ensure system accounts are non-login|{{ansible_hostname}}|CHANGE_REQUIRED|{{eb_rhel7cis_rule_5_4_2.stdout != ""}}"
+            msg="NOT_COMPLIANT|CIS_RESULT| 5.4.2 |Ensure system accounts are non-login|{{ansible_hostname}}|CHANGE_REQUIRED|{{ea_rhel7cis_rule_5_4_2.stdout != ""}}"
       - set_fact:
           cis_noncompliant_status: true
           cis_noncompliant_5_4_2_status: NonCompliant
           cis_noncompliant_aggregate: '{{ cis_noncompliant_aggregate + ["5.4.2"] }}'
-      when: (eb_rhel7cis_rule_5_4_2.stdout != "")
+      when: (ea_rhel7cis_rule_5_4_2.stdout != "")
     - block:
       - name: Display Output | 5.4.2 | When Compliant
         debug:
-            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.4.2 |Ensure system accounts are non-login|{{ansible_hostname}}|CHANGE_REQUIRED|{{eb_rhel7cis_rule_5_4_2.stdout == ""}}"
+            msg="SUCCESS_COMPLIANT|CIS_RESULT| 5.4.2 |Ensure system accounts are non-login|{{ansible_hostname}}|CHANGE_REQUIRED|{{ea_rhel7cis_rule_5_4_2.stdout == ""}}"
       - set_fact:
           cis_noncompliant_5_4_2_status: Compliant
       when:
-          (eb_rhel7cis_rule_5_4_2.stdout == "")
+          (ea_rhel7cis_rule_5_4_2.stdout == "")
   when:
       - rhel7cis_rule_5_4_2|bool or (fix_mode|bool) or (fix_rhel7cis_rule_5_4_2|bool)
   tags:
@@ -2993,11 +2998,6 @@
 
 - name: "EVIDENCE | 5.4.2 | AFTER | Ensure system accounts are non-login"
   block:
-    - name: "EVIDENCE | 5.4.2 | AFTER | Ensure system accounts are non-login"
-      shell: |
-        egrep -v "^\+" /etc/passwd | awk -F: '($1!="root" && $1!="sync" && $1!="shutdown" && $1!="halt" && $3<{{ rhel7cis_rule_5_4_2_min_uid }} && $7!="/sbin/nologin" && $7!="/bin/false") {print $1}'
-      register: ea_rhel7cis_rule_5_4_2
-      changed_when: false
     - set_fact:
         mode_rhel7cis_rule_5_4_2: "{{ 'fix' if (fix_mode|bool or fix_rhel7cis_rule_5_4_2|bool) else 'check_only' }}"
       changed_when: false
