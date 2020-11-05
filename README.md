@@ -42,6 +42,7 @@ Run multiple rules in check only - Inform mode
 ```
 ansible-playbook -i inventory site.yaml -t rule_1.1.6,rule_1.1.7,rule_1.1.8,rule_1.1.9,rule_1.1.10,rule_1.1.11,rule_1.1.12 -e rhel7cis_section1=true -e rhel7cis_rule_1_1_6=true -e rhel7cis_rule_1_1_7=true -e rhel7cis_rule_1_1_8=true -e rhel7cis_rule_1_1_9=true -e rhel7cis_rule_1_1_10=true -e rhel7cis_rule_1_1_11=true -e rhel7cis_rule_1_1_12=true
 ```
+```
 ansible-playbook -i inventory site.yaml -t rule_5.4.2 -e rhel7cis_section5=true -e rhel7cis_rule_5_4_2=true -e rhel7cis_rule_5_4_2_min_uid=1000 -vvv
 ```
 Run multiple rules in enforce (with rules requiring vars)
