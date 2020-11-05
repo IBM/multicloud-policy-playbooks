@@ -1,0 +1,27 @@
+- name: Harden Server
+  hosts: localhost
+  connection: local
+  become: yes
+  tasks:
+    - name: Set facts for retrieval of evidence
+      set_fact:
+        fix_mode: "{{ fix_mode | default(false) }}"
+        cis_noncompliant_aggregate: []
+        cis_noncompliant_status: false
+        cis_evidence: []
+      tags:
+        - always
+
+    - import_role:
+        name: "ansible-role-compliance-rhel7-cis"
+
+    - name: Set final boolean fact for compliant status
+      block:
+        - name: Displaying value of cis_noncompliant_status
+          debug:
+            var: cis_noncompliant_status
+        - name: Displaying value of cis_noncompliant_aggregate
+          debug:
+            var: cis_noncompliant_aggregate
+      tags:
+        - always
